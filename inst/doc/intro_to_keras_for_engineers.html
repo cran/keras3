@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Introduction to Keras for engineers</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Introduction to Keras for engineers</h1>
+
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>Keras 3 is a deep learning framework works with TensorFlow, JAX, and
+PyTorch interchangeably. This notebook will walk you through key Keras 3
+workflows.</p>
+<p>Let’s start by installing Keras 3:</p>
+<p>pip install keras –upgrade –quiet</p>
+</div>
+<div id="setup" class="section level2">
+<h2>Setup</h2>
+<p>We’re going to be using the tensorflow backend here – but you can
+edit the string below to <code>&quot;jax&quot;</code> or <code>&quot;torch&quot;</code> and
+hit “Restart runtime”, and the whole notebook will run just the same!
+This entire guide is backend-agnostic.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(tensorflow)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(keras3)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co"># Note that you must configure the backend</span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="co"># before calling any other keras functions.</span></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="co"># The backend cannot be changed once the</span></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="co"># package is imported.</span></span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="fu">use_backend</span>(<span class="st">&quot;tensorflow&quot;</span>)</span></code></pre></div>
+</div>
+<div id="a-first-example-a-mnist-convnet" class="section level2">
+<h2>A first example: A MNIST convnet</h2>
+<p>Let’s start with the Hello World of ML: training a convnet to
+classify MNIST digits.</p>
+<p>Here’s the data:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Load the data and split it between train and test sets</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">c</span>(<span class="fu">c</span>(x_train, y_train), <span class="fu">c</span>(x_test, y_test)) <span class="sc">%&lt;-%</span> keras3<span class="sc">::</span><span class="fu">dataset_mnist</span>()</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co"># Scale images to the [0, 1] range</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>x_train <span class="ot">&lt;-</span> x_train <span class="sc">/</span> <span class="dv">255</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>x_test <span class="ot">&lt;-</span> x_test <span class="sc">/</span> <span class="dv">255</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co"># Make sure images have shape (28, 28, 1)</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>x_train <span class="ot">&lt;-</span> <span class="fu">op_expand_dims</span>(x_train, <span class="sc">-</span><span class="dv">1</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>x_test <span class="ot">&lt;-</span> <span class="fu">op_expand_dims</span>(x_test, <span class="sc">-</span><span class="dv">1</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="fu">dim</span>(x_train)</span></code></pre></div>
+<pre><code>## [1] 60000    28    28     1</code></pre>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">dim</span>(x_test)</span></code></pre></div>
+<pre><code>## [1] 10000    28    28     1</code></pre>
+<p>Here’s our model.</p>
+<p>Different model-building options that Keras offers include:</p>
+<ul>
+<li><a href="sequential_model.html">The Sequential API</a> (what we use
+below)</li>
+<li><a href="functional_api.html">The Functional API</a> (most
+typical)</li>
+<li><a href="making_new_layers_and_models_via_subclassing.html">Writing
+your own models yourself via subclassing</a> (for advanced use
+cases)</li>
+</ul>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Model parameters</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>num_classes <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>input_shape <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">28</span>, <span class="dv">28</span>, <span class="dv">1</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">keras_model_sequential</span>(<span class="at">input_shape =</span> input_shape)</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>model <span class="sc">|&gt;</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>  <span class="fu">layer_conv_2d</span>(<span class="at">filters =</span> <span class="dv">64</span>, <span class="at">kernel_size =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>), <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>  <span class="fu">layer_conv_2d</span>(<span class="at">filters =</span> <span class="dv">64</span>, <span class="at">kernel_size =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>), <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>  <span class="fu">layer_max_pooling_2d</span>(<span class="at">pool_size =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>  <span class="fu">layer_conv_2d</span>(<span class="at">filters =</span> <span class="dv">128</span>, <span class="at">kernel_size =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>), <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>  <span class="fu">layer_conv_2d</span>(<span class="at">filters =</span> <span class="dv">128</span>, <span class="at">kernel_size =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>), <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>  <span class="fu">layer_global_average_pooling_2d</span>() <span class="sc">|&gt;</span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>  <span class="fu">layer_dropout</span>(<span class="at">rate =</span> <span class="fl">0.5</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> num_classes, <span class="at">activation =</span> <span class="st">&quot;softmax&quot;</span>)</span></code></pre></div>
+<p>Here’s our model summary:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">summary</span>(model)</span></code></pre></div>
+<pre><code>## [1mModel: &quot;sequential&quot;[0m
+## ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
+## ┃[1m [0m[1mLayer (type)                   [0m[1m [0m┃[1m [0m[1mOutput Shape             [0m[1m [0m┃[1m [0m[1m   Param #[0m[1m [0m┃
+## ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━┩
+## │ conv2d_3 ([38;5;33mConv2D[0m)               │ ([38;5;45mNone[0m, [38;5;34m26[0m, [38;5;34m26[0m, [38;5;34m64[0m)        │        [38;5;34m640[0m │
+## ├─────────────────────────────────┼───────────────────────────┼────────────┤
+## │ conv2d_2 ([38;5;33mConv2D[0m)               │ ([38;5;45mNone[0m, [38;5;34m24[0m, [38;5;34m24[0m, [38;5;34m64[0m)        │     [38;5;34m36,928[0m │
+## ├─────────────────────────────────┼───────────────────────────┼────────────┤
+## │ max_pooling2d ([38;5;33mMaxPooling2D[0m)    │ ([38;5;45mNone[0m, [38;5;34m12[0m, [38;5;34m12[0m, [38;5;34m64[0m)        │          [38;5;34m0[0m │
+## ├─────────────────────────────────┼───────────────────────────┼────────────┤
+## │ conv2d_1 ([38;5;33mConv2D[0m)               │ ([38;5;45mNone[0m, [38;5;34m10[0m, [38;5;34m10[0m, [38;5;34m128[0m)       │     [38;5;34m73,856[0m │
+## ├─────────────────────────────────┼───────────────────────────┼────────────┤
+## │ conv2d ([38;5;33mConv2D[0m)                 │ ([38;5;45mNone[0m, [38;5;34m8[0m, [38;5;34m8[0m, [38;5;34m128[0m)         │    [38;5;34m147,584[0m │
+## ├─────────────────────────────────┼───────────────────────────┼────────────┤
+## │ global_average_pooling2d        │ ([38;5;45mNone[0m, [38;5;34m128[0m)               │          [38;5;34m0[0m │
+## │ ([38;5;33mGlobalAveragePooling2D[0m)        │                           │            │
+## ├─────────────────────────────────┼───────────────────────────┼────────────┤
+## │ dropout ([38;5;33mDropout[0m)               │ ([38;5;45mNone[0m, [38;5;34m128[0m)               │          [38;5;34m0[0m │
+## ├─────────────────────────────────┼───────────────────────────┼────────────┤
+## │ dense ([38;5;33mDense[0m)                   │ ([38;5;45mNone[0m, [38;5;34m10[0m)                │      [38;5;34m1,290[0m │
+## └─────────────────────────────────┴───────────────────────────┴────────────┘
+## [1m Total params: [0m[38;5;34m260,298[0m (1016.79 KB)
+## [1m Trainable params: [0m[38;5;34m260,298[0m (1016.79 KB)
+## [1m Non-trainable params: [0m[38;5;34m0[0m (0.00 B)</code></pre>
+<p>We use the <code>compile()</code> method to specify the optimizer,
+loss function, and the metrics to monitor. Note that with the JAX and
+TensorFlow backends, XLA compilation is turned on by default.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">compile</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>  <span class="at">optimizer =</span> <span class="st">&quot;adam&quot;</span>,</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>  <span class="at">loss =</span> <span class="st">&quot;sparse_categorical_crossentropy&quot;</span>,</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  <span class="at">metrics =</span> <span class="fu">list</span>(</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>    <span class="fu">metric_sparse_categorical_accuracy</span>(<span class="at">name =</span> <span class="st">&quot;acc&quot;</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>  )</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>)</span></code></pre></div>
+<p>Let’s train and evaluate the model. We’ll set aside a validation
+split of 15% of the data during training to monitor generalization on
+unseen data.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>batch_size <span class="ot">&lt;-</span> <span class="dv">128</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>epochs <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>callbacks <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>  <span class="fu">callback_model_checkpoint</span>(<span class="at">filepath=</span><span class="st">&quot;model_at_epoch_{epoch}.keras&quot;</span>),</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>  <span class="fu">callback_early_stopping</span>(<span class="at">monitor=</span><span class="st">&quot;val_loss&quot;</span>, <span class="at">patience=</span><span class="dv">2</span>)</span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>)</span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(</span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a>  x_train, y_train,</span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a>  <span class="at">batch_size =</span> batch_size,</span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a>  <span class="at">epochs =</span> epochs,</span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a>  <span class="at">validation_split =</span> <span class="fl">0.15</span>,</span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a>  <span class="at">callbacks =</span> callbacks</span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a>)</span></code></pre></div>
+<pre><code>## Epoch 1/10
+## 399/399 - 10s - 24ms/step - acc: 0.7362 - loss: 0.7750 - val_acc: 0.9622 - val_loss: 0.1377
+## Epoch 2/10
+## 399/399 - 2s - 5ms/step - acc: 0.9304 - loss: 0.2354 - val_acc: 0.9702 - val_loss: 0.0983
+## Epoch 3/10
+## 399/399 - 2s - 5ms/step - acc: 0.9480 - loss: 0.1740 - val_acc: 0.9791 - val_loss: 0.0685
+## Epoch 4/10
+## 399/399 - 2s - 5ms/step - acc: 0.9593 - loss: 0.1395 - val_acc: 0.9848 - val_loss: 0.0545
+## Epoch 5/10
+## 399/399 - 2s - 5ms/step - acc: 0.9656 - loss: 0.1179 - val_acc: 0.9872 - val_loss: 0.0451
+## Epoch 6/10
+## 399/399 - 2s - 5ms/step - acc: 0.9692 - loss: 0.1026 - val_acc: 0.9868 - val_loss: 0.0466
+## Epoch 7/10
+## 399/399 - 2s - 5ms/step - acc: 0.9737 - loss: 0.0916 - val_acc: 0.9890 - val_loss: 0.0394
+## Epoch 8/10
+## 399/399 - 2s - 5ms/step - acc: 0.9753 - loss: 0.0834 - val_acc: 0.9898 - val_loss: 0.0357
+## Epoch 9/10
+## 399/399 - 2s - 5ms/step - acc: 0.9778 - loss: 0.0750 - val_acc: 0.9910 - val_loss: 0.0313
+## Epoch 10/10
+## 399/399 - 2s - 5ms/step - acc: 0.9799 - loss: 0.0695 - val_acc: 0.9882 - val_loss: 0.0381</code></pre>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>score <span class="ot">&lt;-</span> model <span class="sc">|&gt;</span> <span class="fu">evaluate</span>(x_test, y_test, <span class="at">verbose =</span> <span class="dv">0</span>)</span></code></pre></div>
+<p>During training, we were saving a model at the end of each epoch. You
+can also save the model in its latest state like this:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">save_model</span>(model, <span class="st">&quot;final_model.keras&quot;</span>, <span class="at">overwrite=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<p>And reload it like this:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">load_model</span>(<span class="st">&quot;final_model.keras&quot;</span>)</span></code></pre></div>
+<p>Next, you can query predictions of class probabilities with
+<code>predict()</code>:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>predictions <span class="ot">&lt;-</span> model <span class="sc">|&gt;</span> <span class="fu">predict</span>(x_test)</span></code></pre></div>
+<pre><code>## 313/313 - 1s - 2ms/step</code></pre>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="fu">dim</span>(predictions)</span></code></pre></div>
+<pre><code>## [1] 10000    10</code></pre>
+<p>That’s it for the basics!</p>
+</div>
+<div id="writing-cross-framework-custom-components" class="section level2">
+<h2>Writing cross-framework custom components</h2>
+<p>Keras enables you to write custom Layers, Models, Metrics, Losses,
+and Optimizers that work across TensorFlow, JAX, and PyTorch with the
+same codebase. Let’s take a look at custom layers first.</p>
+<p>The <code>op_</code> namespace contains:</p>
+<ul>
+<li>An implementation of the NumPy API, e.g. <code>op_stack</code> or
+<code>op_matmul</code>.</li>
+<li>A set of neural network specific ops that are absent from NumPy,
+such as <code>op_conv</code> or
+<code>op_binary_crossentropy</code>.</li>
+</ul>
+<p>Let’s make a custom <code>Dense</code> layer that works with all
+backends:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a>layer_my_dense <span class="ot">&lt;-</span> <span class="fu">Layer</span>(</span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>  <span class="at">classname =</span> <span class="st">&quot;MyDense&quot;</span>,</span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>(units, <span class="at">activation =</span> <span class="cn">NULL</span>, <span class="at">name =</span> <span class="cn">NULL</span>, ...) {</span>
+<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>(<span class="at">name =</span> name, ...)</span>
+<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a>    self<span class="sc">$</span>units <span class="ot">&lt;-</span> units</span>
+<span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a>    self<span class="sc">$</span>activation <span class="ot">&lt;-</span> activation</span>
+<span id="cb19-7"><a href="#cb19-7" tabindex="-1"></a>  },</span>
+<span id="cb19-8"><a href="#cb19-8" tabindex="-1"></a>  <span class="at">build =</span> <span class="cf">function</span>(input_shape) {</span>
+<span id="cb19-9"><a href="#cb19-9" tabindex="-1"></a>    input_dim <span class="ot">&lt;-</span> <span class="fu">tail</span>(input_shape, <span class="dv">1</span>)</span>
+<span id="cb19-10"><a href="#cb19-10" tabindex="-1"></a>    self<span class="sc">$</span>w <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">add_weight</span>(</span>
+<span id="cb19-11"><a href="#cb19-11" tabindex="-1"></a>      <span class="at">shape =</span> <span class="fu">shape</span>(input_dim, self<span class="sc">$</span>units),</span>
+<span id="cb19-12"><a href="#cb19-12" tabindex="-1"></a>      <span class="at">initializer =</span> <span class="fu">initializer_glorot_normal</span>(),</span>
+<span id="cb19-13"><a href="#cb19-13" tabindex="-1"></a>      <span class="at">name =</span> <span class="st">&quot;kernel&quot;</span>,</span>
+<span id="cb19-14"><a href="#cb19-14" tabindex="-1"></a>      <span class="at">trainable =</span> <span class="cn">TRUE</span></span>
+<span id="cb19-15"><a href="#cb19-15" tabindex="-1"></a>    )</span>
+<span id="cb19-16"><a href="#cb19-16" tabindex="-1"></a>    self<span class="sc">$</span>b <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">add_weight</span>(</span>
+<span id="cb19-17"><a href="#cb19-17" tabindex="-1"></a>      <span class="at">shape =</span> <span class="fu">shape</span>(self<span class="sc">$</span>units),</span>
+<span id="cb19-18"><a href="#cb19-18" tabindex="-1"></a>      <span class="at">initializer =</span> <span class="fu">initializer_zeros</span>(),</span>
+<span id="cb19-19"><a href="#cb19-19" tabindex="-1"></a>      <span class="at">name =</span> <span class="st">&quot;bias&quot;</span>,</span>
+<span id="cb19-20"><a href="#cb19-20" tabindex="-1"></a>      <span class="at">trainable =</span> <span class="cn">TRUE</span></span>
+<span id="cb19-21"><a href="#cb19-21" tabindex="-1"></a>    )</span>
+<span id="cb19-22"><a href="#cb19-22" tabindex="-1"></a>  },</span>
+<span id="cb19-23"><a href="#cb19-23" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
+<span id="cb19-24"><a href="#cb19-24" tabindex="-1"></a>    <span class="co"># Use Keras ops to create backend-agnostic layers/metrics/etc.</span></span>
+<span id="cb19-25"><a href="#cb19-25" tabindex="-1"></a>    x <span class="ot">&lt;-</span> <span class="fu">op_matmul</span>(inputs, self<span class="sc">$</span>w) <span class="sc">+</span> self<span class="sc">$</span>b</span>
+<span id="cb19-26"><a href="#cb19-26" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(self<span class="sc">$</span>activation))</span>
+<span id="cb19-27"><a href="#cb19-27" tabindex="-1"></a>      x <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">activation</span>(x)</span>
+<span id="cb19-28"><a href="#cb19-28" tabindex="-1"></a>    x</span>
+<span id="cb19-29"><a href="#cb19-29" tabindex="-1"></a>  }</span>
+<span id="cb19-30"><a href="#cb19-30" tabindex="-1"></a>)</span></code></pre></div>
+<p>Next, let’s make a custom <code>Dropout</code> layer that relies on
+the <code>random_*</code> namespace:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a>layer_my_dropout <span class="ot">&lt;-</span> <span class="fu">Layer</span>(</span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a>  <span class="st">&quot;MyDropout&quot;</span>,</span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>(rate, <span class="at">name =</span> <span class="cn">NULL</span>, <span class="at">seed =</span> <span class="cn">NULL</span>, ...) {</span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>(<span class="at">name =</span> name)</span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a>    self<span class="sc">$</span>rate <span class="ot">&lt;-</span> rate</span>
+<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a>    <span class="co"># Use seed_generator for managing RNG state.</span></span>
+<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a>    <span class="co"># It is a state element and its seed variable is</span></span>
+<span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a>    <span class="co"># tracked as part of `layer$variables`.</span></span>
+<span id="cb20-9"><a href="#cb20-9" tabindex="-1"></a>    self<span class="sc">$</span>seed_generator <span class="ot">&lt;-</span> <span class="fu">random_seed_generator</span>(seed)</span>
+<span id="cb20-10"><a href="#cb20-10" tabindex="-1"></a>  },</span>
+<span id="cb20-11"><a href="#cb20-11" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
+<span id="cb20-12"><a href="#cb20-12" tabindex="-1"></a>    <span class="co"># Use `keras3::random_*` for random ops.</span></span>
+<span id="cb20-13"><a href="#cb20-13" tabindex="-1"></a>    <span class="fu">random_dropout</span>(inputs, self<span class="sc">$</span>rate, <span class="at">seed =</span> self<span class="sc">$</span>seed_generator)</span>
+<span id="cb20-14"><a href="#cb20-14" tabindex="-1"></a>  }</span>
+<span id="cb20-15"><a href="#cb20-15" tabindex="-1"></a>)</span></code></pre></div>
+<p>Next, let’s write a custom subclassed model that uses our two custom
+layers:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a>MyModel <span class="ot">&lt;-</span> <span class="fu">Model</span>(</span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a>  <span class="st">&quot;MyModel&quot;</span>,</span>
+<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>(num_classes, ...) {</span>
+<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>(...)</span>
+<span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a>    self<span class="sc">$</span>conv_base <span class="ot">&lt;-</span></span>
+<span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a>      <span class="fu">keras_model_sequential</span>() <span class="sc">|&gt;</span></span>
+<span id="cb21-7"><a href="#cb21-7" tabindex="-1"></a>      <span class="fu">layer_conv_2d</span>(<span class="dv">64</span>, <span class="at">kernel_size =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>), <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb21-8"><a href="#cb21-8" tabindex="-1"></a>      <span class="fu">layer_conv_2d</span>(<span class="dv">64</span>, <span class="at">kernel_size =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>), <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb21-9"><a href="#cb21-9" tabindex="-1"></a>      <span class="fu">layer_max_pooling_2d</span>(<span class="at">pool_size =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb21-10"><a href="#cb21-10" tabindex="-1"></a>      <span class="fu">layer_conv_2d</span>(<span class="dv">128</span>, <span class="at">kernel_size =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>), <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb21-11"><a href="#cb21-11" tabindex="-1"></a>      <span class="fu">layer_conv_2d</span>(<span class="dv">128</span>, <span class="at">kernel_size =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>), <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb21-12"><a href="#cb21-12" tabindex="-1"></a>      <span class="fu">layer_global_average_pooling_2d</span>()</span>
+<span id="cb21-13"><a href="#cb21-13" tabindex="-1"></a></span>
+<span id="cb21-14"><a href="#cb21-14" tabindex="-1"></a>    self<span class="sc">$</span>dp <span class="ot">&lt;-</span> <span class="fu">layer_my_dropout</span>(<span class="at">rate =</span> <span class="fl">0.5</span>)</span>
+<span id="cb21-15"><a href="#cb21-15" tabindex="-1"></a>    self<span class="sc">$</span>dense <span class="ot">&lt;-</span> <span class="fu">layer_my_dense</span>(<span class="at">units =</span> num_classes,</span>
+<span id="cb21-16"><a href="#cb21-16" tabindex="-1"></a>                                 <span class="at">activation =</span> activation_softmax)</span>
+<span id="cb21-17"><a href="#cb21-17" tabindex="-1"></a>  },</span>
+<span id="cb21-18"><a href="#cb21-18" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
+<span id="cb21-19"><a href="#cb21-19" tabindex="-1"></a>    inputs <span class="sc">|&gt;</span></span>
+<span id="cb21-20"><a href="#cb21-20" tabindex="-1"></a>      self<span class="sc">$</span><span class="fu">conv_base</span>() <span class="sc">|&gt;</span></span>
+<span id="cb21-21"><a href="#cb21-21" tabindex="-1"></a>      self<span class="sc">$</span><span class="fu">dp</span>() <span class="sc">|&gt;</span></span>
+<span id="cb21-22"><a href="#cb21-22" tabindex="-1"></a>      self<span class="sc">$</span><span class="fu">dense</span>()</span>
+<span id="cb21-23"><a href="#cb21-23" tabindex="-1"></a>  }</span>
+<span id="cb21-24"><a href="#cb21-24" tabindex="-1"></a>)</span></code></pre></div>
+<p>Let’s compile it and fit it:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">MyModel</span>(<span class="at">num_classes =</span> <span class="dv">10</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">compile</span>(</span>
+<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a>  <span class="at">loss =</span> <span class="fu">loss_sparse_categorical_crossentropy</span>(),</span>
+<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a>  <span class="at">optimizer =</span> <span class="fu">optimizer_adam</span>(<span class="at">learning_rate =</span> <span class="fl">1e-3</span>),</span>
+<span id="cb22-5"><a href="#cb22-5" tabindex="-1"></a>  <span class="at">metrics =</span> <span class="fu">list</span>(</span>
+<span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a>    <span class="fu">metric_sparse_categorical_accuracy</span>(<span class="at">name =</span> <span class="st">&quot;acc&quot;</span>)</span>
+<span id="cb22-7"><a href="#cb22-7" tabindex="-1"></a>  )</span>
+<span id="cb22-8"><a href="#cb22-8" tabindex="-1"></a>)</span>
+<span id="cb22-9"><a href="#cb22-9" tabindex="-1"></a></span>
+<span id="cb22-10"><a href="#cb22-10" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(</span>
+<span id="cb22-11"><a href="#cb22-11" tabindex="-1"></a>  x_train, y_train,</span>
+<span id="cb22-12"><a href="#cb22-12" tabindex="-1"></a>  <span class="at">batch_size =</span> batch_size,</span>
+<span id="cb22-13"><a href="#cb22-13" tabindex="-1"></a>  <span class="at">epochs =</span> <span class="dv">1</span>, <span class="co"># For speed</span></span>
+<span id="cb22-14"><a href="#cb22-14" tabindex="-1"></a>  <span class="at">validation_split =</span> <span class="fl">0.15</span></span>
+<span id="cb22-15"><a href="#cb22-15" tabindex="-1"></a>)</span></code></pre></div>
+<pre><code>## 399/399 - 9s - 22ms/step - acc: 0.7409 - loss: 0.7537 - val_acc: 0.9232 - val_loss: 0.2499</code></pre>
+</div>
+<div id="training-models-on-arbitrary-data-sources" class="section level2">
+<h2>Training models on arbitrary data sources</h2>
+<p>All Keras models can be trained and evaluated on a wide variety of
+data sources, independently of the backend you’re using. This
+includes:</p>
+<ul>
+<li>Arrays</li>
+<li>Dataframes</li>
+<li>TensorFlow <code>tf_dataset</code> objects</li>
+<li>PyTorch <code>DataLoader</code> objects</li>
+<li>Keras <code>PyDataset</code> objects</li>
+</ul>
+<p>They all work whether you’re using TensorFlow, JAX, or PyTorch as
+your Keras backend.</p>
+<!-- Let's try it out with PyTorch `DataLoaders`: -->
+<!-- ```python -->
+<!-- import torch -->
+<!-- # Create a TensorDataset -->
+<!-- train_torch_dataset = torch.utils.data.TensorDataset( -->
+<!--     torch.from_numpy(x_train), torch.from_numpy(y_train) -->
+<!-- ) -->
+<!-- val_torch_dataset = torch.utils.data.TensorDataset( -->
+<!--     torch.from_numpy(x_test), torch.from_numpy(y_test) -->
+<!-- ) -->
+<!-- # Create a DataLoader -->
+<!-- train_dataloader = torch.utils.data.DataLoader( -->
+<!--     train_torch_dataset, batch_size=batch_size, shuffle=True -->
+<!-- ) -->
+<!-- val_dataloader = torch.utils.data.DataLoader( -->
+<!--     val_torch_dataset, batch_size=batch_size, shuffle=False -->
+<!-- ) -->
+<!-- model = MyModel(num_classes=10) -->
+<!-- model.compile( -->
+<!--     loss=keras.losses.SparseCategoricalCrossentropy(), -->
+<!--     optimizer=keras.optimizers.Adam(learning_rate=1e-3), -->
+<!--     metrics=[ -->
+<!--         keras.metrics.SparseCategoricalAccuracy(name="acc"), -->
+<!--     ], -->
+<!-- ) -->
+<!-- model.fit(train_dataloader, epochs=1, validation_data=val_dataloader) -->
+<!-- ``` -->
+<p>Let’s try this out with <code>tf_dataset</code>:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a><span class="fu">library</span>(tfdatasets)</span>
+<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a>train_dataset <span class="ot">&lt;-</span> <span class="fu">list</span>(x_train, y_train) <span class="sc">|&gt;</span></span>
+<span id="cb24-4"><a href="#cb24-4" tabindex="-1"></a>  <span class="fu">tensor_slices_dataset</span>() <span class="sc">|&gt;</span></span>
+<span id="cb24-5"><a href="#cb24-5" tabindex="-1"></a>  <span class="fu">dataset_batch</span>(batch_size) <span class="sc">|&gt;</span></span>
+<span id="cb24-6"><a href="#cb24-6" tabindex="-1"></a>  <span class="fu">dataset_prefetch</span>(<span class="at">buffer_size =</span> tf<span class="sc">$</span>data<span class="sc">$</span>AUTOTUNE)</span>
+<span id="cb24-7"><a href="#cb24-7" tabindex="-1"></a></span>
+<span id="cb24-8"><a href="#cb24-8" tabindex="-1"></a>test_dataset <span class="ot">&lt;-</span> <span class="fu">list</span>(x_test, y_test) <span class="sc">|&gt;</span></span>
+<span id="cb24-9"><a href="#cb24-9" tabindex="-1"></a>  <span class="fu">tensor_slices_dataset</span>() <span class="sc">|&gt;</span></span>
+<span id="cb24-10"><a href="#cb24-10" tabindex="-1"></a>  <span class="fu">dataset_batch</span>(batch_size) <span class="sc">|&gt;</span></span>
+<span id="cb24-11"><a href="#cb24-11" tabindex="-1"></a>  <span class="fu">dataset_prefetch</span>(<span class="at">buffer_size =</span> tf<span class="sc">$</span>data<span class="sc">$</span>AUTOTUNE)</span>
+<span id="cb24-12"><a href="#cb24-12" tabindex="-1"></a></span>
+<span id="cb24-13"><a href="#cb24-13" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">MyModel</span>(<span class="at">num_classes =</span> <span class="dv">10</span>)</span>
+<span id="cb24-14"><a href="#cb24-14" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">compile</span>(</span>
+<span id="cb24-15"><a href="#cb24-15" tabindex="-1"></a>  <span class="at">loss =</span> <span class="fu">loss_sparse_categorical_crossentropy</span>(),</span>
+<span id="cb24-16"><a href="#cb24-16" tabindex="-1"></a>  <span class="at">optimizer =</span> <span class="fu">optimizer_adam</span>(<span class="at">learning_rate =</span> <span class="fl">1e-3</span>),</span>
+<span id="cb24-17"><a href="#cb24-17" tabindex="-1"></a>  <span class="at">metrics =</span> <span class="fu">list</span>(</span>
+<span id="cb24-18"><a href="#cb24-18" tabindex="-1"></a>    <span class="fu">metric_sparse_categorical_accuracy</span>(<span class="at">name =</span> <span class="st">&quot;acc&quot;</span>)</span>
+<span id="cb24-19"><a href="#cb24-19" tabindex="-1"></a>  )</span>
+<span id="cb24-20"><a href="#cb24-20" tabindex="-1"></a>)</span>
+<span id="cb24-21"><a href="#cb24-21" tabindex="-1"></a></span>
+<span id="cb24-22"><a href="#cb24-22" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(train_dataset, <span class="at">epochs =</span> <span class="dv">1</span>, <span class="at">validation_data =</span> test_dataset)</span></code></pre></div>
+<pre><code>## 469/469 - 10s - 21ms/step - acc: 0.7581 - loss: 0.7151 - val_acc: 0.8985 - val_loss: 0.3161</code></pre>
+</div>
+<div id="further-reading" class="section level2">
+<h2>Further reading</h2>
+<p>This concludes our short overview of the new multi-backend
+capabilities of Keras 3. Next, you can learn about:</p>
+<div id="how-to-customize-what-happens-in-fit" class="section level3">
+<h3>How to customize what happens in <code>fit()</code></h3>
+<p>Want to implement a non-standard training algorithm yourself but
+still want to benefit from the power and usability of
+<code>fit()</code>? It’s easy to customize <code>fit()</code> to support
+arbitrary use cases:</p>
+<ul>
+<li><a href="custom_train_step_in_tensorflow.html">Customizing what
+happens in <code>fit()</code> with TensorFlow</a>
+<!-- - [Customizing what happens in `fit()` with JAX](https://keras.io/guides/custom_train_step_in_jax/) -->
+<!-- - [Customizing what happens in `fit()` with PyTorch](https://keras.io/guides/custom_train_step_in_pytorch/) --></li>
+</ul>
+</div>
+</div>
+<div id="how-to-write-custom-training-loops" class="section level2">
+<h2>How to write custom training loops</h2>
+<ul>
+<li><a href="writing_a_custom_training_loop_in_tensorflow.html">Writing
+a training loop from scratch in TensorFlow</a>
+<!-- - [Writing a training loop from scratch in JAX](https://keras.io/guides/writing_a_custom_training_loop_in_jax/) -->
+<!-- - [Writing a training loop from scratch in PyTorch](https://keras.io/guides/writing_a_custom_training_loop_in_torch/) --></li>
+</ul>
+</div>
+<div id="how-to-distribute-training" class="section level2">
+<h2>How to distribute training</h2>
+<ul>
+<li><a href="distributed_training_with_tensorflow.html">Guide to
+distributed training with TensorFlow</a>
+<!-- - [JAX distributed training example](https://github.com/keras-team/keras/blob/main/examples/demo_jax_distributed.py) -->
+<!-- - [PyTorch distributed training example](https://github.com/keras-team/keras/blob/main/examples/demo_torch_multi_gpu.py) --></li>
+</ul>
+<p>Enjoy the library! 🚀</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

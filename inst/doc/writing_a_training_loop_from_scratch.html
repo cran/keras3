@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Writing a training loop from scratch</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Writing a training loop from scratch</h1>
+
+
+
+<div id="setup" class="section level2">
+<h2>Setup</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(keras3)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(tensorflow)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(tfdatasets)</span></code></pre></div>
+</div>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>Keras provides default training and evaluation loops,
+<code>fit()</code> and <code>evaluate()</code>. Their usage is covered
+in the guide <a href="training_with_built_in_methods.html">Training
+&amp; evaluation with the built-in methods</a>.</p>
+<p>If you want to customize the learning algorithm of your model while
+still leveraging the convenience of <code>fit()</code> (for instance, to
+train a GAN using <code>fit()</code>), you can subclass the
+<code>Model</code> class and implement your own
+<code>train_step()</code> method, which is called repeatedly during
+<code>fit()</code>. This is covered in the guide <a href="custom_train_step_in_tensorflow.html">Customizing what happens in
+<code>fit()</code></a>.</p>
+<p>Now, if you want very low-level control over training &amp;
+evaluation, you should write your own training &amp; evaluation loops
+from scratch. This is what this guide is about.</p>
+</div>
+<div id="using-the-gradienttape-a-first-end-to-end-example" class="section level2">
+<h2>Using the <code>GradientTape</code>: a first end-to-end example</h2>
+<p>Calling a model inside a <code>GradientTape</code> scope enables you
+to retrieve the gradients of the trainable weights of the layer with
+respect to a loss value. Using an optimizer instance, you can use these
+gradients to update these variables (which you can retrieve using
+<code>model.trainable_weights</code>).</p>
+<p>Let’s consider a simple MNIST model:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>inputs <span class="ot">&lt;-</span> <span class="fu">keras_input</span>(<span class="at">shape =</span> <span class="dv">784</span>, <span class="at">name=</span><span class="st">&quot;digits&quot;</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>outputs <span class="ot">&lt;-</span> inputs <span class="sc">%&gt;%</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">64</span>, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">64</span>, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">10</span>, <span class="at">name =</span> <span class="st">&quot;predictions&quot;</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">keras_model</span>(<span class="at">inputs=</span>inputs, <span class="at">outputs=</span>outputs)</span></code></pre></div>
+<p>Let’s train it using mini-batch gradient with a custom training
+loop.</p>
+<p>First, we’re going to need an optimizer, a loss function, and a
+dataset:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># Instantiate an optimizer.</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>optimizer <span class="ot">&lt;-</span> <span class="fu">optimizer_sgd</span>(<span class="at">learning_rate=</span><span class="fl">1e-3</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co"># Instantiate a loss function.</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>loss_fn <span class="ot">&lt;-</span> <span class="fu">loss_sparse_categorical_crossentropy</span>(<span class="at">from_logits=</span><span class="cn">TRUE</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co"># Prepare the training dataset.</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>batch_size <span class="ot">&lt;-</span> <span class="dv">64</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="fu">c</span>(<span class="fu">c</span>(x_train, y_train), <span class="fu">c</span>(x_test, y_test)) <span class="sc">%&lt;-%</span> <span class="fu">dataset_mnist</span>()</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>x_train <span class="ot">&lt;-</span> <span class="fu">array_reshape</span>(x_train, <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">784</span>))</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>x_test <span class="ot">&lt;-</span> <span class="fu">array_reshape</span>(x_test, <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">784</span>))</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co"># Reserve 10,000 samples for validation.</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>x_val <span class="ot">&lt;-</span> x_train[<span class="dv">1</span><span class="sc">:</span><span class="dv">10000</span>,]</span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>y_val <span class="ot">&lt;-</span> y_train[<span class="dv">1</span><span class="sc">:</span><span class="dv">10000</span>]</span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>x_train <span class="ot">=</span> x_train[<span class="sc">-</span><span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">10000</span>),]</span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a>y_train <span class="ot">=</span> y_train[<span class="sc">-</span><span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">10000</span>)]</span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a></span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co"># Prepare the training dataset.</span></span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a>train_dataset <span class="ot">&lt;-</span> <span class="fu">list</span>(x_train, y_train) <span class="sc">%&gt;%</span></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a>  <span class="fu">tensor_slices_dataset</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a>  <span class="fu">dataset_shuffle</span>(<span class="at">buffer_size=</span><span class="dv">1024</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a>  <span class="fu">dataset_batch</span>(batch_size)</span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a></span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="co"># Prepare the validation dataset.</span></span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a>val_dataset <span class="ot">&lt;-</span> <span class="fu">list</span>(x_val, y_val) <span class="sc">%&gt;%</span></span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a>  <span class="fu">tensor_slices_dataset</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a>  <span class="fu">dataset_batch</span>(batch_size)</span></code></pre></div>
+<p>Here’s our training loop:</p>
+<ul>
+<li>We open a <code>for</code> loop that iterates over epochs</li>
+<li>For each epoch, we open a <code>for</code> loop that iterates over
+the dataset, in batches</li>
+<li>For each batch, we open a <code>GradientTape()</code> scope</li>
+<li>Inside this scope, we call the model (forward pass) and compute the
+loss</li>
+<li>Outside the scope, we retrieve the gradients of the weights of the
+model with regard to the loss</li>
+<li>Finally, we use the optimizer to update the weights of the model
+based on the gradients</li>
+</ul>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>epochs <span class="ot">&lt;-</span> <span class="dv">2</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="cf">for</span> (epoch <span class="cf">in</span> <span class="fu">seq_len</span>(epochs)) {</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;Start of epoch &quot;</span>, epoch, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>   <span class="co"># Iterate over the batches of the dataset.</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  step <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>  coro<span class="sc">::</span><span class="fu">loop</span>(<span class="cf">for</span>(data <span class="cf">in</span> train_dataset) {</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>    step <span class="ot">&lt;-</span> step <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>    <span class="co"># Open a GradientTape to record the operations run</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>    <span class="co"># during the forward pass, which enables auto-differentiation.</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>    <span class="fu">with</span>(tf<span class="sc">$</span><span class="fu">GradientTape</span>() <span class="sc">%as%</span> tape, {</span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>      <span class="co"># Run the forward pass of the layer.</span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>      <span class="co"># The operations that the layer applies</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>      <span class="co"># to its inputs are going to be recorded</span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a>      <span class="co"># on the GradientTape.</span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a>      logits <span class="ot">&lt;-</span> <span class="fu">model</span>(data[[<span class="dv">1</span>]], <span class="at">training =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a>      <span class="co"># Compute the loss value for this minibatch.</span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a>      loss_value <span class="ot">&lt;-</span> <span class="fu">loss_fn</span>(data[[<span class="dv">2</span>]], logits)</span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a>    })</span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a>    <span class="co"># Use the gradient tape to automatically retrieve</span></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a>    <span class="co"># the gradients of the trainable variables with respect to the loss.</span></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a>    gradients <span class="ot">&lt;-</span> tape<span class="sc">$</span><span class="fu">gradient</span>(loss_value, model<span class="sc">$</span>trainable_weights)</span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a></span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a>    <span class="co"># Run one step of gradient descent by updating</span></span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a>    <span class="co"># the value of the variables to minimize the loss.</span></span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a>    optimizer<span class="sc">$</span><span class="fu">apply_gradients</span>(<span class="fu">zip_lists</span>(gradients, model<span class="sc">$</span>trainable_weights))</span>
+<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a></span>
+<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a>    <span class="co"># Log every 200 batches.</span></span>
+<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a>    <span class="cf">if</span> (step <span class="sc">%%</span> <span class="dv">200</span> <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb4-32"><a href="#cb4-32" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="fu">sprintf</span>(</span>
+<span id="cb4-33"><a href="#cb4-33" tabindex="-1"></a>        <span class="st">&quot;Training loss (for one batch) at step %d: %.4f</span><span class="sc">\n</span><span class="st">&quot;</span>, step, loss_value</span>
+<span id="cb4-34"><a href="#cb4-34" tabindex="-1"></a>      ))</span>
+<span id="cb4-35"><a href="#cb4-35" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;Seen so far: %d samples </span><span class="sc">\n</span><span class="st">&quot;</span>, (step <span class="sc">*</span> batch_size)))</span>
+<span id="cb4-36"><a href="#cb4-36" tabindex="-1"></a>    }</span>
+<span id="cb4-37"><a href="#cb4-37" tabindex="-1"></a>  })</span>
+<span id="cb4-38"><a href="#cb4-38" tabindex="-1"></a>}</span></code></pre></div>
+<pre><code>## Start of epoch  1
+## Training loss (for one batch) at step 200: 1.6731
+## Seen so far: 12800 samples
+## Training loss (for one batch) at step 400: 0.8859
+## Seen so far: 25600 samples
+## Training loss (for one batch) at step 600: 0.7074
+## Seen so far: 38400 samples
+## Start of epoch  2
+## Training loss (for one batch) at step 200: 0.8335
+## Seen so far: 12800 samples
+## Training loss (for one batch) at step 400: 0.8314
+## Seen so far: 25600 samples
+## Training loss (for one batch) at step 600: 0.4169
+## Seen so far: 38400 samples</code></pre>
+</div>
+<div id="low-level-handling-of-metrics" class="section level2">
+<h2>Low-level handling of metrics</h2>
+<p>Let’s add metrics monitoring to this basic loop.</p>
+<p>You can readily reuse the built-in metrics (or custom ones you wrote)
+in such training loops written from scratch. Here’s the flow:</p>
+<ul>
+<li>Instantiate the metric at the start of the loop</li>
+<li>Call <code>metric$update_state()</code> after each batch</li>
+<li>Call <code>metric$result()</code> when you need to display the
+current value of the metric</li>
+<li>Call <code>metric$reset_state()</code> when you need to clear the
+state of the metric (typically at the end of an epoch)</li>
+</ul>
+<p>Let’s use this knowledge to compute
+<code>SparseCategoricalAccuracy</code> on validation data at the end of
+each epoch:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Get model</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>inputs <span class="ot">&lt;-</span> <span class="fu">keras_input</span>(<span class="at">shape =</span> <span class="dv">784</span>, <span class="at">name=</span><span class="st">&quot;digits&quot;</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>outputs <span class="ot">&lt;-</span> inputs <span class="sc">%&gt;%</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">64</span>, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">64</span>, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">10</span>, <span class="at">name =</span> <span class="st">&quot;predictions&quot;</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">keras_model</span>(<span class="at">inputs=</span>inputs, <span class="at">outputs=</span>outputs)</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="co"># Instantiate an optimizer to train the model.</span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>optimizer <span class="ot">&lt;-</span> <span class="fu">optimizer_sgd</span>(<span class="at">learning_rate=</span><span class="fl">1e-3</span>)</span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co"># Instantiate a loss function.</span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>loss_fn <span class="ot">&lt;-</span> <span class="fu">loss_sparse_categorical_crossentropy</span>(<span class="at">from_logits=</span><span class="cn">TRUE</span>)</span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co"># Prepare the metrics.</span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>train_acc_metric <span class="ot">&lt;-</span> <span class="fu">metric_sparse_categorical_accuracy</span>()</span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a>val_acc_metric <span class="ot">&lt;-</span> <span class="fu">metric_sparse_categorical_accuracy</span>()</span></code></pre></div>
+<p>Here’s our training &amp; evaluation loop:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>epochs <span class="ot">&lt;-</span> <span class="dv">2</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>time <span class="ot">&lt;-</span> <span class="fu">Sys.time</span>()</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="cf">for</span> (epoch <span class="cf">in</span> <span class="fu">seq_len</span>(epochs)) {</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;Start of epoch &quot;</span>, epoch, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>   <span class="co"># Iterate over the batches of the dataset.</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  step <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>  coro<span class="sc">::</span><span class="fu">loop</span>(<span class="cf">for</span>(data <span class="cf">in</span> train_dataset) {</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>    step <span class="ot">&lt;-</span> step <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>    <span class="fu">with</span>(tf<span class="sc">$</span><span class="fu">GradientTape</span>() <span class="sc">%as%</span> tape, {</span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>      logits <span class="ot">&lt;-</span> <span class="fu">model</span>(data[[<span class="dv">1</span>]], <span class="at">training =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>      loss_value <span class="ot">&lt;-</span> <span class="fu">loss_fn</span>(data[[<span class="dv">2</span>]], logits)</span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>    })</span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>    gradients <span class="ot">&lt;-</span> tape<span class="sc">$</span><span class="fu">gradient</span>(loss_value, model<span class="sc">$</span>trainable_weights)</span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a>    optimizer<span class="sc">$</span><span class="fu">apply_gradients</span>(<span class="fu">zip_lists</span>(gradients, model<span class="sc">$</span>trainable_weights))</span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a>    <span class="co"># Update training metric.</span></span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a>    train_acc_metric<span class="sc">$</span><span class="fu">update_state</span>(data[[<span class="dv">2</span>]], logits)</span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a></span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a>    <span class="cf">if</span> (step <span class="sc">%%</span> <span class="dv">200</span> <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="fu">sprintf</span>(</span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a>        <span class="st">&quot;Training loss (for one batch) at step %d: %.4f</span><span class="sc">\n</span><span class="st">&quot;</span>, step, loss_value</span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a>      ))</span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;Seen so far: %d samples </span><span class="sc">\n</span><span class="st">&quot;</span>, (step <span class="sc">*</span> batch_size)))</span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a>    }</span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a>  })</span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a></span>
+<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a>  <span class="co"># Display metrics at the end of each epoch.</span></span>
+<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a>  train_acc <span class="ot">&lt;-</span> train_acc_metric<span class="sc">$</span><span class="fu">result</span>()</span>
+<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;Training acc over epoch: %.4f</span><span class="sc">\n</span><span class="st">&quot;</span>, train_acc))</span>
+<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a></span>
+<span id="cb7-31"><a href="#cb7-31" tabindex="-1"></a>  <span class="co"># Reset training metrics at the end of each epoch</span></span>
+<span id="cb7-32"><a href="#cb7-32" tabindex="-1"></a>  train_acc_metric<span class="sc">$</span><span class="fu">reset_state</span>()</span>
+<span id="cb7-33"><a href="#cb7-33" tabindex="-1"></a></span>
+<span id="cb7-34"><a href="#cb7-34" tabindex="-1"></a>  coro<span class="sc">::</span><span class="fu">loop</span>(<span class="cf">for</span>(data <span class="cf">in</span> val_dataset) {</span>
+<span id="cb7-35"><a href="#cb7-35" tabindex="-1"></a>    val_logits <span class="ot">&lt;-</span> <span class="fu">model</span>(data[[<span class="dv">1</span>]], <span class="at">training=</span><span class="cn">FALSE</span>)</span>
+<span id="cb7-36"><a href="#cb7-36" tabindex="-1"></a>    <span class="co"># Update val metrics</span></span>
+<span id="cb7-37"><a href="#cb7-37" tabindex="-1"></a>    val_acc_metric<span class="sc">$</span><span class="fu">update_state</span>(data[[<span class="dv">2</span>]], val_logits)</span>
+<span id="cb7-38"><a href="#cb7-38" tabindex="-1"></a>  })</span>
+<span id="cb7-39"><a href="#cb7-39" tabindex="-1"></a></span>
+<span id="cb7-40"><a href="#cb7-40" tabindex="-1"></a>  val_acc <span class="ot">&lt;-</span> val_acc_metric<span class="sc">$</span><span class="fu">result</span>()</span>
+<span id="cb7-41"><a href="#cb7-41" tabindex="-1"></a>  val_acc_metric<span class="sc">$</span><span class="fu">reset_state</span>()</span>
+<span id="cb7-42"><a href="#cb7-42" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;Validation acc: %.4f</span><span class="sc">\n</span><span class="st">&quot;</span>, val_acc))</span>
+<span id="cb7-43"><a href="#cb7-43" tabindex="-1"></a>}</span></code></pre></div>
+<pre><code>## Start of epoch  1
+## Training loss (for one batch) at step 200: 1.4448
+## Seen so far: 12800 samples
+## Training loss (for one batch) at step 400: 0.7797
+## Seen so far: 25600 samples
+## Training loss (for one batch) at step 600: 0.7271
+## Seen so far: 38400 samples
+## Training acc over epoch: 0.7030
+## Validation acc: 0.7874
+## Start of epoch  2
+## Training loss (for one batch) at step 200: 0.8021
+## Seen so far: 12800 samples
+## Training loss (for one batch) at step 400: 0.5809
+## Seen so far: 25600 samples
+## Training loss (for one batch) at step 600: 0.6895
+## Seen so far: 38400 samples
+## Training acc over epoch: 0.8185
+## Validation acc: 0.8365</code></pre>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">Sys.time</span>() <span class="sc">-</span> time</span></code></pre></div>
+<pre><code>## Time difference of 34.27442 secs</code></pre>
+</div>
+<div id="speeding-up-your-training-step-with-tf_function" class="section level2">
+<h2>Speeding-up your training step with <code>tf_function</code></h2>
+<p>The default runtime in TensorFlow 2 is <a href="https://www.tensorflow.org/guide/eager">eager execution</a>. As
+such, our training loop above executes eagerly.</p>
+<p>This is great for debugging, but graph compilation has a definite
+performance advantage. Describing your computation as a static graph
+enables the framework to apply global performance optimizations. This is
+impossible when the framework is constrained to greedily execute one
+operation after another, with no knowledge of what comes next.</p>
+<p>You can compile into a static graph any function that takes tensors
+as input. Just add a <code>@tf.function</code> decorator on it, like
+this:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>train_step <span class="ot">&lt;-</span> <span class="fu">tf_function</span>(<span class="cf">function</span>(x, y) {</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>  <span class="fu">with</span>(tf<span class="sc">$</span><span class="fu">GradientTape</span>() <span class="sc">%as%</span> tape, {</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>    logits <span class="ot">&lt;-</span> <span class="fu">model</span>(x, <span class="at">training =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>    loss_value <span class="ot">&lt;-</span> <span class="fu">loss_fn</span>(y, logits)</span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>  })</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>  gradients <span class="ot">&lt;-</span> tape<span class="sc">$</span><span class="fu">gradient</span>(loss_value, model<span class="sc">$</span>trainable_weights)</span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>  optimizer<span class="sc">$</span><span class="fu">apply_gradients</span>(<span class="fu">zip_lists</span>(gradients, model<span class="sc">$</span>trainable_weights))</span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>  train_acc_metric<span class="sc">$</span><span class="fu">update_state</span>(y, logits)</span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>})</span></code></pre></div>
+<p>Let’s do the same with the evaluation step:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>test_step <span class="ot">&lt;-</span> <span class="fu">tf_function</span>(<span class="cf">function</span>(x, y) {</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>  val_logits <span class="ot">&lt;-</span> <span class="fu">model</span>(x, <span class="at">training=</span><span class="cn">FALSE</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>  val_acc_metric<span class="sc">$</span><span class="fu">update_state</span>(y, val_logits)</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>})</span></code></pre></div>
+<p>Now, let’s re-run our training loop with this compiled training
+step:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>epochs <span class="ot">&lt;-</span> <span class="dv">2</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>time <span class="ot">&lt;-</span> <span class="fu">Sys.time</span>()</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="cf">for</span> (epoch <span class="cf">in</span> <span class="fu">seq_len</span>(epochs)) {</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;Start of epoch &quot;</span>, epoch, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>   <span class="co"># Iterate over the batches of the dataset.</span></span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>  step <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>  coro<span class="sc">::</span><span class="fu">loop</span>(<span class="cf">for</span>(data <span class="cf">in</span> train_dataset) {</span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>    step <span class="ot">&lt;-</span> step <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a>    <span class="fu">train_step</span>(data[[<span class="dv">1</span>]], data[[<span class="dv">2</span>]])</span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a>    <span class="cf">if</span> (step <span class="sc">%%</span> <span class="dv">200</span> <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="fu">sprintf</span>(</span>
+<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a>        <span class="st">&quot;Training loss (for one batch) at step %d: %.4f</span><span class="sc">\n</span><span class="st">&quot;</span>, step, loss_value</span>
+<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a>      ))</span>
+<span id="cb13-15"><a href="#cb13-15" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;Seen so far: %d samples </span><span class="sc">\n</span><span class="st">&quot;</span>, (step <span class="sc">*</span> batch_size)))</span>
+<span id="cb13-16"><a href="#cb13-16" tabindex="-1"></a>    }</span>
+<span id="cb13-17"><a href="#cb13-17" tabindex="-1"></a>  })</span>
+<span id="cb13-18"><a href="#cb13-18" tabindex="-1"></a></span>
+<span id="cb13-19"><a href="#cb13-19" tabindex="-1"></a>  <span class="co"># Display metrics at the end of each epoch.</span></span>
+<span id="cb13-20"><a href="#cb13-20" tabindex="-1"></a>  train_acc <span class="ot">&lt;-</span> train_acc_metric<span class="sc">$</span><span class="fu">result</span>()</span>
+<span id="cb13-21"><a href="#cb13-21" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;Training acc over epoch: %.4f</span><span class="sc">\n</span><span class="st">&quot;</span>, train_acc))</span>
+<span id="cb13-22"><a href="#cb13-22" tabindex="-1"></a>  train_acc_metric<span class="sc">$</span><span class="fu">reset_state</span>()</span>
+<span id="cb13-23"><a href="#cb13-23" tabindex="-1"></a></span>
+<span id="cb13-24"><a href="#cb13-24" tabindex="-1"></a>  coro<span class="sc">::</span><span class="fu">loop</span>(<span class="cf">for</span>(data <span class="cf">in</span> val_dataset) {</span>
+<span id="cb13-25"><a href="#cb13-25" tabindex="-1"></a>    <span class="fu">test_step</span>(data[[<span class="dv">1</span>]], data[[<span class="dv">2</span>]])</span>
+<span id="cb13-26"><a href="#cb13-26" tabindex="-1"></a>  })</span>
+<span id="cb13-27"><a href="#cb13-27" tabindex="-1"></a></span>
+<span id="cb13-28"><a href="#cb13-28" tabindex="-1"></a>  val_acc <span class="ot">&lt;-</span> val_acc_metric<span class="sc">$</span><span class="fu">result</span>()</span>
+<span id="cb13-29"><a href="#cb13-29" tabindex="-1"></a>  val_acc_metric<span class="sc">$</span><span class="fu">reset_state</span>()</span>
+<span id="cb13-30"><a href="#cb13-30" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;Validation acc: %.4f</span><span class="sc">\n</span><span class="st">&quot;</span>, val_acc))</span>
+<span id="cb13-31"><a href="#cb13-31" tabindex="-1"></a>}</span></code></pre></div>
+<pre><code>## Start of epoch  1
+## Training loss (for one batch) at step 200: 0.9179
+## Seen so far: 12800 samples
+## Training loss (for one batch) at step 400: 0.9179
+## Seen so far: 25600 samples
+## Training loss (for one batch) at step 600: 0.9179
+## Seen so far: 38400 samples
+## Training acc over epoch: 0.8616
+## Validation acc: 0.8673
+## Start of epoch  2
+## Training loss (for one batch) at step 200: 0.9179
+## Seen so far: 12800 samples
+## Training loss (for one batch) at step 400: 0.9179
+## Seen so far: 25600 samples
+## Training loss (for one batch) at step 600: 0.9179
+## Seen so far: 38400 samples
+## Training acc over epoch: 0.8828
+## Validation acc: 0.8819</code></pre>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">Sys.time</span>() <span class="sc">-</span> time</span></code></pre></div>
+<pre><code>## Time difference of 4.122807 secs</code></pre>
+<p>Much faster, isn’t it?</p>
+</div>
+<div id="low-level-handling-of-losses-tracked-by-the-model" class="section level2">
+<h2>Low-level handling of losses tracked by the model</h2>
+<p>Layers &amp; models recursively track any losses created during the
+forward pass by layers that call <code>self.add_loss(value)</code>. The
+resulting list of scalar loss values are available via the property
+<code>model.losses</code> at the end of the forward pass.</p>
+<p>If you want to be using these loss components, you should sum them
+and add them to the main loss in your training step.</p>
+<p>Consider this layer, that creates an activity regularization
+loss:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a>ActivityRegularizationLayer <span class="ot">&lt;-</span> <span class="fu">new_layer_class</span>(</span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>  <span class="st">&quot;ActivityRegularizationLayer&quot;</span>,</span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a>    self<span class="sc">$</span><span class="fu">add_loss</span>(<span class="fl">0.1</span> <span class="sc">*</span> tf<span class="sc">$</span><span class="fu">reduce_mean</span>(inputs))</span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a>    inputs</span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a>  }</span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a>)</span></code></pre></div>
+<p>Let’s build a really simple model that uses it:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a>inputs <span class="ot">&lt;-</span> <span class="fu">keras_input</span>(<span class="at">shape =</span> <span class="dv">784</span>, <span class="at">name=</span><span class="st">&quot;digits&quot;</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>outputs <span class="ot">&lt;-</span> inputs <span class="sc">%&gt;%</span></span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">64</span>, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a>  <span class="fu">ActivityRegularizationLayer</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">64</span>, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">10</span>, <span class="at">name =</span> <span class="st">&quot;predictions&quot;</span>)</span>
+<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">keras_model</span>(<span class="at">inputs =</span> inputs, <span class="at">outputs =</span> outputs)</span></code></pre></div>
+<p>Here’s what our training step should look like now:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a>train_step <span class="ot">&lt;-</span> <span class="fu">tf_function</span>(<span class="cf">function</span>(x, y) {</span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>  <span class="fu">with</span>(tf<span class="sc">$</span><span class="fu">GradientTape</span>() <span class="sc">%as%</span> tape, {</span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a>    logits <span class="ot">&lt;-</span> <span class="fu">model</span>(x, <span class="at">training =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a>    loss_value <span class="ot">&lt;-</span> <span class="fu">loss_fn</span>(y, logits)</span>
+<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a>    loss_value <span class="ot">&lt;-</span> loss_value <span class="sc">+</span> <span class="fu">Reduce</span>(<span class="st">`</span><span class="at">+</span><span class="st">`</span>, model<span class="sc">$</span>losses)</span>
+<span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a>  })</span>
+<span id="cb19-7"><a href="#cb19-7" tabindex="-1"></a>  gradients <span class="ot">&lt;-</span> tape<span class="sc">$</span><span class="fu">gradient</span>(loss_value, model<span class="sc">$</span>trainable_weights)</span>
+<span id="cb19-8"><a href="#cb19-8" tabindex="-1"></a>  optimizer<span class="sc">$</span><span class="fu">apply_gradients</span>(<span class="fu">zip_lists</span>(gradients, model<span class="sc">$</span>trainable_weights))</span>
+<span id="cb19-9"><a href="#cb19-9" tabindex="-1"></a>  train_acc_metric<span class="sc">$</span><span class="fu">update_state</span>(y, logits)</span>
+<span id="cb19-10"><a href="#cb19-10" tabindex="-1"></a>})</span></code></pre></div>
+</div>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p>Now you know everything there is to know about using built-in
+training loops and writing your own from scratch.</p>
+<p>To conclude, here’s a simple end-to-end example that ties together
+everything you’ve learned in this guide: a DCGAN trained on MNIST
+digits.</p>
+</div>
+<div id="end-to-end-example-a-gan-training-loop-from-scratch" class="section level2">
+<h2>End-to-end example: a GAN training loop from scratch</h2>
+<p>You may be familiar with Generative Adversarial Networks (GANs). GANs
+can generate new images that look almost real, by learning the latent
+distribution of a training dataset of images (the “latent space” of the
+images).</p>
+<p>A GAN is made of two parts: a “generator” model that maps points in
+the latent space to points in image space, a “discriminator” model, a
+classifier that can tell the difference between real images (from the
+training dataset) and fake images (the output of the generator
+network).</p>
+<p>A GAN training loop looks like this:</p>
+<ol style="list-style-type: decimal">
+<li>Train the discriminator.</li>
+</ol>
+<ul>
+<li>Sample a batch of random points in the latent space.</li>
+<li>Turn the points into fake images via the “generator” model.</li>
+<li>Get a batch of real images and combine them with the generated
+images.</li>
+<li>Train the “discriminator” model to classify generated vs. real
+images.</li>
+</ul>
+<ol start="2" style="list-style-type: decimal">
+<li>Train the generator.</li>
+</ol>
+<ul>
+<li>Sample random points in the latent space.</li>
+<li>Turn the points into fake images via the “generator” network.</li>
+<li>Get a batch of real images and combine them with the generated
+images.</li>
+<li>Train the “generator” model to “fool” the discriminator and classify
+the fake images as real.</li>
+</ul>
+<p>For a much more detailed overview of how GANs works, see <a href="https://www.manning.com/books/deep-learning-with-python">Deep
+Learning with Python</a>.</p>
+<p>Let’s implement this training loop. First, create the discriminator
+meant to classify fake vs real digits:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="co"># Create the discriminator</span></span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a>discriminator <span class="ot">&lt;-</span> <span class="fu">keras_model_sequential</span>(<span class="at">name =</span> <span class="st">&quot;discriminator&quot;</span>, <span class="at">input_shape =</span> <span class="fu">c</span>(<span class="dv">28</span>, <span class="dv">28</span>, <span class="dv">1</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a>  <span class="fu">layer_conv_2d</span>(<span class="at">filters =</span> <span class="dv">64</span>, <span class="at">kernel_size =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>), <span class="at">strides =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>), <span class="at">padding =</span> <span class="st">&quot;same&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a>  <span class="fu">layer_activation_leaky_relu</span>(<span class="at">negative_slope =</span> <span class="fl">0.2</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a>  <span class="fu">layer_conv_2d</span>(<span class="at">filters =</span> <span class="dv">128</span>, <span class="at">kernel_size =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>), <span class="at">strides =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>), <span class="at">padding =</span> <span class="st">&quot;same&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a>  <span class="fu">layer_activation_leaky_relu</span>(<span class="at">negative_slope =</span> <span class="fl">0.2</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a>  <span class="fu">layer_global_max_pooling_2d</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">1</span>)</span>
+<span id="cb20-9"><a href="#cb20-9" tabindex="-1"></a><span class="fu">summary</span>(discriminator)</span></code></pre></div>
+<pre><code>## [1mModel: &quot;discriminator&quot;[0m
+## ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
+## ┃[1m [0m[1mLayer (type)                   [0m[1m [0m┃[1m [0m[1mOutput Shape             [0m[1m [0m┃[1m [0m[1m   Param #[0m[1m [0m┃
+## ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━┩
+## │ conv2d_1 ([38;5;33mConv2D[0m)               │ ([38;5;45mNone[0m, [38;5;34m14[0m, [38;5;34m14[0m, [38;5;34m64[0m)        │        [38;5;34m640[0m │
+## ├─────────────────────────────────┼───────────────────────────┼────────────┤
+## │ leaky_re_lu_1 ([38;5;33mLeakyReLU[0m)       │ ([38;5;45mNone[0m, [38;5;34m14[0m, [38;5;34m14[0m, [38;5;34m64[0m)        │          [38;5;34m0[0m │
+## ├─────────────────────────────────┼───────────────────────────┼────────────┤
+## │ conv2d ([38;5;33mConv2D[0m)                 │ ([38;5;45mNone[0m, [38;5;34m7[0m, [38;5;34m7[0m, [38;5;34m128[0m)         │     [38;5;34m73,856[0m │
+## ├─────────────────────────────────┼───────────────────────────┼────────────┤
+## │ leaky_re_lu ([38;5;33mLeakyReLU[0m)         │ ([38;5;45mNone[0m, [38;5;34m7[0m, [38;5;34m7[0m, [38;5;34m128[0m)         │          [38;5;34m0[0m │
+## ├─────────────────────────────────┼───────────────────────────┼────────────┤
+## │ global_max_pooling2d            │ ([38;5;45mNone[0m, [38;5;34m128[0m)               │          [38;5;34m0[0m │
+## │ ([38;5;33mGlobalMaxPooling2D[0m)            │                           │            │
+## ├─────────────────────────────────┼───────────────────────────┼────────────┤
+## │ dense_6 ([38;5;33mDense[0m)                 │ ([38;5;45mNone[0m, [38;5;34m1[0m)                 │        [38;5;34m129[0m │
+## └─────────────────────────────────┴───────────────────────────┴────────────┘
+## [1m Total params: [0m[38;5;34m74,625[0m (291.50 KB)
+## [1m Trainable params: [0m[38;5;34m74,625[0m (291.50 KB)
+## [1m Non-trainable params: [0m[38;5;34m0[0m (0.00 B)</code></pre>
+<p>Then let’s create a generator network, that turns latent vectors into
+outputs of shape <code>(28, 28, 1)</code> (representing MNIST
+digits):</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a>latent_dim <span class="ot">&lt;-</span> <span class="dv">128</span><span class="dt">L</span></span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a></span>
+<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a>generator <span class="ot">&lt;-</span> <span class="fu">keras_model_sequential</span>(<span class="at">name =</span> <span class="st">&quot;generator&quot;</span>, <span class="at">input_shape =</span> latent_dim) <span class="sc">%&gt;%</span></span>
+<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="dv">7</span> <span class="sc">*</span> <span class="dv">7</span> <span class="sc">*</span> <span class="dv">128</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb22-5"><a href="#cb22-5" tabindex="-1"></a>  <span class="fu">layer_activation_leaky_relu</span>(<span class="at">negative_slope =</span> <span class="fl">0.2</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a>  <span class="fu">layer_reshape</span>(<span class="at">target_shape =</span> <span class="fu">c</span>(<span class="dv">7</span>, <span class="dv">7</span>, <span class="dv">128</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb22-7"><a href="#cb22-7" tabindex="-1"></a>  <span class="fu">layer_conv_2d_transpose</span>(<span class="at">filters =</span> <span class="dv">128</span>, <span class="at">kernel_size =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">4</span>), <span class="at">strides =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>), <span class="at">padding =</span> <span class="st">&quot;same&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb22-8"><a href="#cb22-8" tabindex="-1"></a>  <span class="fu">layer_activation_leaky_relu</span>(<span class="at">negative_slope =</span> <span class="fl">0.2</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb22-9"><a href="#cb22-9" tabindex="-1"></a>  <span class="fu">layer_conv_2d_transpose</span>(<span class="at">filters =</span> <span class="dv">128</span>, <span class="at">kernel_size =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">4</span>), <span class="at">strides =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>), <span class="at">padding =</span> <span class="st">&quot;same&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb22-10"><a href="#cb22-10" tabindex="-1"></a>  <span class="fu">layer_activation_leaky_relu</span>(<span class="at">negative_slope =</span> <span class="fl">0.2</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb22-11"><a href="#cb22-11" tabindex="-1"></a>  <span class="fu">layer_conv_2d</span>(<span class="at">filters =</span> <span class="dv">1</span>, <span class="at">kernel_size =</span> <span class="fu">c</span>(<span class="dv">7</span>, <span class="dv">7</span>), <span class="at">padding =</span> <span class="st">&quot;same&quot;</span>, <span class="at">activation =</span> <span class="st">&quot;sigmoid&quot;</span>)</span>
+<span id="cb22-12"><a href="#cb22-12" tabindex="-1"></a><span class="fu">summary</span>(generator)</span></code></pre></div>
+<pre><code>## [1mModel: &quot;generator&quot;[0m
+## ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
+## ┃[1m [0m[1mLayer (type)                   [0m[1m [0m┃[1m [0m[1mOutput Shape             [0m[1m [0m┃[1m [0m[1m   Param #[0m[1m [0m┃
+## ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━┩
+## │ dense_7 ([38;5;33mDense[0m)                 │ ([38;5;45mNone[0m, [38;5;34m6272[0m)              │    [38;5;34m809,088[0m │
+## ├─────────────────────────────────┼───────────────────────────┼────────────┤
+## │ leaky_re_lu_4 ([38;5;33mLeakyReLU[0m)       │ ([38;5;45mNone[0m, [38;5;34m6272[0m)              │          [38;5;34m0[0m │
+## ├─────────────────────────────────┼───────────────────────────┼────────────┤
+## │ reshape ([38;5;33mReshape[0m)               │ ([38;5;45mNone[0m, [38;5;34m7[0m, [38;5;34m7[0m, [38;5;34m128[0m)         │          [38;5;34m0[0m │
+## ├─────────────────────────────────┼───────────────────────────┼────────────┤
+## │ conv2d_transpose_1              │ ([38;5;45mNone[0m, [38;5;34m14[0m, [38;5;34m14[0m, [38;5;34m128[0m)       │    [38;5;34m262,272[0m │
+## │ ([38;5;33mConv2DTranspose[0m)               │                           │            │
+## ├─────────────────────────────────┼───────────────────────────┼────────────┤
+## │ leaky_re_lu_3 ([38;5;33mLeakyReLU[0m)       │ ([38;5;45mNone[0m, [38;5;34m14[0m, [38;5;34m14[0m, [38;5;34m128[0m)       │          [38;5;34m0[0m │
+## ├─────────────────────────────────┼───────────────────────────┼────────────┤
+## │ conv2d_transpose                │ ([38;5;45mNone[0m, [38;5;34m28[0m, [38;5;34m28[0m, [38;5;34m128[0m)       │    [38;5;34m262,272[0m │
+## │ ([38;5;33mConv2DTranspose[0m)               │                           │            │
+## ├─────────────────────────────────┼───────────────────────────┼────────────┤
+## │ leaky_re_lu_2 ([38;5;33mLeakyReLU[0m)       │ ([38;5;45mNone[0m, [38;5;34m28[0m, [38;5;34m28[0m, [38;5;34m128[0m)       │          [38;5;34m0[0m │
+## ├─────────────────────────────────┼───────────────────────────┼────────────┤
+## │ conv2d_2 ([38;5;33mConv2D[0m)               │ ([38;5;45mNone[0m, [38;5;34m28[0m, [38;5;34m28[0m, [38;5;34m1[0m)         │      [38;5;34m6,273[0m │
+## └─────────────────────────────────┴───────────────────────────┴────────────┘
+## [1m Total params: [0m[38;5;34m1,339,905[0m (5.11 MB)
+## [1m Trainable params: [0m[38;5;34m1,339,905[0m (5.11 MB)
+## [1m Non-trainable params: [0m[38;5;34m0[0m (0.00 B)</code></pre>
+<p>Here’s the key bit: the training loop. As you can see it is quite
+straightforward. The training step function only takes 17 lines.</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a><span class="co"># Instantiate one optimizer for the discriminator and another for the generator.</span></span>
+<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a>d_optimizer <span class="ot">&lt;-</span> <span class="fu">optimizer_adam</span>(<span class="at">learning_rate=</span><span class="fl">0.0003</span>)</span>
+<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a>g_optimizer <span class="ot">&lt;-</span> <span class="fu">optimizer_adam</span>(<span class="at">learning_rate=</span><span class="fl">0.0004</span>)</span>
+<span id="cb24-4"><a href="#cb24-4" tabindex="-1"></a></span>
+<span id="cb24-5"><a href="#cb24-5" tabindex="-1"></a><span class="co"># Instantiate a loss function.</span></span>
+<span id="cb24-6"><a href="#cb24-6" tabindex="-1"></a>loss_fn <span class="ot">&lt;-</span> <span class="fu">loss_binary_crossentropy</span>(<span class="at">from_logits=</span><span class="cn">TRUE</span>)</span>
+<span id="cb24-7"><a href="#cb24-7" tabindex="-1"></a></span>
+<span id="cb24-8"><a href="#cb24-8" tabindex="-1"></a>train_step <span class="ot">&lt;-</span> <span class="fu">tf_function</span>(<span class="cf">function</span>(real_images) {</span>
+<span id="cb24-9"><a href="#cb24-9" tabindex="-1"></a>  <span class="co"># Sample random points in the latent space</span></span>
+<span id="cb24-10"><a href="#cb24-10" tabindex="-1"></a>  batch_size <span class="ot">&lt;-</span> tf<span class="sc">$</span><span class="fu">shape</span>(real_images)[<span class="dv">1</span>]</span>
+<span id="cb24-11"><a href="#cb24-11" tabindex="-1"></a>  random_latent_vectors <span class="ot">&lt;-</span></span>
+<span id="cb24-12"><a href="#cb24-12" tabindex="-1"></a>    tf<span class="sc">$</span>random<span class="sc">$</span><span class="fu">normal</span>(<span class="at">shape =</span> <span class="fu">c</span>(batch_size, latent_dim))</span>
+<span id="cb24-13"><a href="#cb24-13" tabindex="-1"></a></span>
+<span id="cb24-14"><a href="#cb24-14" tabindex="-1"></a>  <span class="co"># Decode them to fake images</span></span>
+<span id="cb24-15"><a href="#cb24-15" tabindex="-1"></a>  generated_images <span class="ot">&lt;-</span> <span class="fu">generator</span>(random_latent_vectors)</span>
+<span id="cb24-16"><a href="#cb24-16" tabindex="-1"></a></span>
+<span id="cb24-17"><a href="#cb24-17" tabindex="-1"></a>  <span class="co"># Combine them with real images</span></span>
+<span id="cb24-18"><a href="#cb24-18" tabindex="-1"></a>  combined_images <span class="ot">&lt;-</span></span>
+<span id="cb24-19"><a href="#cb24-19" tabindex="-1"></a>    tf<span class="sc">$</span><span class="fu">concat</span>(<span class="fu">list</span>(generated_images, real_images),</span>
+<span id="cb24-20"><a href="#cb24-20" tabindex="-1"></a>              <span class="at">axis =</span> <span class="dv">0</span><span class="dt">L</span>)</span>
+<span id="cb24-21"><a href="#cb24-21" tabindex="-1"></a></span>
+<span id="cb24-22"><a href="#cb24-22" tabindex="-1"></a>  <span class="co"># Assemble labels discriminating real from fake images</span></span>
+<span id="cb24-23"><a href="#cb24-23" tabindex="-1"></a>  labels <span class="ot">&lt;-</span></span>
+<span id="cb24-24"><a href="#cb24-24" tabindex="-1"></a>    tf<span class="sc">$</span><span class="fu">concat</span>(<span class="fu">list</span>(tf<span class="sc">$</span><span class="fu">ones</span>(<span class="fu">c</span>(batch_size, <span class="dv">1</span><span class="dt">L</span>)),</span>
+<span id="cb24-25"><a href="#cb24-25" tabindex="-1"></a>                   tf<span class="sc">$</span><span class="fu">zeros</span>(<span class="fu">c</span>(batch_size, <span class="dv">1</span><span class="dt">L</span>))),</span>
+<span id="cb24-26"><a href="#cb24-26" tabindex="-1"></a>              <span class="at">axis =</span> <span class="dv">0</span><span class="dt">L</span>)</span>
+<span id="cb24-27"><a href="#cb24-27" tabindex="-1"></a></span>
+<span id="cb24-28"><a href="#cb24-28" tabindex="-1"></a>  <span class="co"># Add random noise to the labels - important trick!</span></span>
+<span id="cb24-29"><a href="#cb24-29" tabindex="-1"></a>  labels <span class="sc">%&lt;&gt;%</span> <span class="st">`</span><span class="at">+</span><span class="st">`</span>(tf<span class="sc">$</span>random<span class="sc">$</span><span class="fu">uniform</span>(tf<span class="sc">$</span><span class="fu">shape</span>(.), <span class="at">maxval =</span> <span class="fl">0.05</span>))</span>
+<span id="cb24-30"><a href="#cb24-30" tabindex="-1"></a></span>
+<span id="cb24-31"><a href="#cb24-31" tabindex="-1"></a>  <span class="co"># Train the discriminator</span></span>
+<span id="cb24-32"><a href="#cb24-32" tabindex="-1"></a>  <span class="fu">with</span>(tf<span class="sc">$</span><span class="fu">GradientTape</span>() <span class="sc">%as%</span> tape, {</span>
+<span id="cb24-33"><a href="#cb24-33" tabindex="-1"></a>    predictions <span class="ot">&lt;-</span> <span class="fu">discriminator</span>(combined_images)</span>
+<span id="cb24-34"><a href="#cb24-34" tabindex="-1"></a>    d_loss <span class="ot">&lt;-</span> <span class="fu">loss_fn</span>(labels, predictions)</span>
+<span id="cb24-35"><a href="#cb24-35" tabindex="-1"></a>  })</span>
+<span id="cb24-36"><a href="#cb24-36" tabindex="-1"></a>  grads <span class="ot">&lt;-</span> tape<span class="sc">$</span><span class="fu">gradient</span>(d_loss, discriminator<span class="sc">$</span>trainable_weights)</span>
+<span id="cb24-37"><a href="#cb24-37" tabindex="-1"></a>  d_optimizer<span class="sc">$</span><span class="fu">apply_gradients</span>(</span>
+<span id="cb24-38"><a href="#cb24-38" tabindex="-1"></a>    <span class="fu">zip_lists</span>(grads, discriminator<span class="sc">$</span>trainable_weights))</span>
+<span id="cb24-39"><a href="#cb24-39" tabindex="-1"></a></span>
+<span id="cb24-40"><a href="#cb24-40" tabindex="-1"></a></span>
+<span id="cb24-41"><a href="#cb24-41" tabindex="-1"></a>  <span class="co"># Sample random points in the latent space</span></span>
+<span id="cb24-42"><a href="#cb24-42" tabindex="-1"></a>  random_latent_vectors <span class="ot">&lt;-</span></span>
+<span id="cb24-43"><a href="#cb24-43" tabindex="-1"></a>    tf<span class="sc">$</span>random<span class="sc">$</span><span class="fu">normal</span>(<span class="at">shape =</span> <span class="fu">c</span>(batch_size, latent_dim))</span>
+<span id="cb24-44"><a href="#cb24-44" tabindex="-1"></a></span>
+<span id="cb24-45"><a href="#cb24-45" tabindex="-1"></a>  <span class="co"># Assemble labels that say &quot;all real images&quot;</span></span>
+<span id="cb24-46"><a href="#cb24-46" tabindex="-1"></a>  misleading_labels <span class="ot">&lt;-</span> tf<span class="sc">$</span><span class="fu">zeros</span>(<span class="fu">c</span>(batch_size, <span class="dv">1</span><span class="dt">L</span>))</span>
+<span id="cb24-47"><a href="#cb24-47" tabindex="-1"></a></span>
+<span id="cb24-48"><a href="#cb24-48" tabindex="-1"></a>  <span class="co"># Train the generator (note that we should *not* update the weights</span></span>
+<span id="cb24-49"><a href="#cb24-49" tabindex="-1"></a>  <span class="co"># of the discriminator)!</span></span>
+<span id="cb24-50"><a href="#cb24-50" tabindex="-1"></a>  <span class="fu">with</span>(tf<span class="sc">$</span><span class="fu">GradientTape</span>() <span class="sc">%as%</span> tape, {</span>
+<span id="cb24-51"><a href="#cb24-51" tabindex="-1"></a>    predictions <span class="ot">&lt;-</span> <span class="fu">discriminator</span>(<span class="fu">generator</span>(random_latent_vectors))</span>
+<span id="cb24-52"><a href="#cb24-52" tabindex="-1"></a>    g_loss <span class="ot">&lt;-</span> <span class="fu">loss_fn</span>(misleading_labels, predictions)</span>
+<span id="cb24-53"><a href="#cb24-53" tabindex="-1"></a>  })</span>
+<span id="cb24-54"><a href="#cb24-54" tabindex="-1"></a></span>
+<span id="cb24-55"><a href="#cb24-55" tabindex="-1"></a>  grads <span class="ot">&lt;-</span> tape<span class="sc">$</span><span class="fu">gradient</span>(g_loss, generator<span class="sc">$</span>trainable_weights)</span>
+<span id="cb24-56"><a href="#cb24-56" tabindex="-1"></a>  g_optimizer<span class="sc">$</span><span class="fu">apply_gradients</span>(</span>
+<span id="cb24-57"><a href="#cb24-57" tabindex="-1"></a>    <span class="fu">zip_lists</span>(grads, generator<span class="sc">$</span>trainable_weights))</span>
+<span id="cb24-58"><a href="#cb24-58" tabindex="-1"></a></span>
+<span id="cb24-59"><a href="#cb24-59" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">d_loss =</span> d_loss, <span class="at">g_loss =</span> g_loss, <span class="at">generated_images =</span> generated_images)</span>
+<span id="cb24-60"><a href="#cb24-60" tabindex="-1"></a>})</span></code></pre></div>
+<p>Let’s train our GAN, by repeatedly calling <code>train_step</code> on
+batches of images.</p>
+<p>Since our discriminator and generator are convnets, you’re going to
+want to run this code on a GPU.</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a><span class="co"># Prepare the dataset. We use both the training &amp; test MNIST digits.</span></span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a>batch_size <span class="ot">&lt;-</span> <span class="dv">64</span></span>
+<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a><span class="fu">c</span>(<span class="fu">c</span>(x_train, .), <span class="fu">c</span>(x_test, .)) <span class="sc">%&lt;-%</span> <span class="fu">dataset_mnist</span>()</span>
+<span id="cb25-4"><a href="#cb25-4" tabindex="-1"></a>all_digits <span class="ot">&lt;-</span> <span class="fu">op_concatenate</span>(<span class="fu">list</span>(x_train, x_test))</span>
+<span id="cb25-5"><a href="#cb25-5" tabindex="-1"></a>all_digits <span class="ot">&lt;-</span> <span class="fu">op_reshape</span>(all_digits, <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">28</span>, <span class="dv">28</span>, <span class="dv">1</span>))</span>
+<span id="cb25-6"><a href="#cb25-6" tabindex="-1"></a>dataset <span class="ot">&lt;-</span> all_digits <span class="sc">%&gt;%</span></span>
+<span id="cb25-7"><a href="#cb25-7" tabindex="-1"></a>  tfdatasets<span class="sc">::</span><span class="fu">tensor_slices_dataset</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb25-8"><a href="#cb25-8" tabindex="-1"></a>  tfdatasets<span class="sc">::</span><span class="fu">dataset_map</span>(<span class="cf">function</span>(x) tf<span class="sc">$</span><span class="fu">cast</span>(x, <span class="st">&quot;float&quot;</span>)<span class="sc">/</span><span class="dv">255</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb25-9"><a href="#cb25-9" tabindex="-1"></a>  tfdatasets<span class="sc">::</span><span class="fu">dataset_shuffle</span>(<span class="at">buffer_size =</span> <span class="dv">1024</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb25-10"><a href="#cb25-10" tabindex="-1"></a>  tfdatasets<span class="sc">::</span><span class="fu">dataset_batch</span>(<span class="at">batch_size =</span> batch_size)</span>
+<span id="cb25-11"><a href="#cb25-11" tabindex="-1"></a></span>
+<span id="cb25-12"><a href="#cb25-12" tabindex="-1"></a>epochs <span class="ot">&lt;-</span> <span class="dv">1</span>  <span class="co"># In practice you need at least 20 epochs to generate nice digits.</span></span>
+<span id="cb25-13"><a href="#cb25-13" tabindex="-1"></a>save_dir <span class="ot">&lt;-</span> <span class="st">&quot;./&quot;</span></span>
+<span id="cb25-14"><a href="#cb25-14" tabindex="-1"></a></span>
+<span id="cb25-15"><a href="#cb25-15" tabindex="-1"></a><span class="cf">for</span> (epoch <span class="cf">in</span> <span class="fu">seq_len</span>(epochs)) {</span>
+<span id="cb25-16"><a href="#cb25-16" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;Start epoch: &quot;</span>, epoch, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb25-17"><a href="#cb25-17" tabindex="-1"></a>  step <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb25-18"><a href="#cb25-18" tabindex="-1"></a>  coro<span class="sc">::</span><span class="fu">loop</span>(<span class="cf">for</span>(real_images <span class="cf">in</span> dataset) {</span>
+<span id="cb25-19"><a href="#cb25-19" tabindex="-1"></a>    step <span class="ot">&lt;-</span> step <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb25-20"><a href="#cb25-20" tabindex="-1"></a>    <span class="co"># Train the discriminator &amp; generator on one batch of real images.</span></span>
+<span id="cb25-21"><a href="#cb25-21" tabindex="-1"></a>    <span class="fu">c</span>(d_loss, g_loss, generated_images) <span class="sc">%&lt;-%</span> <span class="fu">train_step</span>(real_images)</span>
+<span id="cb25-22"><a href="#cb25-22" tabindex="-1"></a></span>
+<span id="cb25-23"><a href="#cb25-23" tabindex="-1"></a>    <span class="co"># Logging.</span></span>
+<span id="cb25-24"><a href="#cb25-24" tabindex="-1"></a>    <span class="cf">if</span> (step <span class="sc">%%</span> <span class="dv">200</span> <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb25-25"><a href="#cb25-25" tabindex="-1"></a>      <span class="co"># Print metrics</span></span>
+<span id="cb25-26"><a href="#cb25-26" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;discriminator loss at step %d: %.2f</span><span class="sc">\n</span><span class="st">&quot;</span>, step, d_loss))</span>
+<span id="cb25-27"><a href="#cb25-27" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;adversarial loss at step %d: %.2f</span><span class="sc">\n</span><span class="st">&quot;</span>, step, g_loss))</span>
+<span id="cb25-28"><a href="#cb25-28" tabindex="-1"></a>    }</span>
+<span id="cb25-29"><a href="#cb25-29" tabindex="-1"></a></span>
+<span id="cb25-30"><a href="#cb25-30" tabindex="-1"></a>    <span class="co"># To limit execution time we stop after 10 steps.</span></span>
+<span id="cb25-31"><a href="#cb25-31" tabindex="-1"></a>    <span class="co"># Remove the lines below to actually train the model!</span></span>
+<span id="cb25-32"><a href="#cb25-32" tabindex="-1"></a>    <span class="cf">if</span> (step <span class="sc">&gt;</span> <span class="dv">10</span>){</span>
+<span id="cb25-33"><a href="#cb25-33" tabindex="-1"></a>      <span class="cf">break</span></span>
+<span id="cb25-34"><a href="#cb25-34" tabindex="-1"></a>    }</span>
+<span id="cb25-35"><a href="#cb25-35" tabindex="-1"></a>  })</span>
+<span id="cb25-36"><a href="#cb25-36" tabindex="-1"></a>}</span></code></pre></div>
+<pre><code>## Start epoch:  1</code></pre>
+<p>That’s it! You’ll get nice-looking fake MNIST digits after just ~30s
+of training on the Colab GPU.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

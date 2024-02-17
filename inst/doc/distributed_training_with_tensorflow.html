@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Multi-GPU distributed training with TensorFlow</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Multi-GPU distributed training with
+TensorFlow</h1>
+
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>There are generally two ways to distribute computation across
+multiple devices:</p>
+<p><strong>Data parallelism</strong>, where a single model gets
+replicated on multiple devices or multiple machines. Each of them
+processes different batches of data, then they merge their results.
+There exist many variants of this setup, that differ in how the
+different model replicas merge results, in whether they stay in sync at
+every batch or whether they are more loosely coupled, etc.</p>
+<p><strong>Model parallelism</strong>, where different parts of a single
+model run on different devices, processing a single batch of data
+together. This works best with models that have a naturally-parallel
+architecture, such as models that feature multiple branches.</p>
+<p>This guide focuses on data parallelism, in particular
+<strong>synchronous data parallelism</strong>, where the different
+replicas of the model stay in sync after each batch they process.
+Synchronicity keeps the model convergence behavior identical to what you
+would see for single-device training.</p>
+<p>Specifically, this guide teaches you how to use the
+<code>tf.distribute</code> API to train Keras models on multiple GPUs,
+with minimal changes to your code, on multiple GPUs (typically 2 to 16)
+installed on a single machine (single host, multi-device training). This
+is the most common setup for researchers and small-scale industry
+workflows.</p>
+</div>
+<div id="setup" class="section level2">
+<h2>Setup</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(keras3)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(tfdatasets, <span class="at">exclude =</span> <span class="st">&quot;shape&quot;</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(tensorflow, <span class="at">exclude =</span> <span class="fu">c</span>(<span class="st">&quot;shape&quot;</span>, <span class="st">&quot;set_random_seed&quot;</span>))</span></code></pre></div>
+</div>
+<div id="single-host-multi-device-synchronous-training" class="section level2">
+<h2>Single-host, multi-device synchronous training</h2>
+<p>In this setup, you have one machine with several GPUs on it
+(typically 2 to 16). Each device will run a copy of your model (called a
+<strong>replica</strong>). For simplicity, in what follows, we’ll assume
+we’re dealing with 8 GPUs, at no loss of generality.</p>
+<p><strong>How it works</strong></p>
+<p>At each step of training:</p>
+<ul>
+<li>The current batch of data (called <strong>global batch</strong>) is
+split into 8 different sub-batches (called <strong>local
+batches</strong>). For instance, if the global batch has 512 samples,
+each of the 8 local batches will have 64 samples.</li>
+<li>Each of the 8 replicas independently processes a local batch: they
+run a forward pass, then a backward pass, outputting the gradient of the
+weights with respect to the loss of the model on the local batch.</li>
+<li>The weight updates originating from local gradients are efficiently
+merged across the 8 replicas. Because this is done at the end of every
+step, the replicas always stay in sync.</li>
+</ul>
+<p>In practice, the process of synchronously updating the weights of the
+model replicas is handled at the level of each individual weight
+variable. This is done through a <strong>mirrored variable</strong>
+object.</p>
+<p><strong>How to use it</strong></p>
+<p>To do single-host, multi-device synchronous training with a Keras
+model, you would use the <a href="https://www.tensorflow.org/api_docs/python/tf/distribute/MirroredStrategy"><code>tf$distribute$MirroredStrategy</code>
+API</a>. Here’s how it works:</p>
+<ul>
+<li>Instantiate a <code>MirroredStrategy</code>, optionally configuring
+which specific devices you want to use (by default the strategy will use
+all GPUs available).</li>
+<li>Use the strategy object to open a scope, and within this scope,
+create all the Keras objects you need that contain variables. Typically,
+that means <strong>creating &amp; compiling the model</strong> inside
+the distribution scope. In some cases, the first call to
+<code>fit()</code> may also create variables, so it’s a good idea to put
+your <code>fit()</code> call in the scope as well.</li>
+<li>Train the model via <code>fit()</code> as usual.</li>
+</ul>
+<p>Importantly, we recommend that you use <code>tf.data.Dataset</code>
+objects to load data in a multi-device or distributed workflow.</p>
+<p>Schematically, it looks like this:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Create a MirroredStrategy.</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>strategy <span class="ot">&lt;-</span> tf<span class="sc">$</span>distribute<span class="sc">$</span><span class="fu">MirroredStrategy</span>()</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&#39;Number of devices: %d</span><span class="sc">\n</span><span class="st">&#39;</span>, strategy<span class="sc">$</span>num_replicas_in_sync))</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co"># Open a strategy scope.</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="fu">with</span>(startegy<span class="sc">$</span><span class="fu">scope</span>(), {</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>  <span class="co"># Everything that creates variables should be under the strategy scope.</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  <span class="co"># In general this is only model construction &amp; `compile()`.</span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">Model</span>(...)</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>  model <span class="sc">|&gt;</span> <span class="fu">compile</span>(...)</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>  <span class="co"># Train the model on all available devices.</span></span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>  model <span class="sc">|&gt;</span> <span class="fu">fit</span>(train_dataset, <span class="at">validation_data=</span>val_dataset, ...)</span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>  <span class="co"># Test the model on all available devices.</span></span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>  model <span class="sc">|&gt;</span> <span class="fu">evaluate</span>(test_dataset)</span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a>})</span></code></pre></div>
+<p>Here’s a simple end-to-end runnable example:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>get_compiled_model <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  inputs <span class="ot">&lt;-</span> <span class="fu">keras_input</span>(<span class="at">shape =</span> <span class="dv">784</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  outputs <span class="ot">&lt;-</span> inputs <span class="sc">|&gt;</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>    <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">256</span>, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>    <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">256</span>, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>    <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">10</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">keras_model</span>(inputs, outputs)</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  model <span class="sc">|&gt;</span> <span class="fu">compile</span>(</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>    <span class="at">optimizer =</span> <span class="fu">optimizer_adam</span>(),</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>    <span class="at">loss =</span> <span class="fu">loss_sparse_categorical_crossentropy</span>(<span class="at">from_logits =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>    <span class="at">metrics =</span> <span class="fu">list</span>(<span class="fu">metric_sparse_categorical_accuracy</span>()),</span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>    <span class="co"># XLA compilation is temporarily disabled due to a bug</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>    <span class="co"># https://github.com/keras-team/keras/issues/19005</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>    <span class="at">jit_compile =</span> <span class="cn">FALSE</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a>  )</span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a>  model</span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a>}</span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a>get_dataset <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">batch_size =</span> <span class="dv">64</span>) {</span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a>  <span class="fu">c</span>(<span class="fu">c</span>(x_train, y_train), <span class="fu">c</span>(x_test, y_test)) <span class="sc">%&lt;-%</span> <span class="fu">dataset_mnist</span>()</span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a>  x_train <span class="ot">&lt;-</span> <span class="fu">array_reshape</span>(x_train, <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">784</span>))</span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a>  x_test <span class="ot">&lt;-</span> <span class="fu">array_reshape</span>(x_test, <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">784</span>))</span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a>  <span class="co"># Reserve 10,000 samples for validation.</span></span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a>  val_i <span class="ot">&lt;-</span> <span class="fu">sample.int</span>(<span class="fu">nrow</span>(x_train), <span class="dv">10000</span>)</span>
+<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a>  x_val <span class="ot">&lt;-</span> x_train[val_i,]</span>
+<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a>  y_val <span class="ot">&lt;-</span> y_train[val_i]</span>
+<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a>  x_train <span class="ot">=</span> x_train[<span class="sc">-</span>val_i,]</span>
+<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a>  y_train <span class="ot">=</span> y_train[<span class="sc">-</span>val_i]</span>
+<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a></span>
+<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a>  <span class="co"># Prepare the training dataset.</span></span>
+<span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a>  train_dataset <span class="ot">&lt;-</span> <span class="fu">list</span>(x_train, y_train) <span class="sc">|&gt;</span></span>
+<span id="cb3-35"><a href="#cb3-35" tabindex="-1"></a>    <span class="fu">tensor_slices_dataset</span>() <span class="sc">|&gt;</span></span>
+<span id="cb3-36"><a href="#cb3-36" tabindex="-1"></a>    <span class="fu">dataset_batch</span>(batch_size)</span>
+<span id="cb3-37"><a href="#cb3-37" tabindex="-1"></a></span>
+<span id="cb3-38"><a href="#cb3-38" tabindex="-1"></a>  <span class="co"># Prepare the validation dataset.</span></span>
+<span id="cb3-39"><a href="#cb3-39" tabindex="-1"></a>  val_dataset <span class="ot">&lt;-</span> <span class="fu">list</span>(x_val, y_val) <span class="sc">|&gt;</span></span>
+<span id="cb3-40"><a href="#cb3-40" tabindex="-1"></a>    <span class="fu">tensor_slices_dataset</span>() <span class="sc">|&gt;</span></span>
+<span id="cb3-41"><a href="#cb3-41" tabindex="-1"></a>    <span class="fu">dataset_batch</span>(batch_size)</span>
+<span id="cb3-42"><a href="#cb3-42" tabindex="-1"></a></span>
+<span id="cb3-43"><a href="#cb3-43" tabindex="-1"></a>  <span class="co"># Prepare the test dataset.</span></span>
+<span id="cb3-44"><a href="#cb3-44" tabindex="-1"></a>  test_dataset <span class="ot">&lt;-</span> <span class="fu">list</span>(x_test, y_test) <span class="sc">|&gt;</span></span>
+<span id="cb3-45"><a href="#cb3-45" tabindex="-1"></a>    <span class="fu">tensor_slices_dataset</span>() <span class="sc">|&gt;</span></span>
+<span id="cb3-46"><a href="#cb3-46" tabindex="-1"></a>    <span class="fu">dataset_batch</span>(batch_size)</span>
+<span id="cb3-47"><a href="#cb3-47" tabindex="-1"></a></span>
+<span id="cb3-48"><a href="#cb3-48" tabindex="-1"></a>  <span class="fu">list</span>(train_dataset, val_dataset, test_dataset)</span>
+<span id="cb3-49"><a href="#cb3-49" tabindex="-1"></a>}</span>
+<span id="cb3-50"><a href="#cb3-50" tabindex="-1"></a></span>
+<span id="cb3-51"><a href="#cb3-51" tabindex="-1"></a><span class="co"># Create a MirroredStrategy.</span></span>
+<span id="cb3-52"><a href="#cb3-52" tabindex="-1"></a>strategy <span class="ot">&lt;-</span> tf<span class="sc">$</span>distribute<span class="sc">$</span><span class="fu">MirroredStrategy</span>()</span>
+<span id="cb3-53"><a href="#cb3-53" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&#39;Number of devices: %d</span><span class="sc">\n</span><span class="st">&#39;</span>, strategy<span class="sc">$</span>num_replicas_in_sync))</span></code></pre></div>
+<pre><code>## Number of devices: 2</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Open a strategy scope.</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="fu">with</span>(strategy<span class="sc">$</span><span class="fu">scope</span>(), {</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="co"># Everything that creates variables should be under the strategy scope.</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="co"># In general this is only model construction &amp; `compile()`.</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">get_compiled_model</span>()</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>  <span class="fu">c</span>(train_dataset, val_dataset, test_dataset) <span class="sc">%&lt;-%</span> <span class="fu">get_dataset</span>()</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>  <span class="co"># Train the model on all available devices.</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>  model <span class="sc">|&gt;</span> <span class="fu">fit</span>(train_dataset, <span class="at">epochs =</span> <span class="dv">2</span>, <span class="at">validation_data =</span> val_dataset)</span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>  <span class="co"># Test the model on all available devices.</span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>  model <span class="sc">|&gt;</span> <span class="fu">evaluate</span>(test_dataset)</span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>})</span></code></pre></div>
+<pre><code>## Epoch 1/2
+## 782/782 - 7s - 9ms/step - loss: 2.9199 - sparse_categorical_accuracy: 0.8580 - val_loss: 0.9377 - val_sparse_categorical_accuracy: 0.8986
+## Epoch 2/2
+## 782/782 - 4s - 5ms/step - loss: 0.5622 - sparse_categorical_accuracy: 0.9254 - val_loss: 0.7505 - val_sparse_categorical_accuracy: 0.9044
+## 157/157 - 0s - 3ms/step - loss: 0.8129 - sparse_categorical_accuracy: 0.9042</code></pre>
+<pre><code>## $loss
+## [1] 0.8128782
+##
+## $sparse_categorical_accuracy
+## [1] 0.9042</code></pre>
+</div>
+<div id="using-callbacks-to-ensure-fault-tolerance" class="section level2">
+<h2>Using callbacks to ensure fault tolerance</h2>
+<p>When using distributed training, you should always make sure you have
+a strategy to recover from failure (fault tolerance). The simplest way
+to handle this is to pass <code>ModelCheckpoint</code> callback to
+<code>fit()</code>, to save your model at regular intervals (e.g. every
+100 batches or every epoch). You can then restart training from your
+saved model.</p>
+<p>Here’s a simple example:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="co"># Prepare a directory to store all the checkpoints.</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>checkpoint_dir <span class="ot">&lt;-</span> <span class="st">&quot;./ckpt&quot;</span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">dir.exists</span>(checkpoint_dir)) {</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  <span class="fu">dir.create</span>(checkpoint_dir)</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>}</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>make_or_restore_model <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>  <span class="co"># Either restore the latest model, or create a fresh one</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>  <span class="co"># if there is no checkpoint available.</span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>  checkpoints <span class="ot">&lt;-</span> <span class="fu">list.files</span>(checkpoint_dir, <span class="co">#pattern = &quot;ckpt-.*\\.keras&quot;,</span></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>                            <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(checkpoints) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a>    checkpoint_epochs <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(<span class="fu">sub</span>(<span class="st">&quot;ckpt-([0-9]+)</span><span class="sc">\\</span><span class="st">.keras&quot;</span>, <span class="st">&quot;</span><span class="sc">\\</span><span class="st">1&quot;</span>,</span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a>                                        <span class="fu">basename</span>(checkpoints)))</span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a>    latest_checkpoint <span class="ot">&lt;-</span> checkpoints[<span class="fu">which.max</span>(checkpoint_epochs)]</span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a>    <span class="fu">load_model</span>(latest_checkpoint)</span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a>    <span class="fu">get_compiled_model</span>()</span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a>  }</span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a>}</span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a></span>
+<span id="cb8-23"><a href="#cb8-23" tabindex="-1"></a></span>
+<span id="cb8-24"><a href="#cb8-24" tabindex="-1"></a></span>
+<span id="cb8-25"><a href="#cb8-25" tabindex="-1"></a>run_training <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">epochs =</span> <span class="dv">1</span>) {</span>
+<span id="cb8-26"><a href="#cb8-26" tabindex="-1"></a>  <span class="co"># Create a MirroredStrategy.</span></span>
+<span id="cb8-27"><a href="#cb8-27" tabindex="-1"></a>  strategy <span class="ot">&lt;-</span> tf<span class="sc">$</span>distribute<span class="sc">$</span><span class="fu">MirroredStrategy</span>()</span>
+<span id="cb8-28"><a href="#cb8-28" tabindex="-1"></a></span>
+<span id="cb8-29"><a href="#cb8-29" tabindex="-1"></a>  <span class="co"># Open a strategy scope and create/restore the model</span></span>
+<span id="cb8-30"><a href="#cb8-30" tabindex="-1"></a>  <span class="fu">with</span>(strategy<span class="sc">$</span><span class="fu">scope</span>(), {</span>
+<span id="cb8-31"><a href="#cb8-31" tabindex="-1"></a>    model <span class="ot">&lt;-</span> <span class="fu">make_or_restore_model</span>()</span>
+<span id="cb8-32"><a href="#cb8-32" tabindex="-1"></a></span>
+<span id="cb8-33"><a href="#cb8-33" tabindex="-1"></a>    callbacks <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb8-34"><a href="#cb8-34" tabindex="-1"></a>      <span class="co"># This callback saves a SavedModel every epoch</span></span>
+<span id="cb8-35"><a href="#cb8-35" tabindex="-1"></a>      <span class="co"># We include the current epoch in the folder name.</span></span>
+<span id="cb8-36"><a href="#cb8-36" tabindex="-1"></a>      <span class="fu">callback_model_checkpoint</span>(</span>
+<span id="cb8-37"><a href="#cb8-37" tabindex="-1"></a>        <span class="at">filepath =</span> <span class="fu">paste0</span>(checkpoint_dir, <span class="st">&quot;/ckpt-{epoch}.keras&quot;</span>),</span>
+<span id="cb8-38"><a href="#cb8-38" tabindex="-1"></a>        <span class="at">save_freq =</span> <span class="st">&quot;epoch&quot;</span></span>
+<span id="cb8-39"><a href="#cb8-39" tabindex="-1"></a>      ))</span>
+<span id="cb8-40"><a href="#cb8-40" tabindex="-1"></a></span>
+<span id="cb8-41"><a href="#cb8-41" tabindex="-1"></a>    model <span class="sc">|&gt;</span> <span class="fu">fit</span>(</span>
+<span id="cb8-42"><a href="#cb8-42" tabindex="-1"></a>      train_dataset,</span>
+<span id="cb8-43"><a href="#cb8-43" tabindex="-1"></a>      <span class="at">epochs =</span> epochs,</span>
+<span id="cb8-44"><a href="#cb8-44" tabindex="-1"></a>      <span class="at">callbacks =</span> callbacks,</span>
+<span id="cb8-45"><a href="#cb8-45" tabindex="-1"></a>      <span class="at">validation_data =</span> val_dataset,</span>
+<span id="cb8-46"><a href="#cb8-46" tabindex="-1"></a>      <span class="at">verbose =</span> <span class="dv">2</span></span>
+<span id="cb8-47"><a href="#cb8-47" tabindex="-1"></a>    )</span>
+<span id="cb8-48"><a href="#cb8-48" tabindex="-1"></a>  })</span>
+<span id="cb8-49"><a href="#cb8-49" tabindex="-1"></a>}</span>
+<span id="cb8-50"><a href="#cb8-50" tabindex="-1"></a></span>
+<span id="cb8-51"><a href="#cb8-51" tabindex="-1"></a><span class="co"># Running the first time creates the model</span></span>
+<span id="cb8-52"><a href="#cb8-52" tabindex="-1"></a><span class="fu">run_training</span>(<span class="at">epochs =</span> <span class="dv">1</span>)</span></code></pre></div>
+<pre><code>## 782/782 - 6s - 8ms/step - loss: 3.3305 - sparse_categorical_accuracy: 0.8592 - val_loss: 1.1806 - val_sparse_categorical_accuracy: 0.8930</code></pre>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># Calling the same function again will resume from where we left off</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="fu">run_training</span>(<span class="at">epochs =</span> <span class="dv">1</span>)</span></code></pre></div>
+<pre><code>## 782/782 - 4s - 5ms/step - loss: 0.6629 - sparse_categorical_accuracy: 0.9215 - val_loss: 0.8294 - val_sparse_categorical_accuracy: 0.9130</code></pre>
+</div>
+<div id="tfdata-performance-tips" class="section level2">
+<h2><code>tf$data</code> performance tips</h2>
+<p>When doing distributed training, the efficiency with which you load
+data can often become critical. Here are a few tips to make sure your
+<code>tf$data</code> pipelines run as fast as possible.</p>
+<p><strong>Note about dataset batching</strong></p>
+<p>When creating your dataset, make sure it is batched with the global
+batch size. For instance, if each of your 8 GPUs is capable of running a
+batch of 64 samples, you call use a global batch size of 512.</p>
+<p><strong>Calling <code>dataset_cache()</code></strong></p>
+<p>If you call <code>dataset_cache()</code> on a dataset, its data will
+be cached after running through the first iteration over the data. Every
+subsequent iteration will use the cached data. The cache can be in
+memory (default) or to a local file you specify.</p>
+<p>This can improve performance when:</p>
+<ul>
+<li>Your data is not expected to change from iteration to iteration</li>
+<li>You are reading data from a remote distributed filesystem</li>
+<li>You are reading data from local disk, but your data would fit in
+memory and your workflow is significantly IO-bound (e.g. reading &amp;
+decoding image files).</li>
+</ul>
+<p><strong>Calling
+<code>dataset_prefetch(buffer_size)</code></strong></p>
+<p>You should almost always call
+<code>dataset_prefetch(buffer_size)</code> after creating a dataset. It
+means your data pipeline will run asynchronously from your model, with
+new samples being preprocessed and stored in a buffer while the current
+batch samples are used to train the model. The next batch will be
+prefetched in GPU memory by the time the current batch is over.</p>
+<p>That’s it!</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

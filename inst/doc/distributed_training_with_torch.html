@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Multi-GPU distributed training with PyTorch</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Multi-GPU distributed training with
+PyTorch</h1>
+
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>There are generally two ways to distribute computation across
+multiple devices:</p>
+<p><strong>Data parallelism</strong>, where a single model gets
+replicated on multiple devices or multiple machines. Each of them
+processes different batches of data, then they merge their results.
+There exist many variants of this setup, that differ in how the
+different model replicas merge results, in whether they stay in sync at
+every batch or whether they are more loosely coupled, etc.</p>
+<p><strong>Model parallelism</strong>, where different parts of a single
+model run on different devices, processing a single batch of data
+together. This works best with models that have a naturally-parallel
+architecture, such as models that feature multiple branches.</p>
+<p>This guide focuses on data parallelism, in particular
+<strong>synchronous data parallelism</strong>, where the different
+replicas of the model stay in sync after each batch they process.
+Synchronicity keeps the model convergence behavior identical to what you
+would see for single-device training.</p>
+<p>Specifically, this guide teaches you how to use PyTorch’s
+<code>DistributedDataParallel</code> module wrapper to train Keras, with
+minimal changes to your code, on multiple GPUs (typically 2 to 16)
+installed on a single machine (single host, multi-device training). This
+is the most common setup for researchers and small-scale industry
+workflows.</p>
+</div>
+<div id="setup" class="section level2">
+<h2>Setup</h2>
+<p>Let’s start by defining the function that creates the model that we
+will train, and the function that creates the dataset we will train on
+(MNIST in this case).</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>os.environ[<span class="st">&quot;KERAS_BACKEND&quot;</span>] <span class="op">=</span> <span class="st">&quot;torch&quot;</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="im">import</span> keras</span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="kw">def</span> get_model():</span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a>    <span class="co"># Make a simple convnet with batch normalization and dropout.</span></span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a>    inputs <span class="op">=</span> keras.Input(shape<span class="op">=</span>(<span class="dv">28</span>, <span class="dv">28</span>, <span class="dv">1</span>))</span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a>    x <span class="op">=</span> keras.layers.Rescaling(<span class="fl">1.0</span> <span class="op">/</span> <span class="fl">255.0</span>)(inputs)</span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a>    x <span class="op">=</span> keras.layers.Conv2D(</span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a>        filters<span class="op">=</span><span class="dv">12</span>, kernel_size<span class="op">=</span><span class="dv">3</span>, padding<span class="op">=</span><span class="st">&quot;same&quot;</span>, use_bias<span class="op">=</span><span class="va">False</span></span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a>    )(x)</span>
+<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a>    x <span class="op">=</span> keras.layers.BatchNormalization(scale<span class="op">=</span><span class="va">False</span>, center<span class="op">=</span><span class="va">True</span>)(x)</span>
+<span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a>    x <span class="op">=</span> keras.layers.ReLU()(x)</span>
+<span id="cb1-19"><a href="#cb1-19" tabindex="-1"></a>    x <span class="op">=</span> keras.layers.Conv2D(</span>
+<span id="cb1-20"><a href="#cb1-20" tabindex="-1"></a>        filters<span class="op">=</span><span class="dv">24</span>,</span>
+<span id="cb1-21"><a href="#cb1-21" tabindex="-1"></a>        kernel_size<span class="op">=</span><span class="dv">6</span>,</span>
+<span id="cb1-22"><a href="#cb1-22" tabindex="-1"></a>        use_bias<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb1-23"><a href="#cb1-23" tabindex="-1"></a>        strides<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb1-24"><a href="#cb1-24" tabindex="-1"></a>    )(x)</span>
+<span id="cb1-25"><a href="#cb1-25" tabindex="-1"></a>    x <span class="op">=</span> keras.layers.BatchNormalization(scale<span class="op">=</span><span class="va">False</span>, center<span class="op">=</span><span class="va">True</span>)(x)</span>
+<span id="cb1-26"><a href="#cb1-26" tabindex="-1"></a>    x <span class="op">=</span> keras.layers.ReLU()(x)</span>
+<span id="cb1-27"><a href="#cb1-27" tabindex="-1"></a>    x <span class="op">=</span> keras.layers.Conv2D(</span>
+<span id="cb1-28"><a href="#cb1-28" tabindex="-1"></a>        filters<span class="op">=</span><span class="dv">32</span>,</span>
+<span id="cb1-29"><a href="#cb1-29" tabindex="-1"></a>        kernel_size<span class="op">=</span><span class="dv">6</span>,</span>
+<span id="cb1-30"><a href="#cb1-30" tabindex="-1"></a>        padding<span class="op">=</span><span class="st">&quot;same&quot;</span>,</span>
+<span id="cb1-31"><a href="#cb1-31" tabindex="-1"></a>        strides<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb1-32"><a href="#cb1-32" tabindex="-1"></a>        name<span class="op">=</span><span class="st">&quot;large_k&quot;</span>,</span>
+<span id="cb1-33"><a href="#cb1-33" tabindex="-1"></a>    )(x)</span>
+<span id="cb1-34"><a href="#cb1-34" tabindex="-1"></a>    x <span class="op">=</span> keras.layers.BatchNormalization(scale<span class="op">=</span><span class="va">False</span>, center<span class="op">=</span><span class="va">True</span>)(x)</span>
+<span id="cb1-35"><a href="#cb1-35" tabindex="-1"></a>    x <span class="op">=</span> keras.layers.ReLU()(x)</span>
+<span id="cb1-36"><a href="#cb1-36" tabindex="-1"></a>    x <span class="op">=</span> keras.layers.GlobalAveragePooling2D()(x)</span>
+<span id="cb1-37"><a href="#cb1-37" tabindex="-1"></a>    x <span class="op">=</span> keras.layers.Dense(<span class="dv">256</span>, activation<span class="op">=</span><span class="st">&quot;relu&quot;</span>)(x)</span>
+<span id="cb1-38"><a href="#cb1-38" tabindex="-1"></a>    x <span class="op">=</span> keras.layers.Dropout(<span class="fl">0.5</span>)(x)</span>
+<span id="cb1-39"><a href="#cb1-39" tabindex="-1"></a>    outputs <span class="op">=</span> keras.layers.Dense(<span class="dv">10</span>)(x)</span>
+<span id="cb1-40"><a href="#cb1-40" tabindex="-1"></a>    model <span class="op">=</span> keras.Model(inputs, outputs)</span>
+<span id="cb1-41"><a href="#cb1-41" tabindex="-1"></a>    <span class="cf">return</span> model</span>
+<span id="cb1-42"><a href="#cb1-42" tabindex="-1"></a></span>
+<span id="cb1-43"><a href="#cb1-43" tabindex="-1"></a></span>
+<span id="cb1-44"><a href="#cb1-44" tabindex="-1"></a><span class="kw">def</span> get_dataset():</span>
+<span id="cb1-45"><a href="#cb1-45" tabindex="-1"></a>    <span class="co"># Load the data and split it between train and test sets</span></span>
+<span id="cb1-46"><a href="#cb1-46" tabindex="-1"></a>    (x_train, y_train), (x_test, y_test) <span class="op">=</span> keras.datasets.mnist.load_data()</span>
+<span id="cb1-47"><a href="#cb1-47" tabindex="-1"></a></span>
+<span id="cb1-48"><a href="#cb1-48" tabindex="-1"></a>    <span class="co"># Scale images to the [0, 1] range</span></span>
+<span id="cb1-49"><a href="#cb1-49" tabindex="-1"></a>    x_train <span class="op">=</span> x_train.astype(<span class="st">&quot;float32&quot;</span>)</span>
+<span id="cb1-50"><a href="#cb1-50" tabindex="-1"></a>    x_test <span class="op">=</span> x_test.astype(<span class="st">&quot;float32&quot;</span>)</span>
+<span id="cb1-51"><a href="#cb1-51" tabindex="-1"></a>    <span class="co"># Make sure images have shape (28, 28, 1)</span></span>
+<span id="cb1-52"><a href="#cb1-52" tabindex="-1"></a>    x_train <span class="op">=</span> np.expand_dims(x_train, <span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb1-53"><a href="#cb1-53" tabindex="-1"></a>    x_test <span class="op">=</span> np.expand_dims(x_test, <span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb1-54"><a href="#cb1-54" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&quot;x_train shape:&quot;</span>, x_train.shape)</span>
+<span id="cb1-55"><a href="#cb1-55" tabindex="-1"></a></span>
+<span id="cb1-56"><a href="#cb1-56" tabindex="-1"></a>    <span class="co"># Create a TensorDataset</span></span>
+<span id="cb1-57"><a href="#cb1-57" tabindex="-1"></a>    dataset <span class="op">=</span> torch.utils.data.TensorDataset(</span>
+<span id="cb1-58"><a href="#cb1-58" tabindex="-1"></a>        torch.from_numpy(x_train), torch.from_numpy(y_train)</span>
+<span id="cb1-59"><a href="#cb1-59" tabindex="-1"></a>    )</span>
+<span id="cb1-60"><a href="#cb1-60" tabindex="-1"></a>    <span class="cf">return</span> dataset</span></code></pre></div>
+<p>Next, let’s define a simple PyTorch training loop that targets a GPU
+(note the calls to <code>.cuda()</code>).</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="kw">def</span> train_model(model, dataloader, num_epochs, optimizer, loss_fn):</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>    <span class="cf">for</span> epoch <span class="kw">in</span> <span class="bu">range</span>(num_epochs):</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>        running_loss <span class="op">=</span> <span class="fl">0.0</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>        running_loss_count <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>        <span class="cf">for</span> batch_idx, (inputs, targets) <span class="kw">in</span> <span class="bu">enumerate</span>(dataloader):</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>            inputs <span class="op">=</span> inputs.cuda(non_blocking<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>            targets <span class="op">=</span> targets.cuda(non_blocking<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>            <span class="co"># Forward pass</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>            outputs <span class="op">=</span> model(inputs)</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>            loss <span class="op">=</span> loss_fn(outputs, targets)</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>            <span class="co"># Backward and optimize</span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>            optimizer.zero_grad()</span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>            loss.backward()</span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>            optimizer.step()</span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a>            running_loss <span class="op">+=</span> loss.item()</span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a>            running_loss_count <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a></span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a>        <span class="co"># Print loss statistics</span></span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a>        <span class="bu">print</span>(</span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a>            <span class="ss">f&quot;Epoch </span><span class="sc">{</span>epoch <span class="op">+</span> <span class="dv">1</span><span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>num_epochs<span class="sc">}</span><span class="ss">, &quot;</span></span>
+<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a>            <span class="ss">f&quot;Loss: </span><span class="sc">{</span>running_loss <span class="op">/</span> running_loss_count<span class="sc">}</span><span class="ss">&quot;</span></span>
+<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a>        )</span></code></pre></div>
+</div>
+<div id="single-host-multi-device-synchronous-training" class="section level2">
+<h2>Single-host, multi-device synchronous training</h2>
+<p>In this setup, you have one machine with several GPUs on it
+(typically 2 to 16). Each device will run a copy of your model (called a
+<strong>replica</strong>). For simplicity, in what follows, we’ll assume
+we’re dealing with 8 GPUs, at no loss of generality.</p>
+<p><strong>How it works</strong></p>
+<p>At each step of training:</p>
+<ul>
+<li>The current batch of data (called <strong>global batch</strong>) is
+split into 8 different sub-batches (called <strong>local
+batches</strong>). For instance, if the global batch has 512 samples,
+each of the 8 local batches will have 64 samples.</li>
+<li>Each of the 8 replicas independently processes a local batch: they
+run a forward pass, then a backward pass, outputting the gradient of the
+weights with respect to the loss of the model on the local batch.</li>
+<li>The weight updates originating from local gradients are efficiently
+merged across the 8 replicas. Because this is done at the end of every
+step, the replicas always stay in sync.</li>
+</ul>
+<p>In practice, the process of synchronously updating the weights of the
+model replicas is handled at the level of each individual weight
+variable. This is done through a <strong>mirrored variable</strong>
+object.</p>
+<p><strong>How to use it</strong></p>
+<p>To do single-host, multi-device synchronous training with a Keras
+model, you would use the
+<code>torch.nn.parallel.DistributedDataParallel</code> module wrapper.
+Here’s how it works:</p>
+<ul>
+<li>We use <code>torch.multiprocessing.start_processes</code> to start
+multiple Python processes, one per device. Each process will run the
+<code>per_device_launch_fn</code> function.</li>
+<li>The <code>per_device_launch_fn</code> function does the following:
+<ul>
+<li>It uses <code>torch.distributed.init_process_group</code> and
+<code>torch.cuda.set_device</code> to configure the device to be used
+for that process.</li>
+<li>It uses <code>torch.utils.data.distributed.DistributedSampler</code>
+and <code>torch.utils.data.DataLoader</code> to turn our data into a
+distributed data loader.</li>
+<li>It also uses <code>torch.nn.parallel.DistributedDataParallel</code>
+to turn our model into a distributed PyTorch module.</li>
+<li>It then calls the <code>train_model</code> function.</li>
+</ul></li>
+<li>The <code>train_model</code> function will then run in each process,
+with the model using a separate device in each process.</li>
+</ul>
+<p>Here’s the flow, where each step is split into its own utility
+function:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># Config</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>num_gpu <span class="op">=</span> torch.cuda.device_count()</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>num_epochs <span class="op">=</span> <span class="dv">2</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>batch_size <span class="op">=</span> <span class="dv">64</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;Running on </span><span class="sc">{</span>num_gpu<span class="sc">}</span><span class="ss"> GPUs&quot;</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="kw">def</span> setup_device(current_gpu_index, num_gpus):</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>    <span class="co"># Device setup</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>    os.environ[<span class="st">&quot;MASTER_ADDR&quot;</span>] <span class="op">=</span> <span class="st">&quot;localhost&quot;</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>    os.environ[<span class="st">&quot;MASTER_PORT&quot;</span>] <span class="op">=</span> <span class="st">&quot;56492&quot;</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>    device <span class="op">=</span> torch.device(<span class="st">&quot;cuda:</span><span class="sc">{}</span><span class="st">&quot;</span>.<span class="bu">format</span>(current_gpu_index))</span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>    torch.distributed.init_process_group(</span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>        backend<span class="op">=</span><span class="st">&quot;nccl&quot;</span>,</span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>        init_method<span class="op">=</span><span class="st">&quot;env://&quot;</span>,</span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a>        world_size<span class="op">=</span>num_gpus,</span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a>        rank<span class="op">=</span>current_gpu_index,</span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a>    )</span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a>    torch.cuda.set_device(device)</span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a></span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="kw">def</span> cleanup():</span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a>    torch.distributed.destroy_process_group()</span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a></span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="kw">def</span> prepare_dataloader(dataset, current_gpu_index, num_gpus, batch_size):</span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a>    sampler <span class="op">=</span> torch.utils.data.distributed.DistributedSampler(</span>
+<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a>        dataset,</span>
+<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a>        num_replicas<span class="op">=</span>num_gpus,</span>
+<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a>        rank<span class="op">=</span>current_gpu_index,</span>
+<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a>        shuffle<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a>    )</span>
+<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a>    dataloader <span class="op">=</span> torch.utils.data.DataLoader(</span>
+<span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a>        dataset,</span>
+<span id="cb3-35"><a href="#cb3-35" tabindex="-1"></a>        sampler<span class="op">=</span>sampler,</span>
+<span id="cb3-36"><a href="#cb3-36" tabindex="-1"></a>        batch_size<span class="op">=</span>batch_size,</span>
+<span id="cb3-37"><a href="#cb3-37" tabindex="-1"></a>        shuffle<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb3-38"><a href="#cb3-38" tabindex="-1"></a>    )</span>
+<span id="cb3-39"><a href="#cb3-39" tabindex="-1"></a>    <span class="cf">return</span> dataloader</span>
+<span id="cb3-40"><a href="#cb3-40" tabindex="-1"></a></span>
+<span id="cb3-41"><a href="#cb3-41" tabindex="-1"></a></span>
+<span id="cb3-42"><a href="#cb3-42" tabindex="-1"></a><span class="kw">def</span> per_device_launch_fn(current_gpu_index, num_gpu):</span>
+<span id="cb3-43"><a href="#cb3-43" tabindex="-1"></a>    <span class="co"># Setup the process groups</span></span>
+<span id="cb3-44"><a href="#cb3-44" tabindex="-1"></a>    setup_device(current_gpu_index, num_gpu)</span>
+<span id="cb3-45"><a href="#cb3-45" tabindex="-1"></a></span>
+<span id="cb3-46"><a href="#cb3-46" tabindex="-1"></a>    dataset <span class="op">=</span> get_dataset()</span>
+<span id="cb3-47"><a href="#cb3-47" tabindex="-1"></a>    model <span class="op">=</span> get_model()</span>
+<span id="cb3-48"><a href="#cb3-48" tabindex="-1"></a></span>
+<span id="cb3-49"><a href="#cb3-49" tabindex="-1"></a>    <span class="co"># prepare the dataloader</span></span>
+<span id="cb3-50"><a href="#cb3-50" tabindex="-1"></a>    dataloader <span class="op">=</span> prepare_dataloader(</span>
+<span id="cb3-51"><a href="#cb3-51" tabindex="-1"></a>        dataset, current_gpu_index, num_gpu, batch_size</span>
+<span id="cb3-52"><a href="#cb3-52" tabindex="-1"></a>    )</span>
+<span id="cb3-53"><a href="#cb3-53" tabindex="-1"></a></span>
+<span id="cb3-54"><a href="#cb3-54" tabindex="-1"></a>    <span class="co"># Instantiate the torch optimizer</span></span>
+<span id="cb3-55"><a href="#cb3-55" tabindex="-1"></a>    optimizer <span class="op">=</span> torch.optim.Adam(model.parameters(), lr<span class="op">=</span><span class="fl">1e-3</span>)</span>
+<span id="cb3-56"><a href="#cb3-56" tabindex="-1"></a></span>
+<span id="cb3-57"><a href="#cb3-57" tabindex="-1"></a>    <span class="co"># Instantiate the torch loss function</span></span>
+<span id="cb3-58"><a href="#cb3-58" tabindex="-1"></a>    loss_fn <span class="op">=</span> torch.nn.CrossEntropyLoss()</span>
+<span id="cb3-59"><a href="#cb3-59" tabindex="-1"></a></span>
+<span id="cb3-60"><a href="#cb3-60" tabindex="-1"></a>    <span class="co"># Put model on device</span></span>
+<span id="cb3-61"><a href="#cb3-61" tabindex="-1"></a>    model <span class="op">=</span> model.to(current_gpu_index)</span>
+<span id="cb3-62"><a href="#cb3-62" tabindex="-1"></a>    ddp_model <span class="op">=</span> torch.nn.parallel.DistributedDataParallel(</span>
+<span id="cb3-63"><a href="#cb3-63" tabindex="-1"></a>        model, device_ids<span class="op">=</span>[current_gpu_index], output_device<span class="op">=</span>current_gpu_index</span>
+<span id="cb3-64"><a href="#cb3-64" tabindex="-1"></a>    )</span>
+<span id="cb3-65"><a href="#cb3-65" tabindex="-1"></a></span>
+<span id="cb3-66"><a href="#cb3-66" tabindex="-1"></a>    train_model(ddp_model, dataloader, num_epochs, optimizer, loss_fn)</span>
+<span id="cb3-67"><a href="#cb3-67" tabindex="-1"></a></span>
+<span id="cb3-68"><a href="#cb3-68" tabindex="-1"></a>    cleanup()</span></code></pre></div>
+<p>Time to start multiple processes:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">&quot;__main__&quot;</span>:</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>    <span class="co"># We use the &quot;fork&quot; method rather than &quot;spawn&quot; to support notebooks</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>    torch.multiprocessing.start_processes(</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>        per_device_launch_fn,</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>        args<span class="op">=</span>(num_gpu,),</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>        nprocs<span class="op">=</span>num_gpu,</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>        join<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>        start_method<span class="op">=</span><span class="st">&quot;fork&quot;</span>,</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>    )</span></code></pre></div>
+<p>That’s it!</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Introduction to Keras for Researchers</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Introduction to Keras for Researchers</h1>
+
+
+
+<div id="setup" class="section level2">
+<h2>Setup</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(keras3)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(tensorflow)</span></code></pre></div>
+</div>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>Are you a machine learning researcher? Do you publish at NeurIPS and
+push the state-of-the-art in CV and NLP? This guide will serve as your
+first introduction to core Keras &amp; TensorFlow API concepts.</p>
+<p>In this guide, you will learn about:</p>
+<ul>
+<li>Tensors, variables, and gradients in TensorFlow</li>
+<li>Creating layers by subclassing the [<code>Layer</code>] class</li>
+<li>Writing low-level training loops</li>
+<li>Tracking losses created by layers via the <code>add_loss()</code>
+method</li>
+<li>Tracking metrics in a low-level training loop</li>
+<li>Speeding up execution with a compiled
+[<code>tensorflow::tf_function()</code>]</li>
+<li>Executing layers in training or inference mode</li>
+<li>The Keras Functional API</li>
+</ul>
+<p>You will also see the Keras API in action in two end-to-end research
+examples: a Variational Autoencoder, and a Hypernetwork.</p>
+</div>
+<div id="tensors" class="section level2">
+<h2>Tensors</h2>
+<p>TensorFlow is an infrastructure layer for differentiable programming.
+At its heart, it’s a framework for manipulating N-dimensional arrays
+(tensors), much like NumPy.</p>
+<p>However, there are three key differences between NumPy and
+TensorFlow:</p>
+<ul>
+<li>TensorFlow can leverage hardware accelerators such as GPUs and
+TPUs.</li>
+<li>TensorFlow can automatically compute the gradient of arbitrary
+differentiable tensor expressions.</li>
+<li>TensorFlow computation can be distributed to large numbers of
+devices on a single machine, and large number of machines (potentially
+with multiple devices each).</li>
+</ul>
+<p>Let’s take a look at the object that is at the core of TensorFlow:
+the Tensor.</p>
+<p>Here’s a constant tensor:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>x <span class="ot">&lt;-</span> tf<span class="sc">$</span><span class="fu">constant</span>(<span class="fu">rbind</span>(<span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">2</span>), <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>)))</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">print</span>(x)</span></code></pre></div>
+<pre><code>## tf.Tensor(
+## [[5. 2.]
+##  [1. 3.]], shape=(2, 2), dtype=float64)</code></pre>
+<p>You can get its value as a R array by calling
+<code>as.array()</code>:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">as.array</span>(x)</span></code></pre></div>
+<pre><code>##      [,1] [,2]
+## [1,]    5    2
+## [2,]    1    3</code></pre>
+<p>It features the attributes <code>dtype</code> and
+<code>shape</code>:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>x<span class="sc">$</span>dtype</span></code></pre></div>
+<pre><code>## tf.float64</code></pre>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>x<span class="sc">$</span>shape</span></code></pre></div>
+<pre><code>## TensorShape([2, 2])</code></pre>
+<p>A common way to create constant tensors is via <code>tf$ones</code>
+and <code>tf$zeros</code>:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>tf<span class="sc">$</span><span class="fu">ones</span>(<span class="at">shape =</span> <span class="fu">shape</span>(<span class="dv">2</span>, <span class="dv">1</span>))</span></code></pre></div>
+<pre><code>## tf.Tensor(
+## [[1.]
+##  [1.]], shape=(2, 1), dtype=float32)</code></pre>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>tf<span class="sc">$</span><span class="fu">zeros</span>(<span class="at">shape =</span> <span class="fu">shape</span>(<span class="dv">2</span>, <span class="dv">1</span>))</span></code></pre></div>
+<pre><code>## tf.Tensor(
+## [[0.]
+##  [0.]], shape=(2, 1), dtype=float32)</code></pre>
+<p>You can also create random constant tensors:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">random_normal</span>(<span class="at">shape =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>), <span class="at">mean =</span> <span class="fl">0.0</span>, <span class="at">stddev =</span> <span class="fl">1.0</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">random_uniform</span>(<span class="at">shape =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>), <span class="at">minval =</span> <span class="dv">0</span>, <span class="at">maxval =</span> <span class="dv">10</span>)</span></code></pre></div>
+</div>
+<div id="variables" class="section level2">
+<h2>Variables</h2>
+<p>Variables are special tensors used to store mutable state (such as
+the weights of a neural network). You create a <code>Variable</code>
+using some initial value:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>initial_value <span class="ot">&lt;-</span> <span class="fu">random_normal</span>(<span class="at">shape=</span><span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>))</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>a <span class="ot">&lt;-</span> tf<span class="sc">$</span><span class="fu">Variable</span>(initial_value)</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="fu">print</span>(a)</span></code></pre></div>
+<pre><code>## &lt;tf.Variable &#39;Variable:0&#39; shape=(2, 2) dtype=float32, numpy=
+## array([[ 0.9057419 ,  0.7916686 ],
+##        [ 0.28754202, -0.5408822 ]], dtype=float32)&gt;</code></pre>
+<p>You update the value of a <code>Variable</code> by using the methods
+<code>$assign(value)</code>, <code>$assign_add(increment)</code>, or
+<code>$assign_sub(decrement)</code>:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a>new_value <span class="ot">&lt;-</span> <span class="fu">random_normal</span>(<span class="at">shape=</span><span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>))</span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>a<span class="sc">$</span><span class="fu">assign</span>(new_value)</span></code></pre></div>
+<pre><code>## &lt;tf.Variable &#39;UnreadVariable&#39; shape=(2, 2) dtype=float32, numpy=
+## array([[-0.3405368 , -2.1463926 ],
+##        [ 1.2602988 ,  0.12241419]], dtype=float32)&gt;</code></pre>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a>added_value <span class="ot">&lt;-</span> <span class="fu">random_normal</span>(<span class="at">shape=</span><span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>))</span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>a<span class="sc">$</span><span class="fu">assign_add</span>(added_value)</span></code></pre></div>
+<pre><code>## &lt;tf.Variable &#39;UnreadVariable&#39; shape=(2, 2) dtype=float32, numpy=
+## array([[ 0.04820395, -2.6854615 ],
+##        [ 0.23246336,  1.4535258 ]], dtype=float32)&gt;</code></pre>
+</div>
+<div id="doing-math-in-tensorflow" class="section level2">
+<h2>Doing math in TensorFlow</h2>
+<p>If you’ve used NumPy, doing math in TensorFlow will look very
+familiar. The main difference is that your TensorFlow code can run on
+GPU and TPU.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a>a <span class="ot">&lt;-</span> <span class="fu">random_normal</span>(<span class="at">shape=</span><span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>))</span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a>b <span class="ot">&lt;-</span> <span class="fu">random_normal</span>(<span class="at">shape=</span><span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>))</span>
+<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a>c <span class="ot">&lt;-</span> a <span class="sc">+</span> b</span>
+<span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a>d <span class="ot">&lt;-</span> tf<span class="sc">$</span><span class="fu">square</span>(c)</span>
+<span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a>e <span class="ot">&lt;-</span> tf<span class="sc">$</span><span class="fu">exp</span>(d)</span></code></pre></div>
+</div>
+<div id="gradients" class="section level2">
+<h2>Gradients</h2>
+<p>Here’s another big difference with R: you can automatically retrieve
+the gradient of any differentiable expression.</p>
+<p>Just open a <code>GradientTape</code>, start “watching” a tensor via
+<code>tape$watch()</code>, and compose a differentiable expression using
+this tensor as input:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a>a <span class="ot">&lt;-</span> <span class="fu">random_normal</span>(<span class="at">shape=</span><span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>))</span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a>b <span class="ot">&lt;-</span> <span class="fu">random_normal</span>(<span class="at">shape=</span><span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>))</span>
+<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a><span class="fu">with</span>(tf<span class="sc">$</span><span class="fu">GradientTape</span>() <span class="sc">%as%</span> tape, {</span>
+<span id="cb22-5"><a href="#cb22-5" tabindex="-1"></a>  tape<span class="sc">$</span><span class="fu">watch</span>(a)  <span class="co"># Start recording the history of operations applied to `a`</span></span>
+<span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a>  c <span class="ot">&lt;-</span> tf<span class="sc">$</span><span class="fu">sqrt</span>(tf<span class="sc">$</span><span class="fu">square</span>(a) <span class="sc">+</span> tf<span class="sc">$</span><span class="fu">square</span>(b))  <span class="co"># Do some math using `a`</span></span>
+<span id="cb22-7"><a href="#cb22-7" tabindex="-1"></a>  <span class="co"># What&#39;s the gradient of `c` with respect to `a`?</span></span>
+<span id="cb22-8"><a href="#cb22-8" tabindex="-1"></a>  dc_da <span class="ot">&lt;-</span> tape<span class="sc">$</span><span class="fu">gradient</span>(c, a)</span>
+<span id="cb22-9"><a href="#cb22-9" tabindex="-1"></a>  <span class="fu">print</span>(dc_da)</span>
+<span id="cb22-10"><a href="#cb22-10" tabindex="-1"></a>})</span></code></pre></div>
+<pre><code>## tf.Tensor(
+## [[ 0.9969011  -0.7707146 ]
+##  [ 0.23378514  0.96255165]], shape=(2, 2), dtype=float32)</code></pre>
+<p>By default, variables are watched automatically, so you don’t need to
+manually <code>watch</code> them:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a>a <span class="ot">&lt;-</span> tf<span class="sc">$</span><span class="fu">Variable</span>(a)</span>
+<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a><span class="fu">with</span>(tf<span class="sc">$</span><span class="fu">GradientTape</span>() <span class="sc">%as%</span> tape, {</span>
+<span id="cb24-4"><a href="#cb24-4" tabindex="-1"></a>  c <span class="ot">&lt;-</span> tf<span class="sc">$</span><span class="fu">sqrt</span>(tf<span class="sc">$</span><span class="fu">square</span>(a) <span class="sc">+</span> tf<span class="sc">$</span><span class="fu">square</span>(b))</span>
+<span id="cb24-5"><a href="#cb24-5" tabindex="-1"></a>  dc_da <span class="ot">&lt;-</span> tape<span class="sc">$</span><span class="fu">gradient</span>(c, a)</span>
+<span id="cb24-6"><a href="#cb24-6" tabindex="-1"></a>  <span class="fu">print</span>(dc_da)</span>
+<span id="cb24-7"><a href="#cb24-7" tabindex="-1"></a>})</span></code></pre></div>
+<pre><code>## tf.Tensor(
+## [[ 0.9969011  -0.7707146 ]
+##  [ 0.23378514  0.96255165]], shape=(2, 2), dtype=float32)</code></pre>
+<p>Note that you can compute higher-order derivatives by nesting
+tapes:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a><span class="fu">with</span>(tf<span class="sc">$</span><span class="fu">GradientTape</span>() <span class="sc">%as%</span> outer_tape, {</span>
+<span id="cb26-2"><a href="#cb26-2" tabindex="-1"></a>  <span class="fu">with</span>(tf<span class="sc">$</span><span class="fu">GradientTape</span>() <span class="sc">%as%</span> tape, {</span>
+<span id="cb26-3"><a href="#cb26-3" tabindex="-1"></a>    c <span class="ot">&lt;-</span> tf<span class="sc">$</span><span class="fu">sqrt</span>(tf<span class="sc">$</span><span class="fu">square</span>(a) <span class="sc">+</span> tf<span class="sc">$</span><span class="fu">square</span>(b))</span>
+<span id="cb26-4"><a href="#cb26-4" tabindex="-1"></a>    dc_da <span class="ot">&lt;-</span> tape<span class="sc">$</span><span class="fu">gradient</span>(c, a)</span>
+<span id="cb26-5"><a href="#cb26-5" tabindex="-1"></a>  })</span>
+<span id="cb26-6"><a href="#cb26-6" tabindex="-1"></a>  d2c_da2 <span class="ot">&lt;-</span> outer_tape<span class="sc">$</span><span class="fu">gradient</span>(dc_da, a)</span>
+<span id="cb26-7"><a href="#cb26-7" tabindex="-1"></a>  <span class="fu">print</span>(d2c_da2)</span>
+<span id="cb26-8"><a href="#cb26-8" tabindex="-1"></a>})</span></code></pre></div>
+<pre><code>## tf.Tensor(
+## [[3.3447742e-03 7.1282005e-01]
+##  [5.7464113e+00 5.5013180e-02]], shape=(2, 2), dtype=float32)</code></pre>
+</div>
+<div id="keras-layers" class="section level2">
+<h2>Keras layers</h2>
+<p>While TensorFlow is an <strong>infrastructure layer for
+differentiable programming</strong>, dealing with tensors, variables,
+and gradients, Keras is a <strong>user interface for deep
+learning</strong>, dealing with layers, models, optimizers, loss
+functions, metrics, and more.</p>
+<p>Keras serves as the high-level API for TensorFlow: Keras is what
+makes TensorFlow simple and productive.</p>
+<p>The <code>Layer</code> class is the fundamental abstraction in Keras.
+A <code>Layer</code> encapsulates a state (weights) and some computation
+(defined in the call method).</p>
+<p>A simple layer looks like this. The <code>self$add_weight()</code>
+method gives you a shortcut for creating weights:</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a>Linear <span class="ot">&lt;-</span> <span class="fu">new_layer_class</span>(</span>
+<span id="cb28-2"><a href="#cb28-2" tabindex="-1"></a>  <span class="st">&quot;Linear&quot;</span>,</span>
+<span id="cb28-3"><a href="#cb28-3" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>(<span class="at">units =</span> <span class="dv">32</span>, <span class="at">input_dim =</span> <span class="dv">32</span>) {</span>
+<span id="cb28-4"><a href="#cb28-4" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>()</span>
+<span id="cb28-5"><a href="#cb28-5" tabindex="-1"></a>    self<span class="sc">$</span>w <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">add_weight</span>(</span>
+<span id="cb28-6"><a href="#cb28-6" tabindex="-1"></a>      <span class="at">shape =</span> <span class="fu">shape</span>(input_dim, units),</span>
+<span id="cb28-7"><a href="#cb28-7" tabindex="-1"></a>      <span class="at">initializer =</span> <span class="st">&quot;random_normal&quot;</span>,</span>
+<span id="cb28-8"><a href="#cb28-8" tabindex="-1"></a>      <span class="at">trainable =</span> <span class="cn">TRUE</span></span>
+<span id="cb28-9"><a href="#cb28-9" tabindex="-1"></a>    )</span>
+<span id="cb28-10"><a href="#cb28-10" tabindex="-1"></a>    self<span class="sc">$</span>b <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">add_weight</span>(</span>
+<span id="cb28-11"><a href="#cb28-11" tabindex="-1"></a>      <span class="at">shape =</span> <span class="fu">shape</span>(units),</span>
+<span id="cb28-12"><a href="#cb28-12" tabindex="-1"></a>      <span class="at">initializer =</span> <span class="st">&quot;zeros&quot;</span>,</span>
+<span id="cb28-13"><a href="#cb28-13" tabindex="-1"></a>      <span class="at">trainable =</span> <span class="cn">TRUE</span></span>
+<span id="cb28-14"><a href="#cb28-14" tabindex="-1"></a>    )</span>
+<span id="cb28-15"><a href="#cb28-15" tabindex="-1"></a>  },</span>
+<span id="cb28-16"><a href="#cb28-16" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
+<span id="cb28-17"><a href="#cb28-17" tabindex="-1"></a>    tf<span class="sc">$</span><span class="fu">matmul</span>(inputs, self<span class="sc">$</span>w) <span class="sc">+</span> self<span class="sc">$</span>b</span>
+<span id="cb28-18"><a href="#cb28-18" tabindex="-1"></a>  }</span>
+<span id="cb28-19"><a href="#cb28-19" tabindex="-1"></a>)</span></code></pre></div>
+<p>You would use a <code>Layer</code> instance much like a R
+function:</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a><span class="co"># Instantiate our layer.</span></span>
+<span id="cb29-2"><a href="#cb29-2" tabindex="-1"></a>linear_layer <span class="ot">&lt;-</span> <span class="fu">Linear</span>(<span class="at">units=</span><span class="dv">4</span>, <span class="at">input_dim=</span><span class="dv">2</span>)</span>
+<span id="cb29-3"><a href="#cb29-3" tabindex="-1"></a></span>
+<span id="cb29-4"><a href="#cb29-4" tabindex="-1"></a><span class="co"># The layer can be treated as a function.</span></span>
+<span id="cb29-5"><a href="#cb29-5" tabindex="-1"></a><span class="co"># Here we call it on some data.</span></span>
+<span id="cb29-6"><a href="#cb29-6" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">linear_layer</span>(tf<span class="sc">$</span><span class="fu">ones</span>(<span class="fu">shape</span>(<span class="dv">2</span>, <span class="dv">2</span>)))</span></code></pre></div>
+<p>The weight variables (created in <code>initialize</code>) are
+automatically tracked under the <code>weights</code> property:</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a>linear_layer<span class="sc">$</span>weights</span></code></pre></div>
+<pre><code>## [[1]]
+## &lt;KerasVariable shape=(2, 4), dtype=float32, path=linear/variable&gt;
+##
+## [[2]]
+## &lt;KerasVariable shape=(4), dtype=float32, path=linear/variable_1&gt;</code></pre>
+<p>You have many built-in layers available, from <code>Dense</code> to
+<code>Conv2D</code> to <code>LSTM</code> to fancier ones like
+<code>Conv3DTranspose</code> or <code>ConvLSTM2D</code>. Be smart about
+reusing built-in functionality.</p>
+</div>
+<div id="layer-weight-creation-in-buildinput_shape" class="section level2">
+<h2>Layer weight creation in <code>build(input_shape)</code></h2>
+<p>It’s often a good idea to defer weight creation to the
+<code>build()</code> method, so that you don’t need to specify the input
+dim/shape at layer construction time:</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" tabindex="-1"></a>Linear <span class="ot">&lt;-</span> <span class="fu">new_layer_class</span>(</span>
+<span id="cb32-2"><a href="#cb32-2" tabindex="-1"></a>  <span class="st">&quot;Linear&quot;</span>,</span>
+<span id="cb32-3"><a href="#cb32-3" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>(<span class="at">units =</span> <span class="dv">32</span>) {</span>
+<span id="cb32-4"><a href="#cb32-4" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>()</span>
+<span id="cb32-5"><a href="#cb32-5" tabindex="-1"></a>    self<span class="sc">$</span>units <span class="ot">&lt;-</span> units</span>
+<span id="cb32-6"><a href="#cb32-6" tabindex="-1"></a>  },</span>
+<span id="cb32-7"><a href="#cb32-7" tabindex="-1"></a>  <span class="at">build =</span> <span class="cf">function</span>(input_shape) {</span>
+<span id="cb32-8"><a href="#cb32-8" tabindex="-1"></a>    self<span class="sc">$</span>w <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">add_weight</span>(</span>
+<span id="cb32-9"><a href="#cb32-9" tabindex="-1"></a>      <span class="at">shape =</span> <span class="fu">shape</span>(input_shape[<span class="sc">-</span><span class="dv">1</span>], self<span class="sc">$</span>units),</span>
+<span id="cb32-10"><a href="#cb32-10" tabindex="-1"></a>      <span class="at">initializer =</span> <span class="st">&quot;random_normal&quot;</span>,</span>
+<span id="cb32-11"><a href="#cb32-11" tabindex="-1"></a>      <span class="at">trainable =</span> <span class="cn">TRUE</span></span>
+<span id="cb32-12"><a href="#cb32-12" tabindex="-1"></a>    )</span>
+<span id="cb32-13"><a href="#cb32-13" tabindex="-1"></a>    self<span class="sc">$</span>b <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">add_weight</span>(</span>
+<span id="cb32-14"><a href="#cb32-14" tabindex="-1"></a>      <span class="at">shape =</span> <span class="fu">shape</span>(self<span class="sc">$</span>units),</span>
+<span id="cb32-15"><a href="#cb32-15" tabindex="-1"></a>      <span class="at">initializer =</span> <span class="st">&quot;zeros&quot;</span>,</span>
+<span id="cb32-16"><a href="#cb32-16" tabindex="-1"></a>      <span class="at">trainable =</span> <span class="cn">TRUE</span></span>
+<span id="cb32-17"><a href="#cb32-17" tabindex="-1"></a>    )</span>
+<span id="cb32-18"><a href="#cb32-18" tabindex="-1"></a>  },</span>
+<span id="cb32-19"><a href="#cb32-19" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
+<span id="cb32-20"><a href="#cb32-20" tabindex="-1"></a>    tf<span class="sc">$</span><span class="fu">matmul</span>(inputs, self<span class="sc">$</span>w) <span class="sc">+</span> self<span class="sc">$</span>b</span>
+<span id="cb32-21"><a href="#cb32-21" tabindex="-1"></a>  }</span>
+<span id="cb32-22"><a href="#cb32-22" tabindex="-1"></a>)</span>
+<span id="cb32-23"><a href="#cb32-23" tabindex="-1"></a></span>
+<span id="cb32-24"><a href="#cb32-24" tabindex="-1"></a><span class="co"># Instantiate our layer.</span></span>
+<span id="cb32-25"><a href="#cb32-25" tabindex="-1"></a>linear_layer <span class="ot">&lt;-</span> <span class="fu">Linear</span>(<span class="at">units =</span> <span class="dv">4</span>)</span>
+<span id="cb32-26"><a href="#cb32-26" tabindex="-1"></a></span>
+<span id="cb32-27"><a href="#cb32-27" tabindex="-1"></a><span class="co"># This will also call `build(input_shape)` and create the weights.</span></span>
+<span id="cb32-28"><a href="#cb32-28" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">linear_layer</span>(tf<span class="sc">$</span><span class="fu">ones</span>(<span class="fu">shape</span>(<span class="dv">2</span>, <span class="dv">2</span>)))</span></code></pre></div>
+</div>
+<div id="layer-gradients" class="section level2">
+<h2>Layer gradients</h2>
+<p>You can automatically retrieve the gradients of the weights of a
+layer by calling it inside a <code>GradientTape</code>. Using these
+gradients, you can update the weights of the layer, either manually, or
+using an optimizer object. Of course, you can modify the gradients
+before using them, if you need to.</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a><span class="co"># Prepare a dataset.</span></span>
+<span id="cb33-2"><a href="#cb33-2" tabindex="-1"></a><span class="fu">c</span>(<span class="fu">c</span>(x_train, y_train), .) <span class="sc">%&lt;-%</span> <span class="fu">dataset_mnist</span>()</span>
+<span id="cb33-3"><a href="#cb33-3" tabindex="-1"></a></span>
+<span id="cb33-4"><a href="#cb33-4" tabindex="-1"></a>x_train <span class="ot">&lt;-</span> <span class="fu">array_reshape</span>(x_train, <span class="fu">c</span>(<span class="dv">60000</span>, <span class="dv">784</span>)) <span class="sc">/</span> <span class="dv">255</span></span>
+<span id="cb33-5"><a href="#cb33-5" tabindex="-1"></a></span>
+<span id="cb33-6"><a href="#cb33-6" tabindex="-1"></a>dataset <span class="ot">&lt;-</span> tfdatasets<span class="sc">::</span><span class="fu">tensor_slices_dataset</span>(<span class="fu">list</span>(x_train, y_train)) <span class="sc">%&gt;%</span></span>
+<span id="cb33-7"><a href="#cb33-7" tabindex="-1"></a>  tfdatasets<span class="sc">::</span><span class="fu">dataset_shuffle</span>(<span class="at">buffer_size=</span><span class="dv">1024</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb33-8"><a href="#cb33-8" tabindex="-1"></a>  tfdatasets<span class="sc">::</span><span class="fu">dataset_batch</span>(<span class="dv">64</span>)</span>
+<span id="cb33-9"><a href="#cb33-9" tabindex="-1"></a></span>
+<span id="cb33-10"><a href="#cb33-10" tabindex="-1"></a><span class="co"># Instantiate our linear layer (defined above) with 10 units.</span></span>
+<span id="cb33-11"><a href="#cb33-11" tabindex="-1"></a>linear_layer <span class="ot">&lt;-</span> <span class="fu">Linear</span>(<span class="at">units =</span> <span class="dv">10</span>)</span>
+<span id="cb33-12"><a href="#cb33-12" tabindex="-1"></a></span>
+<span id="cb33-13"><a href="#cb33-13" tabindex="-1"></a><span class="co"># Instantiate a logistic loss function that expects integer targets.</span></span>
+<span id="cb33-14"><a href="#cb33-14" tabindex="-1"></a>loss_fn <span class="ot">&lt;-</span> <span class="fu">loss_sparse_categorical_crossentropy</span>(<span class="at">from_logits=</span><span class="cn">TRUE</span>)</span>
+<span id="cb33-15"><a href="#cb33-15" tabindex="-1"></a></span>
+<span id="cb33-16"><a href="#cb33-16" tabindex="-1"></a><span class="co"># Instantiate an optimizer.</span></span>
+<span id="cb33-17"><a href="#cb33-17" tabindex="-1"></a>optimizer <span class="ot">&lt;-</span> <span class="fu">optimizer_sgd</span>(<span class="at">learning_rate=</span><span class="fl">1e-3</span>)</span>
+<span id="cb33-18"><a href="#cb33-18" tabindex="-1"></a></span>
+<span id="cb33-19"><a href="#cb33-19" tabindex="-1"></a><span class="co"># Iterate over the batches of the dataset.</span></span>
+<span id="cb33-20"><a href="#cb33-20" tabindex="-1"></a>coro<span class="sc">::</span><span class="fu">loop</span>(<span class="cf">for</span>(data <span class="cf">in</span> dataset) {</span>
+<span id="cb33-21"><a href="#cb33-21" tabindex="-1"></a>  <span class="co"># Open a GradientTape.</span></span>
+<span id="cb33-22"><a href="#cb33-22" tabindex="-1"></a>  <span class="fu">with</span>(tf<span class="sc">$</span><span class="fu">GradientTape</span>() <span class="sc">%as%</span> tape, {</span>
+<span id="cb33-23"><a href="#cb33-23" tabindex="-1"></a>    <span class="co"># Forward pass.</span></span>
+<span id="cb33-24"><a href="#cb33-24" tabindex="-1"></a>    logits <span class="ot">&lt;-</span> <span class="fu">linear_layer</span>(data[[<span class="dv">1</span>]])</span>
+<span id="cb33-25"><a href="#cb33-25" tabindex="-1"></a></span>
+<span id="cb33-26"><a href="#cb33-26" tabindex="-1"></a>    <span class="co"># Loss value for this batch.</span></span>
+<span id="cb33-27"><a href="#cb33-27" tabindex="-1"></a>    loss_value <span class="ot">&lt;-</span> <span class="fu">loss_fn</span>(data[[<span class="dv">2</span>]], logits)</span>
+<span id="cb33-28"><a href="#cb33-28" tabindex="-1"></a>  })</span>
+<span id="cb33-29"><a href="#cb33-29" tabindex="-1"></a></span>
+<span id="cb33-30"><a href="#cb33-30" tabindex="-1"></a>  <span class="co"># Get gradients of the loss wrt the weights.</span></span>
+<span id="cb33-31"><a href="#cb33-31" tabindex="-1"></a>  gradients <span class="ot">&lt;-</span> tape<span class="sc">$</span><span class="fu">gradient</span>(loss_value, linear_layer<span class="sc">$</span>trainable_weights)</span>
+<span id="cb33-32"><a href="#cb33-32" tabindex="-1"></a></span>
+<span id="cb33-33"><a href="#cb33-33" tabindex="-1"></a>  <span class="co"># Update the weights of our linear layer.</span></span>
+<span id="cb33-34"><a href="#cb33-34" tabindex="-1"></a>  optimizer<span class="sc">$</span><span class="fu">apply_gradients</span>(<span class="fu">zip_lists</span>(gradients, linear_layer<span class="sc">$</span>trainable_weights))</span>
+<span id="cb33-35"><a href="#cb33-35" tabindex="-1"></a>})</span>
+<span id="cb33-36"><a href="#cb33-36" tabindex="-1"></a>loss_value</span></code></pre></div>
+<pre><code>## tf.Tensor(1.2819729, shape=(), dtype=float32)</code></pre>
+</div>
+<div id="trainable-and-non-trainable-weights" class="section level2">
+<h2>Trainable and non-trainable weights</h2>
+<p>Weights created by layers can be either trainable or non-trainable.
+They’re exposed in <code>trainable_weights</code> and
+<code>non_trainable_weights</code> respectively. Here’s a layer with a
+non-trainable weight:</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" tabindex="-1"></a>ComputeSum <span class="ot">&lt;-</span> <span class="fu">new_layer_class</span>(</span>
+<span id="cb35-2"><a href="#cb35-2" tabindex="-1"></a>  <span class="st">&quot;ComputeSum&quot;</span>,</span>
+<span id="cb35-3"><a href="#cb35-3" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>(input_dim) {</span>
+<span id="cb35-4"><a href="#cb35-4" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>()</span>
+<span id="cb35-5"><a href="#cb35-5" tabindex="-1"></a>    <span class="co"># Create a non-trainable weight.</span></span>
+<span id="cb35-6"><a href="#cb35-6" tabindex="-1"></a>    self<span class="sc">$</span>total <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">add_weight</span>(</span>
+<span id="cb35-7"><a href="#cb35-7" tabindex="-1"></a>      <span class="at">initializer =</span> <span class="st">&quot;zeros&quot;</span>,</span>
+<span id="cb35-8"><a href="#cb35-8" tabindex="-1"></a>      <span class="at">shape =</span> <span class="fu">shape</span>(input_dim),</span>
+<span id="cb35-9"><a href="#cb35-9" tabindex="-1"></a>      <span class="at">trainable =</span> <span class="cn">FALSE</span></span>
+<span id="cb35-10"><a href="#cb35-10" tabindex="-1"></a>    )</span>
+<span id="cb35-11"><a href="#cb35-11" tabindex="-1"></a>  },</span>
+<span id="cb35-12"><a href="#cb35-12" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
+<span id="cb35-13"><a href="#cb35-13" tabindex="-1"></a>    self<span class="sc">$</span>total<span class="sc">$</span><span class="fu">assign_add</span>(tf<span class="sc">$</span><span class="fu">reduce_sum</span>(inputs, <span class="at">axis=</span><span class="dv">0</span><span class="dt">L</span>))</span>
+<span id="cb35-14"><a href="#cb35-14" tabindex="-1"></a>    self<span class="sc">$</span>total</span>
+<span id="cb35-15"><a href="#cb35-15" tabindex="-1"></a>  }</span>
+<span id="cb35-16"><a href="#cb35-16" tabindex="-1"></a>)</span>
+<span id="cb35-17"><a href="#cb35-17" tabindex="-1"></a></span>
+<span id="cb35-18"><a href="#cb35-18" tabindex="-1"></a>my_sum <span class="ot">&lt;-</span> <span class="fu">ComputeSum</span>(<span class="at">input_dim =</span> <span class="dv">2</span>)</span>
+<span id="cb35-19"><a href="#cb35-19" tabindex="-1"></a>x <span class="ot">&lt;-</span> tf<span class="sc">$</span><span class="fu">ones</span>(<span class="fu">shape</span>(<span class="dv">2</span>, <span class="dv">2</span>))</span>
+<span id="cb35-20"><a href="#cb35-20" tabindex="-1"></a></span>
+<span id="cb35-21"><a href="#cb35-21" tabindex="-1"></a><span class="fu">as.array</span>(<span class="fu">my_sum</span>(x))</span></code></pre></div>
+<pre><code>## [1] 2 2</code></pre>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" tabindex="-1"></a><span class="fu">as.array</span>(<span class="fu">my_sum</span>(x))</span></code></pre></div>
+<pre><code>## [1] 4 4</code></pre>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" tabindex="-1"></a>my_sum<span class="sc">$</span>trainable_weights</span></code></pre></div>
+<pre><code>## list()</code></pre>
+</div>
+<div id="layers-that-own-layers" class="section level2">
+<h2>Layers that own layers</h2>
+<p>Layers can be recursively nested to create bigger computation blocks.
+Each layer will track the weights of its sublayers (both trainable and
+non-trainable).</p>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" tabindex="-1"></a><span class="co"># Let&#39;s reuse the Linear class</span></span>
+<span id="cb41-2"><a href="#cb41-2" tabindex="-1"></a><span class="co"># with a `build` method that we defined above.</span></span>
+<span id="cb41-3"><a href="#cb41-3" tabindex="-1"></a></span>
+<span id="cb41-4"><a href="#cb41-4" tabindex="-1"></a>MLP <span class="ot">&lt;-</span> <span class="fu">new_layer_class</span>(</span>
+<span id="cb41-5"><a href="#cb41-5" tabindex="-1"></a>  <span class="st">&quot;MLP&quot;</span>,</span>
+<span id="cb41-6"><a href="#cb41-6" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>() {</span>
+<span id="cb41-7"><a href="#cb41-7" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>()</span>
+<span id="cb41-8"><a href="#cb41-8" tabindex="-1"></a>    self<span class="sc">$</span>linear_1 <span class="ot">&lt;-</span> <span class="fu">Linear</span>(<span class="at">units =</span> <span class="dv">32</span>)</span>
+<span id="cb41-9"><a href="#cb41-9" tabindex="-1"></a>    self<span class="sc">$</span>linear_2 <span class="ot">&lt;-</span> <span class="fu">Linear</span>(<span class="at">units =</span> <span class="dv">32</span>)</span>
+<span id="cb41-10"><a href="#cb41-10" tabindex="-1"></a>    self<span class="sc">$</span>linear_3 <span class="ot">&lt;-</span> <span class="fu">Linear</span>(<span class="at">units =</span> <span class="dv">10</span>)</span>
+<span id="cb41-11"><a href="#cb41-11" tabindex="-1"></a>  },</span>
+<span id="cb41-12"><a href="#cb41-12" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
+<span id="cb41-13"><a href="#cb41-13" tabindex="-1"></a>    x <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">linear_1</span>(inputs)</span>
+<span id="cb41-14"><a href="#cb41-14" tabindex="-1"></a>    x <span class="ot">&lt;-</span> tf<span class="sc">$</span>nn<span class="sc">$</span><span class="fu">relu</span>(x)</span>
+<span id="cb41-15"><a href="#cb41-15" tabindex="-1"></a>    x <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">linear_2</span>(x)</span>
+<span id="cb41-16"><a href="#cb41-16" tabindex="-1"></a>    x <span class="ot">&lt;-</span> tf<span class="sc">$</span>nn<span class="sc">$</span><span class="fu">relu</span>(x)</span>
+<span id="cb41-17"><a href="#cb41-17" tabindex="-1"></a>    <span class="fu">return</span>(self<span class="sc">$</span><span class="fu">linear_3</span>(x))</span>
+<span id="cb41-18"><a href="#cb41-18" tabindex="-1"></a>  }</span>
+<span id="cb41-19"><a href="#cb41-19" tabindex="-1"></a>)</span>
+<span id="cb41-20"><a href="#cb41-20" tabindex="-1"></a></span>
+<span id="cb41-21"><a href="#cb41-21" tabindex="-1"></a>mlp <span class="ot">&lt;-</span> <span class="fu">MLP</span>()</span>
+<span id="cb41-22"><a href="#cb41-22" tabindex="-1"></a></span>
+<span id="cb41-23"><a href="#cb41-23" tabindex="-1"></a><span class="co"># The first call to the `mlp` object will create the weights.</span></span>
+<span id="cb41-24"><a href="#cb41-24" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">mlp</span>(tf<span class="sc">$</span><span class="fu">ones</span>(<span class="at">shape=</span><span class="fu">shape</span>(<span class="dv">3</span>, <span class="dv">64</span>)))</span>
+<span id="cb41-25"><a href="#cb41-25" tabindex="-1"></a></span>
+<span id="cb41-26"><a href="#cb41-26" tabindex="-1"></a><span class="co"># Weights are recursively tracked.</span></span>
+<span id="cb41-27"><a href="#cb41-27" tabindex="-1"></a><span class="fu">length</span>(mlp<span class="sc">$</span>weights)</span></code></pre></div>
+<pre><code>## [1] 6</code></pre>
+<p>Note that our manually-created MLP above is equivalent to the
+following built-in option:</p>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" tabindex="-1"></a>mlp <span class="ot">&lt;-</span> <span class="fu">keras_model_sequential</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb43-2"><a href="#cb43-2" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">32</span>, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb43-3"><a href="#cb43-3" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">32</span>, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb43-4"><a href="#cb43-4" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">10</span>)</span></code></pre></div>
+</div>
+<div id="tracking-losses-created-by-layers" class="section level2">
+<h2>Tracking losses created by layers</h2>
+<p>Layers can create losses during the forward pass via the
+<code>add_loss()</code> method. This is especially useful for
+regularization losses. The losses created by sublayers are recursively
+tracked by the parent layers.</p>
+<p>Here’s a layer that creates an activity regularization loss:</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" tabindex="-1"></a><span class="co"># A layer that creates an activity sparsity regularization loss</span></span>
+<span id="cb44-2"><a href="#cb44-2" tabindex="-1"></a>ActivityRegularization <span class="ot">&lt;-</span> <span class="fu">new_layer_class</span>(</span>
+<span id="cb44-3"><a href="#cb44-3" tabindex="-1"></a>  <span class="st">&quot;ActivityRegularization&quot;</span>,</span>
+<span id="cb44-4"><a href="#cb44-4" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>(<span class="at">rate=</span><span class="fl">1e-2</span>) {</span>
+<span id="cb44-5"><a href="#cb44-5" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>()</span>
+<span id="cb44-6"><a href="#cb44-6" tabindex="-1"></a>    self<span class="sc">$</span>rate <span class="ot">&lt;-</span> rate</span>
+<span id="cb44-7"><a href="#cb44-7" tabindex="-1"></a>  },</span>
+<span id="cb44-8"><a href="#cb44-8" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
+<span id="cb44-9"><a href="#cb44-9" tabindex="-1"></a>    self<span class="sc">$</span><span class="fu">add_loss</span>(self<span class="sc">$</span>rate <span class="sc">*</span> tf<span class="sc">$</span><span class="fu">reduce_sum</span>(tf<span class="sc">$</span><span class="fu">abs</span>(inputs)))</span>
+<span id="cb44-10"><a href="#cb44-10" tabindex="-1"></a>    inputs</span>
+<span id="cb44-11"><a href="#cb44-11" tabindex="-1"></a>  }</span>
+<span id="cb44-12"><a href="#cb44-12" tabindex="-1"></a>)</span></code></pre></div>
+<p>Any model incorporating this layer will track this regularization
+loss:</p>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" tabindex="-1"></a><span class="co"># Let&#39;s use the loss layer in a MLP block.</span></span>
+<span id="cb45-2"><a href="#cb45-2" tabindex="-1"></a>SparseMLP <span class="ot">&lt;-</span> <span class="fu">new_layer_class</span>(</span>
+<span id="cb45-3"><a href="#cb45-3" tabindex="-1"></a>  <span class="st">&quot;SparseMLP&quot;</span>,</span>
+<span id="cb45-4"><a href="#cb45-4" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>() {</span>
+<span id="cb45-5"><a href="#cb45-5" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>()</span>
+<span id="cb45-6"><a href="#cb45-6" tabindex="-1"></a>    self<span class="sc">$</span>linear_1 <span class="ot">&lt;-</span> <span class="fu">Linear</span>(<span class="at">units =</span> <span class="dv">32</span>)</span>
+<span id="cb45-7"><a href="#cb45-7" tabindex="-1"></a>    self<span class="sc">$</span>reg <span class="ot">&lt;-</span> <span class="fu">ActivityRegularization</span>(<span class="at">rate =</span> <span class="fl">1e-2</span>)</span>
+<span id="cb45-8"><a href="#cb45-8" tabindex="-1"></a>    self<span class="sc">$</span>linear_3 <span class="ot">&lt;-</span> <span class="fu">Linear</span>(<span class="at">units =</span> <span class="dv">10</span>)</span>
+<span id="cb45-9"><a href="#cb45-9" tabindex="-1"></a>  },</span>
+<span id="cb45-10"><a href="#cb45-10" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
+<span id="cb45-11"><a href="#cb45-11" tabindex="-1"></a>    x <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">linear_1</span>(inputs)</span>
+<span id="cb45-12"><a href="#cb45-12" tabindex="-1"></a>    x <span class="ot">&lt;-</span> tf<span class="sc">$</span>nn<span class="sc">$</span><span class="fu">relu</span>(x)</span>
+<span id="cb45-13"><a href="#cb45-13" tabindex="-1"></a>    x <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">reg</span>(x)</span>
+<span id="cb45-14"><a href="#cb45-14" tabindex="-1"></a>    <span class="fu">return</span>(self<span class="sc">$</span><span class="fu">linear_3</span>(x))</span>
+<span id="cb45-15"><a href="#cb45-15" tabindex="-1"></a>  }</span>
+<span id="cb45-16"><a href="#cb45-16" tabindex="-1"></a>)</span>
+<span id="cb45-17"><a href="#cb45-17" tabindex="-1"></a></span>
+<span id="cb45-18"><a href="#cb45-18" tabindex="-1"></a>mlp <span class="ot">&lt;-</span> <span class="fu">SparseMLP</span>()</span>
+<span id="cb45-19"><a href="#cb45-19" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">mlp</span>(tf<span class="sc">$</span><span class="fu">ones</span>(<span class="fu">shape</span>(<span class="dv">10</span>, <span class="dv">10</span>)))</span>
+<span id="cb45-20"><a href="#cb45-20" tabindex="-1"></a></span>
+<span id="cb45-21"><a href="#cb45-21" tabindex="-1"></a>mlp<span class="sc">$</span>losses  <span class="co"># List containing one float32 scalar</span></span></code></pre></div>
+<pre><code>## [[1]]
+## tf.Tensor(0.18065463, shape=(), dtype=float32)</code></pre>
+<p>These losses are cleared by the top-level layer at the start of each
+forward pass – they don’t accumulate. <code>layer.losses</code> always
+contains only the losses created during the last forward pass. You would
+typically use these losses by summing them before computing your
+gradients when writing a training loop.</p>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" tabindex="-1"></a><span class="co"># Losses correspond to the *last* forward pass.</span></span>
+<span id="cb47-2"><a href="#cb47-2" tabindex="-1"></a>mlp <span class="ot">&lt;-</span> <span class="fu">SparseMLP</span>()</span>
+<span id="cb47-3"><a href="#cb47-3" tabindex="-1"></a><span class="fu">mlp</span>(tf<span class="sc">$</span><span class="fu">ones</span>(<span class="fu">shape</span>(<span class="dv">10</span>, <span class="dv">10</span>)))</span></code></pre></div>
+<pre><code>## tf.Tensor(
+## [[ 0.0388482  -0.03920118  0.01624808 -0.01361975 -0.01354899  0.07107338
+##   -0.01077365  0.05688906 -0.02838149 -0.04084621]
+##  [ 0.0388482  -0.03920118  0.01624808 -0.01361975 -0.01354899  0.07107338
+##   -0.01077365  0.05688906 -0.02838149 -0.04084621]
+##  [ 0.0388482  -0.03920118  0.01624808 -0.01361975 -0.01354899  0.07107338
+##   -0.01077365  0.05688906 -0.02838149 -0.04084621]
+##  [ 0.0388482  -0.03920118  0.01624808 -0.01361975 -0.01354899  0.07107338
+##   -0.01077365  0.05688906 -0.02838149 -0.04084621]
+##  [ 0.0388482  -0.03920118  0.01624808 -0.01361975 -0.01354899  0.07107338
+##   -0.01077365  0.05688906 -0.02838149 -0.04084621]
+##  [ 0.0388482  -0.03920118  0.01624808 -0.01361975 -0.01354899  0.07107338
+##   -0.01077365  0.05688906 -0.02838149 -0.04084621]
+##  [ 0.0388482  -0.03920118  0.01624808 -0.01361975 -0.01354899  0.07107338
+##   -0.01077365  0.05688906 -0.02838149 -0.04084621]
+##  [ 0.0388482  -0.03920118  0.01624808 -0.01361975 -0.01354899  0.07107338
+##   -0.01077365  0.05688906 -0.02838149 -0.04084621]
+##  [ 0.0388482  -0.03920118  0.01624808 -0.01361975 -0.01354899  0.07107338
+##   -0.01077365  0.05688906 -0.02838149 -0.04084621]
+##  [ 0.0388482  -0.03920118  0.01624808 -0.01361975 -0.01354899  0.07107338
+##   -0.01077365  0.05688906 -0.02838149 -0.04084621]], shape=(10, 10), dtype=float32)</code></pre>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" tabindex="-1"></a><span class="fu">length</span>(mlp<span class="sc">$</span>losses)</span></code></pre></div>
+<pre><code>## [1] 1</code></pre>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" tabindex="-1"></a><span class="fu">mlp</span>(tf<span class="sc">$</span><span class="fu">ones</span>(<span class="fu">shape</span>(<span class="dv">10</span>, <span class="dv">10</span>)))</span></code></pre></div>
+<pre><code>## tf.Tensor(
+## [[ 0.0388482  -0.03920118  0.01624808 -0.01361975 -0.01354899  0.07107338
+##   -0.01077365  0.05688906 -0.02838149 -0.04084621]
+##  [ 0.0388482  -0.03920118  0.01624808 -0.01361975 -0.01354899  0.07107338
+##   -0.01077365  0.05688906 -0.02838149 -0.04084621]
+##  [ 0.0388482  -0.03920118  0.01624808 -0.01361975 -0.01354899  0.07107338
+##   -0.01077365  0.05688906 -0.02838149 -0.04084621]
+##  [ 0.0388482  -0.03920118  0.01624808 -0.01361975 -0.01354899  0.07107338
+##   -0.01077365  0.05688906 -0.02838149 -0.04084621]
+##  [ 0.0388482  -0.03920118  0.01624808 -0.01361975 -0.01354899  0.07107338
+##   -0.01077365  0.05688906 -0.02838149 -0.04084621]
+##  [ 0.0388482  -0.03920118  0.01624808 -0.01361975 -0.01354899  0.07107338
+##   -0.01077365  0.05688906 -0.02838149 -0.04084621]
+##  [ 0.0388482  -0.03920118  0.01624808 -0.01361975 -0.01354899  0.07107338
+##   -0.01077365  0.05688906 -0.02838149 -0.04084621]
+##  [ 0.0388482  -0.03920118  0.01624808 -0.01361975 -0.01354899  0.07107338
+##   -0.01077365  0.05688906 -0.02838149 -0.04084621]
+##  [ 0.0388482  -0.03920118  0.01624808 -0.01361975 -0.01354899  0.07107338
+##   -0.01077365  0.05688906 -0.02838149 -0.04084621]
+##  [ 0.0388482  -0.03920118  0.01624808 -0.01361975 -0.01354899  0.07107338
+##   -0.01077365  0.05688906 -0.02838149 -0.04084621]], shape=(10, 10), dtype=float32)</code></pre>
+<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" tabindex="-1"></a><span class="fu">length</span>(mlp<span class="sc">$</span>losses)  <span class="co"># No accumulation.</span></span></code></pre></div>
+<pre><code>## [1] 1</code></pre>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" tabindex="-1"></a><span class="co"># Let&#39;s demonstrate how to use these losses in a training loop.</span></span>
+<span id="cb55-2"><a href="#cb55-2" tabindex="-1"></a></span>
+<span id="cb55-3"><a href="#cb55-3" tabindex="-1"></a><span class="co"># Prepare a dataset.</span></span>
+<span id="cb55-4"><a href="#cb55-4" tabindex="-1"></a><span class="fu">c</span>(<span class="fu">c</span>(x_train, y_train), .) <span class="sc">%&lt;-%</span> <span class="fu">dataset_mnist</span>()</span>
+<span id="cb55-5"><a href="#cb55-5" tabindex="-1"></a>x_train <span class="ot">&lt;-</span> <span class="fu">array_reshape</span>(x_train, <span class="fu">c</span>(<span class="dv">60000</span>, <span class="dv">784</span>)) <span class="sc">/</span> <span class="dv">255</span></span>
+<span id="cb55-6"><a href="#cb55-6" tabindex="-1"></a></span>
+<span id="cb55-7"><a href="#cb55-7" tabindex="-1"></a>dataset <span class="ot">&lt;-</span> tfdatasets<span class="sc">::</span><span class="fu">tensor_slices_dataset</span>(<span class="fu">list</span>(x_train, y_train)) <span class="sc">%&gt;%</span></span>
+<span id="cb55-8"><a href="#cb55-8" tabindex="-1"></a>  tfdatasets<span class="sc">::</span><span class="fu">dataset_shuffle</span>(<span class="at">buffer_size=</span><span class="dv">1024</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb55-9"><a href="#cb55-9" tabindex="-1"></a>  tfdatasets<span class="sc">::</span><span class="fu">dataset_batch</span>(<span class="dv">64</span>)</span>
+<span id="cb55-10"><a href="#cb55-10" tabindex="-1"></a></span>
+<span id="cb55-11"><a href="#cb55-11" tabindex="-1"></a><span class="co"># A new MLP.</span></span>
+<span id="cb55-12"><a href="#cb55-12" tabindex="-1"></a>mlp <span class="ot">&lt;-</span> <span class="fu">SparseMLP</span>()</span>
+<span id="cb55-13"><a href="#cb55-13" tabindex="-1"></a></span>
+<span id="cb55-14"><a href="#cb55-14" tabindex="-1"></a><span class="co"># Loss and optimizer.</span></span>
+<span id="cb55-15"><a href="#cb55-15" tabindex="-1"></a>loss_fn <span class="ot">&lt;-</span> <span class="fu">loss_sparse_categorical_crossentropy</span>(<span class="at">from_logits=</span><span class="cn">TRUE</span>)</span>
+<span id="cb55-16"><a href="#cb55-16" tabindex="-1"></a>optimizer <span class="ot">&lt;-</span> <span class="fu">optimizer_sgd</span>(<span class="at">learning_rate=</span><span class="fl">1e-3</span>)</span>
+<span id="cb55-17"><a href="#cb55-17" tabindex="-1"></a></span>
+<span id="cb55-18"><a href="#cb55-18" tabindex="-1"></a>coro<span class="sc">::</span><span class="fu">loop</span>(<span class="cf">for</span>(data <span class="cf">in</span> dataset) {</span>
+<span id="cb55-19"><a href="#cb55-19" tabindex="-1"></a>  x <span class="ot">&lt;-</span> data[[<span class="dv">1</span>]]</span>
+<span id="cb55-20"><a href="#cb55-20" tabindex="-1"></a>  y <span class="ot">&lt;-</span> data[[<span class="dv">2</span>]]</span>
+<span id="cb55-21"><a href="#cb55-21" tabindex="-1"></a>  <span class="fu">with</span>(tf<span class="sc">$</span><span class="fu">GradientTape</span>() <span class="sc">%as%</span> tape, {</span>
+<span id="cb55-22"><a href="#cb55-22" tabindex="-1"></a>    <span class="co"># Forward pass.</span></span>
+<span id="cb55-23"><a href="#cb55-23" tabindex="-1"></a>    logits <span class="ot">&lt;-</span> <span class="fu">mlp</span>(x)</span>
+<span id="cb55-24"><a href="#cb55-24" tabindex="-1"></a></span>
+<span id="cb55-25"><a href="#cb55-25" tabindex="-1"></a>    <span class="co"># External loss value for this batch.</span></span>
+<span id="cb55-26"><a href="#cb55-26" tabindex="-1"></a>    loss <span class="ot">&lt;-</span> <span class="fu">loss_fn</span>(y, logits)</span>
+<span id="cb55-27"><a href="#cb55-27" tabindex="-1"></a></span>
+<span id="cb55-28"><a href="#cb55-28" tabindex="-1"></a>    <span class="co"># Add the losses created during the forward pass.</span></span>
+<span id="cb55-29"><a href="#cb55-29" tabindex="-1"></a>    loss <span class="ot">&lt;-</span> loss <span class="sc">+</span> <span class="fu">Reduce</span>(<span class="st">`</span><span class="at">+</span><span class="st">`</span>, mlp<span class="sc">$</span>losses)</span>
+<span id="cb55-30"><a href="#cb55-30" tabindex="-1"></a></span>
+<span id="cb55-31"><a href="#cb55-31" tabindex="-1"></a>    <span class="co"># Get gradients of the loss wrt the weights.</span></span>
+<span id="cb55-32"><a href="#cb55-32" tabindex="-1"></a>    gradients <span class="ot">&lt;-</span> tape<span class="sc">$</span><span class="fu">gradient</span>(loss, mlp<span class="sc">$</span>trainable_weights)</span>
+<span id="cb55-33"><a href="#cb55-33" tabindex="-1"></a></span>
+<span id="cb55-34"><a href="#cb55-34" tabindex="-1"></a>    <span class="co"># Update the weights of our linear layer.</span></span>
+<span id="cb55-35"><a href="#cb55-35" tabindex="-1"></a>    optimizer<span class="sc">$</span><span class="fu">apply_gradients</span>(<span class="fu">zip_lists</span>(gradients, mlp<span class="sc">$</span>trainable_weights))</span>
+<span id="cb55-36"><a href="#cb55-36" tabindex="-1"></a>  })</span>
+<span id="cb55-37"><a href="#cb55-37" tabindex="-1"></a>})</span></code></pre></div>
+</div>
+<div id="keeping-track-of-training-metrics" class="section level2">
+<h2>Keeping track of training metrics</h2>
+<p>Keras offers a broad range of built-in metrics, like
+<code>metric_auc</code> or <code>metric_precision_at_recall</code>. It’s
+also easy to create your own metrics in a few lines of code.</p>
+<p>To use a metric in a custom training loop, you would:</p>
+<ul>
+<li>Instantiate the metric object,
+e.g. <code>metric = metric_auc()</code></li>
+<li>Call its <code>metric$udpate_state(targets, predictions)</code>
+method for each batch of data</li>
+<li>Query its result via <code>metric$result()</code></li>
+<li>Reset the metric’s state at the end of an epoch or at the start of
+an evaluation via <code>metric$reset_state()</code></li>
+</ul>
+<p>Here’s a simple example:</p>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" tabindex="-1"></a><span class="co"># Instantiate a metric object</span></span>
+<span id="cb56-2"><a href="#cb56-2" tabindex="-1"></a>accuracy <span class="ot">&lt;-</span> <span class="fu">metric_sparse_categorical_accuracy</span>()</span>
+<span id="cb56-3"><a href="#cb56-3" tabindex="-1"></a></span>
+<span id="cb56-4"><a href="#cb56-4" tabindex="-1"></a><span class="co"># Prepare our layer, loss, and optimizer.</span></span>
+<span id="cb56-5"><a href="#cb56-5" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">keras_model_sequential</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb56-6"><a href="#cb56-6" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">32</span>, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb56-7"><a href="#cb56-7" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">32</span>, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb56-8"><a href="#cb56-8" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">10</span>)</span>
+<span id="cb56-9"><a href="#cb56-9" tabindex="-1"></a>loss_fn <span class="ot">&lt;-</span> <span class="fu">loss_sparse_categorical_crossentropy</span>(<span class="at">from_logits =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb56-10"><a href="#cb56-10" tabindex="-1"></a>optimizer <span class="ot">&lt;-</span> <span class="fu">optimizer_adam</span>(<span class="at">learning_rate=</span><span class="fl">1e-3</span>)</span>
+<span id="cb56-11"><a href="#cb56-11" tabindex="-1"></a></span>
+<span id="cb56-12"><a href="#cb56-12" tabindex="-1"></a><span class="cf">for</span> (epoch <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="dv">2</span>)) {</span>
+<span id="cb56-13"><a href="#cb56-13" tabindex="-1"></a>  coro<span class="sc">::</span><span class="fu">loop</span>(<span class="cf">for</span> (data <span class="cf">in</span> dataset) {</span>
+<span id="cb56-14"><a href="#cb56-14" tabindex="-1"></a>    x <span class="ot">&lt;-</span> data[[<span class="dv">1</span>]]</span>
+<span id="cb56-15"><a href="#cb56-15" tabindex="-1"></a>    y <span class="ot">&lt;-</span> data[[<span class="dv">2</span>]]</span>
+<span id="cb56-16"><a href="#cb56-16" tabindex="-1"></a>    <span class="fu">with</span>(tf<span class="sc">$</span><span class="fu">GradientTape</span>() <span class="sc">%as%</span> tape, {</span>
+<span id="cb56-17"><a href="#cb56-17" tabindex="-1"></a>      <span class="co"># Forward pass.</span></span>
+<span id="cb56-18"><a href="#cb56-18" tabindex="-1"></a>      logits <span class="ot">&lt;-</span> <span class="fu">model</span>(x)</span>
+<span id="cb56-19"><a href="#cb56-19" tabindex="-1"></a></span>
+<span id="cb56-20"><a href="#cb56-20" tabindex="-1"></a>      <span class="co"># External loss value for this batch.</span></span>
+<span id="cb56-21"><a href="#cb56-21" tabindex="-1"></a>      loss_value <span class="ot">&lt;-</span> <span class="fu">loss_fn</span>(y, logits)</span>
+<span id="cb56-22"><a href="#cb56-22" tabindex="-1"></a>    })</span>
+<span id="cb56-23"><a href="#cb56-23" tabindex="-1"></a></span>
+<span id="cb56-24"><a href="#cb56-24" tabindex="-1"></a>    <span class="co"># Update the state of the `accuracy` metric.</span></span>
+<span id="cb56-25"><a href="#cb56-25" tabindex="-1"></a>    accuracy<span class="sc">$</span><span class="fu">update_state</span>(y, logits)</span>
+<span id="cb56-26"><a href="#cb56-26" tabindex="-1"></a></span>
+<span id="cb56-27"><a href="#cb56-27" tabindex="-1"></a>    <span class="co"># Update the weights of the model to minimize the loss value.</span></span>
+<span id="cb56-28"><a href="#cb56-28" tabindex="-1"></a>    gradients <span class="ot">&lt;-</span> tape<span class="sc">$</span><span class="fu">gradient</span>(loss_value, model<span class="sc">$</span>trainable_weights)</span>
+<span id="cb56-29"><a href="#cb56-29" tabindex="-1"></a>    optimizer<span class="sc">$</span><span class="fu">apply_gradients</span>(<span class="fu">zip_lists</span>(gradients, model<span class="sc">$</span>trainable_weights))</span>
+<span id="cb56-30"><a href="#cb56-30" tabindex="-1"></a></span>
+<span id="cb56-31"><a href="#cb56-31" tabindex="-1"></a>  })</span>
+<span id="cb56-32"><a href="#cb56-32" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;Epoch:&quot;</span>, epoch, <span class="st">&quot;Accuracy:&quot;</span>, <span class="fu">as.numeric</span>(accuracy<span class="sc">$</span><span class="fu">result</span>()), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb56-33"><a href="#cb56-33" tabindex="-1"></a>  accuracy<span class="sc">$</span><span class="fu">reset_state</span>()</span>
+<span id="cb56-34"><a href="#cb56-34" tabindex="-1"></a>}</span></code></pre></div>
+<pre><code>## Epoch: 1 Accuracy: 0.8757833
+## Epoch: 2 Accuracy: 0.93915</code></pre>
+<p>You can also define your own metrics by subclassing
+<code>keras.metrics.Metric</code>. You need to override the three
+functions called above:</p>
+<ul>
+<li>Override <code>update_state()</code> to update the statistic
+values.</li>
+<li>Override <code>result()</code> to return the metric value.</li>
+<li>Override <code>reset_state()</code> to reset the metric to its
+initial state.</li>
+</ul>
+<p>Here is an example where we implement the F1-score metric (with
+support for sample weighting).</p>
+<div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" tabindex="-1"></a>F1Score <span class="ot">&lt;-</span> <span class="fu">new_metric_class</span>(</span>
+<span id="cb58-2"><a href="#cb58-2" tabindex="-1"></a>  <span class="st">&quot;F1Score&quot;</span>,</span>
+<span id="cb58-3"><a href="#cb58-3" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>(self, <span class="at">name=</span><span class="st">&quot;f1_score&quot;</span>, <span class="at">dtype=</span><span class="st">&quot;float32&quot;</span>, <span class="at">threshold=</span><span class="fl">0.5</span>, ...) {</span>
+<span id="cb58-4"><a href="#cb58-4" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>(<span class="at">name=</span>name, <span class="at">dtype=</span>dtype, ...)</span>
+<span id="cb58-5"><a href="#cb58-5" tabindex="-1"></a>    self<span class="sc">$</span>threshold <span class="ot">&lt;-</span> threshold</span>
+<span id="cb58-6"><a href="#cb58-6" tabindex="-1"></a>    self<span class="sc">$</span>true_positives <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">add_weight</span>(</span>
+<span id="cb58-7"><a href="#cb58-7" tabindex="-1"></a>      <span class="at">name=</span><span class="st">&quot;tp&quot;</span>, <span class="at">dtype=</span>dtype, <span class="at">initializer=</span><span class="st">&quot;zeros&quot;</span></span>
+<span id="cb58-8"><a href="#cb58-8" tabindex="-1"></a>    )</span>
+<span id="cb58-9"><a href="#cb58-9" tabindex="-1"></a>    self<span class="sc">$</span>false_positives <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">add_weight</span>(</span>
+<span id="cb58-10"><a href="#cb58-10" tabindex="-1"></a>      <span class="at">name=</span><span class="st">&quot;fp&quot;</span>, <span class="at">dtype=</span>dtype, <span class="at">initializer=</span><span class="st">&quot;zeros&quot;</span></span>
+<span id="cb58-11"><a href="#cb58-11" tabindex="-1"></a>    )</span>
+<span id="cb58-12"><a href="#cb58-12" tabindex="-1"></a>    self<span class="sc">$</span>false_negatives <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">add_weight</span>(</span>
+<span id="cb58-13"><a href="#cb58-13" tabindex="-1"></a>      <span class="at">name=</span><span class="st">&quot;fn&quot;</span>, <span class="at">dtype=</span>dtype, <span class="at">initializer=</span><span class="st">&quot;zeros&quot;</span></span>
+<span id="cb58-14"><a href="#cb58-14" tabindex="-1"></a>    )</span>
+<span id="cb58-15"><a href="#cb58-15" tabindex="-1"></a>  },</span>
+<span id="cb58-16"><a href="#cb58-16" tabindex="-1"></a>  <span class="at">update_state =</span> <span class="cf">function</span>(y_true, y_pred, <span class="at">sample_weight=</span><span class="cn">NULL</span>) {</span>
+<span id="cb58-17"><a href="#cb58-17" tabindex="-1"></a>    y_pred <span class="ot">&lt;-</span> tf<span class="sc">$</span>math<span class="sc">$</span><span class="fu">greater_equal</span>(y_pred, self<span class="sc">$</span>threshold)</span>
+<span id="cb58-18"><a href="#cb58-18" tabindex="-1"></a>    y_true <span class="ot">&lt;-</span> tf<span class="sc">$</span><span class="fu">cast</span>(y_true, tf<span class="sc">$</span>bool)</span>
+<span id="cb58-19"><a href="#cb58-19" tabindex="-1"></a>    y_pred <span class="ot">&lt;-</span> tf<span class="sc">$</span><span class="fu">cast</span>(y_pred, tf<span class="sc">$</span>bool)</span>
+<span id="cb58-20"><a href="#cb58-20" tabindex="-1"></a></span>
+<span id="cb58-21"><a href="#cb58-21" tabindex="-1"></a>    true_positives <span class="ot">&lt;-</span> tf<span class="sc">$</span><span class="fu">cast</span>(y_true <span class="sc">&amp;</span> y_pred, self<span class="sc">$</span>dtype)</span>
+<span id="cb58-22"><a href="#cb58-22" tabindex="-1"></a>    false_positives <span class="ot">&lt;-</span> tf<span class="sc">$</span><span class="fu">cast</span>((<span class="sc">!</span>y_true) <span class="sc">&amp;</span> y_pred, self<span class="sc">$</span>dtype)</span>
+<span id="cb58-23"><a href="#cb58-23" tabindex="-1"></a>    false_negatives <span class="ot">&lt;-</span> tf<span class="sc">$</span><span class="fu">cast</span>(y_true <span class="sc">&amp;</span> (<span class="sc">!</span>y_pred), self<span class="sc">$</span>dtype)</span>
+<span id="cb58-24"><a href="#cb58-24" tabindex="-1"></a></span>
+<span id="cb58-25"><a href="#cb58-25" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(sample_weight)) {</span>
+<span id="cb58-26"><a href="#cb58-26" tabindex="-1"></a>      sample_weight <span class="ot">&lt;-</span> tf<span class="sc">$</span><span class="fu">cast</span>(sample_weight, self<span class="sc">$</span>dtype)</span>
+<span id="cb58-27"><a href="#cb58-27" tabindex="-1"></a>      true_positives <span class="ot">&lt;-</span> true_positives <span class="sc">*</span> sample_weight</span>
+<span id="cb58-28"><a href="#cb58-28" tabindex="-1"></a>      false_positives <span class="ot">&lt;-</span> false_positives <span class="sc">*</span> sample_weight</span>
+<span id="cb58-29"><a href="#cb58-29" tabindex="-1"></a>      false_negatives <span class="ot">&lt;-</span> false_negatives <span class="sc">*</span> sample_weight</span>
+<span id="cb58-30"><a href="#cb58-30" tabindex="-1"></a>    }</span>
+<span id="cb58-31"><a href="#cb58-31" tabindex="-1"></a></span>
+<span id="cb58-32"><a href="#cb58-32" tabindex="-1"></a>    self<span class="sc">$</span>true_positives<span class="sc">$</span><span class="fu">assign_add</span>(tf<span class="sc">$</span><span class="fu">reduce_sum</span>(true_positives))</span>
+<span id="cb58-33"><a href="#cb58-33" tabindex="-1"></a>    self<span class="sc">$</span>false_positives<span class="sc">$</span><span class="fu">assign_add</span>(tf<span class="sc">$</span><span class="fu">reduce_sum</span>(false_positives))</span>
+<span id="cb58-34"><a href="#cb58-34" tabindex="-1"></a>    self<span class="sc">$</span>false_negatives<span class="sc">$</span><span class="fu">assign_add</span>(tf<span class="sc">$</span><span class="fu">reduce_sum</span>(false_negatives))</span>
+<span id="cb58-35"><a href="#cb58-35" tabindex="-1"></a>  },</span>
+<span id="cb58-36"><a href="#cb58-36" tabindex="-1"></a></span>
+<span id="cb58-37"><a href="#cb58-37" tabindex="-1"></a>  <span class="at">result =</span> <span class="cf">function</span>() {</span>
+<span id="cb58-38"><a href="#cb58-38" tabindex="-1"></a>    precision <span class="ot">&lt;-</span> self<span class="sc">$</span>true_positives <span class="sc">/</span> (self<span class="sc">$</span>true_positives <span class="sc">+</span> self<span class="sc">$</span>false_positives)</span>
+<span id="cb58-39"><a href="#cb58-39" tabindex="-1"></a>    recall <span class="ot">&lt;-</span> self<span class="sc">$</span>true_positives <span class="sc">/</span> (self<span class="sc">$</span>true_positives <span class="sc">+</span> self<span class="sc">$</span>false_negatives)</span>
+<span id="cb58-40"><a href="#cb58-40" tabindex="-1"></a>    f1_score <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">*</span> precision <span class="sc">*</span> recall <span class="sc">/</span> (precision <span class="sc">+</span> recall)</span>
+<span id="cb58-41"><a href="#cb58-41" tabindex="-1"></a>    f1_score</span>
+<span id="cb58-42"><a href="#cb58-42" tabindex="-1"></a>  },</span>
+<span id="cb58-43"><a href="#cb58-43" tabindex="-1"></a></span>
+<span id="cb58-44"><a href="#cb58-44" tabindex="-1"></a>  <span class="at">reset_state =</span> <span class="cf">function</span>() {</span>
+<span id="cb58-45"><a href="#cb58-45" tabindex="-1"></a>    self<span class="sc">$</span>true_positives<span class="sc">$</span><span class="fu">assign</span>(<span class="dv">0</span>)</span>
+<span id="cb58-46"><a href="#cb58-46" tabindex="-1"></a>    self<span class="sc">$</span>false_positives<span class="sc">$</span><span class="fu">assign</span>(<span class="dv">0</span>)</span>
+<span id="cb58-47"><a href="#cb58-47" tabindex="-1"></a>    self<span class="sc">$</span>false_negatives<span class="sc">$</span><span class="fu">assign</span>(<span class="dv">0</span>)</span>
+<span id="cb58-48"><a href="#cb58-48" tabindex="-1"></a>  }</span>
+<span id="cb58-49"><a href="#cb58-49" tabindex="-1"></a>)</span></code></pre></div>
+<p>Let’s test-drive it:</p>
+<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">F1Score</span>()</span>
+<span id="cb59-2"><a href="#cb59-2" tabindex="-1"></a>m<span class="sc">$</span><span class="fu">update_state</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>), <span class="fu">c</span>(<span class="fl">0.3</span>, <span class="fl">0.5</span>, <span class="fl">0.8</span>, <span class="fl">0.9</span>))</span>
+<span id="cb59-3"><a href="#cb59-3" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Intermediate result:&quot;</span>, <span class="fu">as.numeric</span>(m<span class="sc">$</span><span class="fu">result</span>()), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span></code></pre></div>
+<pre><code>## Intermediate result: 0.5</code></pre>
+<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" tabindex="-1"></a>m<span class="sc">$</span><span class="fu">update_state</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>), <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.7</span>, <span class="fl">0.6</span>, <span class="fl">0.0</span>))</span>
+<span id="cb61-2"><a href="#cb61-2" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Final result:&quot;</span>, <span class="fu">as.numeric</span>(m<span class="sc">$</span><span class="fu">result</span>()), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span></code></pre></div>
+<pre><code>## Final result: 0.6</code></pre>
+</div>
+<div id="compiled-functions" class="section level2">
+<h2>Compiled functions</h2>
+<p>Running eagerly is great for debugging, but you will get better
+performance by compiling your computation into static graphs. Static
+graphs are a researcher’s best friends. You can compile any function by
+wrapping it in a <code>tf.function</code> decorator.</p>
+<div class="sourceCode" id="cb63"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" tabindex="-1"></a><span class="co"># Prepare our layer, loss, and optimizer.</span></span>
+<span id="cb63-2"><a href="#cb63-2" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">keras_model_sequential</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb63-3"><a href="#cb63-3" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">32</span>, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb63-4"><a href="#cb63-4" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">32</span>, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb63-5"><a href="#cb63-5" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">10</span>)</span>
+<span id="cb63-6"><a href="#cb63-6" tabindex="-1"></a>loss_fn <span class="ot">&lt;-</span> <span class="fu">loss_sparse_categorical_crossentropy</span>(<span class="at">from_logits =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb63-7"><a href="#cb63-7" tabindex="-1"></a>optimizer <span class="ot">&lt;-</span> <span class="fu">optimizer_adam</span>(<span class="at">learning_rate=</span><span class="fl">1e-3</span>)</span>
+<span id="cb63-8"><a href="#cb63-8" tabindex="-1"></a></span>
+<span id="cb63-9"><a href="#cb63-9" tabindex="-1"></a><span class="co"># Create a training step function.</span></span>
+<span id="cb63-10"><a href="#cb63-10" tabindex="-1"></a>train_on_batch <span class="ot">&lt;-</span> <span class="fu">tf_function</span>(<span class="cf">function</span>(x, y) {</span>
+<span id="cb63-11"><a href="#cb63-11" tabindex="-1"></a>  <span class="fu">with</span>(tf<span class="sc">$</span><span class="fu">GradientTape</span>() <span class="sc">%as%</span> tape, {</span>
+<span id="cb63-12"><a href="#cb63-12" tabindex="-1"></a>    <span class="co"># Forward pass.</span></span>
+<span id="cb63-13"><a href="#cb63-13" tabindex="-1"></a>    logits <span class="ot">&lt;-</span> <span class="fu">model</span>(x)</span>
+<span id="cb63-14"><a href="#cb63-14" tabindex="-1"></a>    <span class="co"># External loss value for this batch.</span></span>
+<span id="cb63-15"><a href="#cb63-15" tabindex="-1"></a>    loss_value <span class="ot">&lt;-</span> <span class="fu">loss_fn</span>(y, logits)</span>
+<span id="cb63-16"><a href="#cb63-16" tabindex="-1"></a>  })</span>
+<span id="cb63-17"><a href="#cb63-17" tabindex="-1"></a>  <span class="co"># Update the weights of the model to minimize the loss value.</span></span>
+<span id="cb63-18"><a href="#cb63-18" tabindex="-1"></a>  gradients <span class="ot">&lt;-</span> tape<span class="sc">$</span><span class="fu">gradient</span>(loss_value, model<span class="sc">$</span>trainable_weights)</span>
+<span id="cb63-19"><a href="#cb63-19" tabindex="-1"></a>  optimizer<span class="sc">$</span><span class="fu">apply_gradients</span>(<span class="fu">zip_lists</span>(gradients, model<span class="sc">$</span>trainable_weights))</span>
+<span id="cb63-20"><a href="#cb63-20" tabindex="-1"></a>  loss_value</span>
+<span id="cb63-21"><a href="#cb63-21" tabindex="-1"></a>})</span>
+<span id="cb63-22"><a href="#cb63-22" tabindex="-1"></a></span>
+<span id="cb63-23"><a href="#cb63-23" tabindex="-1"></a></span>
+<span id="cb63-24"><a href="#cb63-24" tabindex="-1"></a><span class="co"># Prepare a dataset.</span></span>
+<span id="cb63-25"><a href="#cb63-25" tabindex="-1"></a><span class="fu">c</span>(<span class="fu">c</span>(x_train, y_train), .) <span class="sc">%&lt;-%</span> <span class="fu">dataset_mnist</span>()</span>
+<span id="cb63-26"><a href="#cb63-26" tabindex="-1"></a>x_train <span class="ot">&lt;-</span> <span class="fu">array_reshape</span>(x_train, <span class="fu">c</span>(<span class="dv">60000</span>, <span class="dv">784</span>)) <span class="sc">/</span> <span class="dv">255</span></span>
+<span id="cb63-27"><a href="#cb63-27" tabindex="-1"></a></span>
+<span id="cb63-28"><a href="#cb63-28" tabindex="-1"></a>dataset <span class="ot">&lt;-</span> tfdatasets<span class="sc">::</span><span class="fu">tensor_slices_dataset</span>(<span class="fu">list</span>(x_train, y_train)) <span class="sc">%&gt;%</span></span>
+<span id="cb63-29"><a href="#cb63-29" tabindex="-1"></a>  tfdatasets<span class="sc">::</span><span class="fu">dataset_shuffle</span>(<span class="at">buffer_size=</span><span class="dv">1024</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb63-30"><a href="#cb63-30" tabindex="-1"></a>  tfdatasets<span class="sc">::</span><span class="fu">dataset_batch</span>(<span class="dv">64</span>)</span>
+<span id="cb63-31"><a href="#cb63-31" tabindex="-1"></a></span>
+<span id="cb63-32"><a href="#cb63-32" tabindex="-1"></a>i <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb63-33"><a href="#cb63-33" tabindex="-1"></a>coro<span class="sc">::</span><span class="fu">loop</span>(<span class="cf">for</span> (data <span class="cf">in</span> dataset) {</span>
+<span id="cb63-34"><a href="#cb63-34" tabindex="-1"></a>  i <span class="ot">&lt;-</span> i <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb63-35"><a href="#cb63-35" tabindex="-1"></a>  x <span class="ot">&lt;-</span> data[[<span class="dv">1</span>]]</span>
+<span id="cb63-36"><a href="#cb63-36" tabindex="-1"></a>  y <span class="ot">&lt;-</span> data[[<span class="dv">2</span>]]</span>
+<span id="cb63-37"><a href="#cb63-37" tabindex="-1"></a>  loss <span class="ot">&lt;-</span> <span class="fu">train_on_batch</span>(x, y)</span>
+<span id="cb63-38"><a href="#cb63-38" tabindex="-1"></a>  <span class="cf">if</span> (i <span class="sc">%%</span> <span class="dv">100</span> <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb63-39"><a href="#cb63-39" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">&quot;Loss:&quot;</span>, <span class="fu">as.numeric</span>(loss), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb63-40"><a href="#cb63-40" tabindex="-1"></a>})</span></code></pre></div>
+<pre><code>## Loss: 0.551749
+## Loss: 0.2131135
+## Loss: 0.2765952
+## Loss: 0.1296219
+## Loss: 0.2657076
+## Loss: 0.2683381
+## Loss: 0.1570166
+## Loss: 0.3139241
+## Loss: 0.08981849</code></pre>
+</div>
+<div id="training-mode-inference-mode" class="section level2">
+<h2>Training mode &amp; inference mode</h2>
+<p>Some layers, in particular the <code>BatchNormalization</code> layer
+and the <code>Dropout</code> layer, have different behaviors during
+training and inference. For such layers, it is standard practice to
+expose a <code>training</code> (boolean) argument in the
+<code>call</code> method.</p>
+<p>By exposing this argument in <code>call</code>, you enable the
+built-in training and evaluation loops (e.g. fit) to correctly use the
+layer in training and inference modes.</p>
+<div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" tabindex="-1"></a>Dropout <span class="ot">&lt;-</span> <span class="fu">new_layer_class</span>(</span>
+<span id="cb65-2"><a href="#cb65-2" tabindex="-1"></a>  <span class="st">&quot;Dropout&quot;</span>,</span>
+<span id="cb65-3"><a href="#cb65-3" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>(rate) {</span>
+<span id="cb65-4"><a href="#cb65-4" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>()</span>
+<span id="cb65-5"><a href="#cb65-5" tabindex="-1"></a>    self<span class="sc">$</span>rate <span class="ot">&lt;-</span> rate</span>
+<span id="cb65-6"><a href="#cb65-6" tabindex="-1"></a>  },</span>
+<span id="cb65-7"><a href="#cb65-7" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs, <span class="at">training =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb65-8"><a href="#cb65-8" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(training) <span class="sc">&amp;&amp;</span> training) {</span>
+<span id="cb65-9"><a href="#cb65-9" tabindex="-1"></a>      <span class="fu">return</span>(tf<span class="sc">$</span>nn<span class="sc">$</span><span class="fu">dropout</span>(inputs, <span class="at">rate =</span> self<span class="sc">$</span>rate))</span>
+<span id="cb65-10"><a href="#cb65-10" tabindex="-1"></a>    }</span>
+<span id="cb65-11"><a href="#cb65-11" tabindex="-1"></a>    inputs</span>
+<span id="cb65-12"><a href="#cb65-12" tabindex="-1"></a>  }</span>
+<span id="cb65-13"><a href="#cb65-13" tabindex="-1"></a>)</span>
+<span id="cb65-14"><a href="#cb65-14" tabindex="-1"></a></span>
+<span id="cb65-15"><a href="#cb65-15" tabindex="-1"></a>MLPWithDropout <span class="ot">&lt;-</span> <span class="fu">new_layer_class</span>(</span>
+<span id="cb65-16"><a href="#cb65-16" tabindex="-1"></a>  <span class="st">&quot;MLPWithDropout&quot;</span>,</span>
+<span id="cb65-17"><a href="#cb65-17" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>() {</span>
+<span id="cb65-18"><a href="#cb65-18" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>()</span>
+<span id="cb65-19"><a href="#cb65-19" tabindex="-1"></a>    self<span class="sc">$</span>linear_1 <span class="ot">&lt;-</span> <span class="fu">Linear</span>(<span class="at">units =</span> <span class="dv">32</span>)</span>
+<span id="cb65-20"><a href="#cb65-20" tabindex="-1"></a>    self<span class="sc">$</span>dropout <span class="ot">&lt;-</span> <span class="fu">Dropout</span>(<span class="at">rate =</span> <span class="fl">0.5</span>)</span>
+<span id="cb65-21"><a href="#cb65-21" tabindex="-1"></a>    self<span class="sc">$</span>linear_3 <span class="ot">&lt;-</span> <span class="fu">Linear</span>(<span class="at">units =</span> <span class="dv">10</span>)</span>
+<span id="cb65-22"><a href="#cb65-22" tabindex="-1"></a>  },</span>
+<span id="cb65-23"><a href="#cb65-23" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs, <span class="at">training =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb65-24"><a href="#cb65-24" tabindex="-1"></a>    x <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">linear_1</span>(inputs)</span>
+<span id="cb65-25"><a href="#cb65-25" tabindex="-1"></a>    x <span class="ot">&lt;-</span> tf<span class="sc">$</span>nn<span class="sc">$</span><span class="fu">relu</span>(x)</span>
+<span id="cb65-26"><a href="#cb65-26" tabindex="-1"></a>    x <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">dropout</span>(x, <span class="at">training =</span> training)</span>
+<span id="cb65-27"><a href="#cb65-27" tabindex="-1"></a>    self<span class="sc">$</span><span class="fu">linear_3</span>(x)</span>
+<span id="cb65-28"><a href="#cb65-28" tabindex="-1"></a>  }</span>
+<span id="cb65-29"><a href="#cb65-29" tabindex="-1"></a>)</span>
+<span id="cb65-30"><a href="#cb65-30" tabindex="-1"></a></span>
+<span id="cb65-31"><a href="#cb65-31" tabindex="-1"></a>mlp <span class="ot">&lt;-</span> <span class="fu">MLPWithDropout</span>()</span>
+<span id="cb65-32"><a href="#cb65-32" tabindex="-1"></a>y_train <span class="ot">&lt;-</span> <span class="fu">mlp</span>(tf<span class="sc">$</span><span class="fu">ones</span>(<span class="fu">shape</span>(<span class="dv">2</span>, <span class="dv">2</span>)), <span class="at">training=</span><span class="cn">TRUE</span>)</span>
+<span id="cb65-33"><a href="#cb65-33" tabindex="-1"></a>y_test <span class="ot">&lt;-</span> <span class="fu">mlp</span>(tf<span class="sc">$</span><span class="fu">ones</span>(<span class="fu">shape</span>(<span class="dv">2</span>, <span class="dv">2</span>)), <span class="at">training=</span><span class="cn">FALSE</span>)</span></code></pre></div>
+</div>
+<div id="the-functional-api-for-model-building" class="section level2">
+<h2>The Functional API for model-building</h2>
+<p>To build deep learning models, you don’t have to use object-oriented
+programming all the time. All layers we’ve seen so far can also be
+composed functionally, like this (we call it the “Functional API”):</p>
+<div class="sourceCode" id="cb66"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" tabindex="-1"></a><span class="co"># We use an `Input` object to describe the shape and dtype of the inputs.</span></span>
+<span id="cb66-2"><a href="#cb66-2" tabindex="-1"></a><span class="co"># This is the deep learning equivalent of *declaring a type*.</span></span>
+<span id="cb66-3"><a href="#cb66-3" tabindex="-1"></a><span class="co"># The shape argument is per-sample; it does not include the batch size.</span></span>
+<span id="cb66-4"><a href="#cb66-4" tabindex="-1"></a><span class="co"># The functional API focused on defining per-sample transformations.</span></span>
+<span id="cb66-5"><a href="#cb66-5" tabindex="-1"></a><span class="co"># The model we create will automatically batch the per-sample transformations,</span></span>
+<span id="cb66-6"><a href="#cb66-6" tabindex="-1"></a><span class="co"># so that it can be called on batches of data.</span></span>
+<span id="cb66-7"><a href="#cb66-7" tabindex="-1"></a>inputs <span class="ot">&lt;-</span> <span class="fu">layer_input</span>(<span class="at">shape =</span> <span class="dv">16</span>, <span class="at">dtype =</span> <span class="st">&quot;float32&quot;</span>)</span>
+<span id="cb66-8"><a href="#cb66-8" tabindex="-1"></a></span>
+<span id="cb66-9"><a href="#cb66-9" tabindex="-1"></a><span class="co"># We call layers on these &quot;type&quot; objects</span></span>
+<span id="cb66-10"><a href="#cb66-10" tabindex="-1"></a><span class="co"># and they return updated types (new shapes/dtypes).</span></span>
+<span id="cb66-11"><a href="#cb66-11" tabindex="-1"></a>outputs <span class="ot">&lt;-</span> inputs <span class="sc">%&gt;%</span></span>
+<span id="cb66-12"><a href="#cb66-12" tabindex="-1"></a>  <span class="fu">Linear</span>(<span class="at">units =</span> <span class="dv">32</span>) <span class="sc">%&gt;%</span> <span class="co"># We are reusing the Linear layer we defined earlier.</span></span>
+<span id="cb66-13"><a href="#cb66-13" tabindex="-1"></a>  <span class="fu">Dropout</span>(<span class="at">rate =</span> <span class="fl">0.5</span>) <span class="sc">%&gt;%</span> <span class="co"># We are reusing the Dropout layer we defined earlier.</span></span>
+<span id="cb66-14"><a href="#cb66-14" tabindex="-1"></a>  <span class="fu">Linear</span>(<span class="at">units =</span> <span class="dv">10</span>)</span>
+<span id="cb66-15"><a href="#cb66-15" tabindex="-1"></a></span>
+<span id="cb66-16"><a href="#cb66-16" tabindex="-1"></a><span class="co"># A functional `Model` can be defined by specifying inputs and outputs.</span></span>
+<span id="cb66-17"><a href="#cb66-17" tabindex="-1"></a><span class="co"># A model is itself a layer like any other.</span></span>
+<span id="cb66-18"><a href="#cb66-18" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">keras_model</span>(inputs, outputs)</span>
+<span id="cb66-19"><a href="#cb66-19" tabindex="-1"></a></span>
+<span id="cb66-20"><a href="#cb66-20" tabindex="-1"></a><span class="co"># A functional model already has weights, before being called on any data.</span></span>
+<span id="cb66-21"><a href="#cb66-21" tabindex="-1"></a><span class="co"># That&#39;s because we defined its input shape in advance (in `Input`).</span></span>
+<span id="cb66-22"><a href="#cb66-22" tabindex="-1"></a><span class="fu">length</span>(model<span class="sc">$</span>weights)</span></code></pre></div>
+<pre><code>## [1] 4</code></pre>
+<div class="sourceCode" id="cb68"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" tabindex="-1"></a><span class="co"># Let&#39;s call our model on some data, for fun.</span></span>
+<span id="cb68-2"><a href="#cb68-2" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">model</span>(tf<span class="sc">$</span><span class="fu">ones</span>(<span class="fu">shape</span>(<span class="dv">2</span>, <span class="dv">16</span>)))</span>
+<span id="cb68-3"><a href="#cb68-3" tabindex="-1"></a>y<span class="sc">$</span>shape</span></code></pre></div>
+<pre><code>## TensorShape([2, 10])</code></pre>
+<div class="sourceCode" id="cb70"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" tabindex="-1"></a><span class="co"># You can pass a `training` argument in `__call__`</span></span>
+<span id="cb70-2"><a href="#cb70-2" tabindex="-1"></a><span class="co"># (it will get passed down to the Dropout layer).</span></span>
+<span id="cb70-3"><a href="#cb70-3" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">model</span>(tf<span class="sc">$</span><span class="fu">ones</span>(<span class="fu">shape</span>(<span class="dv">2</span>, <span class="dv">16</span>)), <span class="at">training=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<p>The Functional API tends to be more concise than subclassing, and
+provides a few other advantages (generally the same advantages that
+functional, typed languages provide over untyped OO development).
+However, it can only be used to define DAGs of layers – recursive
+networks should be defined as Layer subclasses instead.</p>
+<p>Learn more about the Functional API <a href="functional_api.html">here</a>.</p>
+<p>In your research workflows, you may often find yourself
+mix-and-matching OO models and Functional models.</p>
+<p>Note that the <code>Model</code> class also features built-in
+training &amp; evaluation loops: <code>fit()</code>,
+<code>predict()</code> and <code>evaluate()</code> (configured via the
+<code>compile()</code> method). These built-in functions give you access
+to the following built-in training infrastructure features:</p>
+<ul>
+<li><a href="https://keras.posit.co/reference/index.html#callbacks">Callbacks</a>.
+You can leverage built-in callbacks for early-stopping, model
+checkpointing, and monitoring training with TensorBoard. You can also <a href="writing_your_own_callbacks.html">implement custom callbacks</a> if
+needed.</li>
+<li><a href="distributed_training_with_tensorflow.html">Distributed
+training</a>. You can easily scale up your training to multiple GPUs,
+TPU, or even multiple machines with the <code>tf.distribute</code> API –
+with no changes to your code.</li>
+<li><a href="https://keras.posit.co/reference/compile.keras.src.models.model.Model.html">Step
+fusing</a>. With the <code>steps_per_execution</code> argument in
+<code>Model.compile()</code>, you can process multiple batches in a
+single <code>tf.function</code> call, which greatly improves device
+utilization on TPUs.</li>
+</ul>
+<p>We won’t go into the details, but we provide a simple code example
+below. It leverages the built-in training infrastructure to implement
+the MNIST example above.</p>
+<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" tabindex="-1"></a>inputs <span class="ot">&lt;-</span> <span class="fu">layer_input</span>(<span class="at">shape =</span> <span class="dv">784</span>, <span class="at">dtype=</span><span class="st">&quot;float32&quot;</span>)</span>
+<span id="cb71-2"><a href="#cb71-2" tabindex="-1"></a>outputs <span class="ot">&lt;-</span> inputs <span class="sc">%&gt;%</span></span>
+<span id="cb71-3"><a href="#cb71-3" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">32</span>, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb71-4"><a href="#cb71-4" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">32</span>, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb71-5"><a href="#cb71-5" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">10</span>)</span>
+<span id="cb71-6"><a href="#cb71-6" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">keras_model</span>(inputs, outputs)</span>
+<span id="cb71-7"><a href="#cb71-7" tabindex="-1"></a></span>
+<span id="cb71-8"><a href="#cb71-8" tabindex="-1"></a><span class="co"># Specify the loss, optimizer, and metrics with `compile()`.</span></span>
+<span id="cb71-9"><a href="#cb71-9" tabindex="-1"></a>model <span class="sc">%&gt;%</span> <span class="fu">compile</span>(</span>
+<span id="cb71-10"><a href="#cb71-10" tabindex="-1"></a>    <span class="at">loss =</span> <span class="fu">loss_sparse_categorical_crossentropy</span>(<span class="at">from_logits=</span><span class="cn">TRUE</span>),</span>
+<span id="cb71-11"><a href="#cb71-11" tabindex="-1"></a>    <span class="at">optimizer=</span><span class="fu">optimizer_adam</span>(<span class="at">learning_rate=</span><span class="fl">1e-3</span>),</span>
+<span id="cb71-12"><a href="#cb71-12" tabindex="-1"></a>    <span class="at">metrics=</span><span class="fu">list</span>(<span class="fu">metric_sparse_categorical_accuracy</span>()),</span>
+<span id="cb71-13"><a href="#cb71-13" tabindex="-1"></a>)</span>
+<span id="cb71-14"><a href="#cb71-14" tabindex="-1"></a></span>
+<span id="cb71-15"><a href="#cb71-15" tabindex="-1"></a><span class="co"># Train the model with the dataset for 2 epochs.</span></span>
+<span id="cb71-16"><a href="#cb71-16" tabindex="-1"></a>model <span class="sc">%&gt;%</span> <span class="fu">fit</span>(dataset, <span class="at">epochs=</span><span class="dv">2</span>)</span></code></pre></div>
+<pre><code>## Epoch 1/2
+## 938/938 - 4s - 4ms/step - loss: 0.3958 - sparse_categorical_accuracy: 0.8866
+## Epoch 2/2
+## 938/938 - 1s - 960us/step - loss: 0.1888 - sparse_categorical_accuracy: 0.9443</code></pre>
+<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" tabindex="-1"></a>predictions <span class="ot">&lt;-</span> model <span class="sc">%&gt;%</span> <span class="fu">predict</span>(dataset)</span></code></pre></div>
+<pre><code>## 938/938 - 1s - 1ms/step</code></pre>
+<div class="sourceCode" id="cb75"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" tabindex="-1"></a>model <span class="sc">%&gt;%</span> <span class="fu">evaluate</span>(dataset)</span></code></pre></div>
+<pre><code>## 938/938 - 1s - 1ms/step - loss: 0.1763 - sparse_categorical_accuracy: 0.9454</code></pre>
+<pre><code>## $loss
+## [1] 0.1763445
+##
+## $sparse_categorical_accuracy
+## [1] 0.9454167</code></pre>
+<p>You can always subclass the <code>Model</code> class (it works
+exactly like subclassing <code>Layer</code>) if you want to leverage
+built-in training loops for your OO models. Just override the
+<code>Model$train_step()</code> to customize what happens in
+<code>fit()</code> while retaining support for the built-in
+infrastructure features outlined above – callbacks, zero-code
+distribution support, and step fusing support. You may also override
+<code>test_step()</code> to customize what happens in
+<code>evaluate()</code>, and override <code>predict_step()</code> to
+customize what happens in <code>predict()</code>. For more information,
+please refer to <a href="custom_train_step_in_tensorflow.html">this
+guide</a>.</p>
+<div class="sourceCode" id="cb78"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" tabindex="-1"></a>CustomModel <span class="ot">&lt;-</span> <span class="fu">new_model_class</span>(</span>
+<span id="cb78-2"><a href="#cb78-2" tabindex="-1"></a>  <span class="st">&quot;CustomModel&quot;</span>,</span>
+<span id="cb78-3"><a href="#cb78-3" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>(...) {</span>
+<span id="cb78-4"><a href="#cb78-4" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>(...)</span>
+<span id="cb78-5"><a href="#cb78-5" tabindex="-1"></a>    self<span class="sc">$</span>loss_tracker <span class="ot">&lt;-</span> <span class="fu">metric_mean</span>(<span class="at">name=</span><span class="st">&quot;loss&quot;</span>)</span>
+<span id="cb78-6"><a href="#cb78-6" tabindex="-1"></a>    self<span class="sc">$</span>accuracy <span class="ot">&lt;-</span> <span class="fu">metric_sparse_categorical_accuracy</span>()</span>
+<span id="cb78-7"><a href="#cb78-7" tabindex="-1"></a>    self<span class="sc">$</span>loss_fn <span class="ot">&lt;-</span> <span class="fu">loss_sparse_categorical_crossentropy</span>(<span class="at">from_logits=</span><span class="cn">TRUE</span>)</span>
+<span id="cb78-8"><a href="#cb78-8" tabindex="-1"></a>    self<span class="sc">$</span>optimizer <span class="ot">&lt;-</span> <span class="fu">optimizer_adam</span>(<span class="at">learning_rate=</span><span class="fl">1e-3</span>)</span>
+<span id="cb78-9"><a href="#cb78-9" tabindex="-1"></a>  },</span>
+<span id="cb78-10"><a href="#cb78-10" tabindex="-1"></a>  <span class="at">train_step =</span> <span class="cf">function</span>(data) {</span>
+<span id="cb78-11"><a href="#cb78-11" tabindex="-1"></a>    <span class="fu">c</span>(x, y, sample_weight) <span class="sc">%&lt;-%</span> <span class="fu">unpack_x_y_sample_weight</span>(data)</span>
+<span id="cb78-12"><a href="#cb78-12" tabindex="-1"></a>    <span class="fu">with</span>(tf<span class="sc">$</span><span class="fu">GradientTape</span>() <span class="sc">%as%</span> tape, {</span>
+<span id="cb78-13"><a href="#cb78-13" tabindex="-1"></a>      y_pred <span class="ot">&lt;-</span> <span class="fu">self</span>(x, <span class="at">training=</span><span class="cn">TRUE</span>)</span>
+<span id="cb78-14"><a href="#cb78-14" tabindex="-1"></a>      loss <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">loss_fn</span>(<span class="at">y =</span> y, <span class="at">y_pred =</span> y_pred, <span class="at">sample_weight=</span>sample_weight)</span>
+<span id="cb78-15"><a href="#cb78-15" tabindex="-1"></a>    })</span>
+<span id="cb78-16"><a href="#cb78-16" tabindex="-1"></a>    gradients <span class="ot">&lt;-</span> tape<span class="sc">$</span><span class="fu">gradient</span>(loss, self<span class="sc">$</span>trainable_variables)</span>
+<span id="cb78-17"><a href="#cb78-17" tabindex="-1"></a>    self<span class="sc">$</span>optimizer<span class="sc">$</span><span class="fu">apply_gradients</span>(</span>
+<span id="cb78-18"><a href="#cb78-18" tabindex="-1"></a>      <span class="fu">zip_lists</span>(gradients, self<span class="sc">$</span>trainable_variables)</span>
+<span id="cb78-19"><a href="#cb78-19" tabindex="-1"></a>    )</span>
+<span id="cb78-20"><a href="#cb78-20" tabindex="-1"></a></span>
+<span id="cb78-21"><a href="#cb78-21" tabindex="-1"></a>    <span class="co"># Update metrics (includes the metric that tracks the loss)</span></span>
+<span id="cb78-22"><a href="#cb78-22" tabindex="-1"></a>    self<span class="sc">$</span>loss_tracker<span class="sc">$</span><span class="fu">update_state</span>(loss)</span>
+<span id="cb78-23"><a href="#cb78-23" tabindex="-1"></a>    self<span class="sc">$</span>accuracy<span class="sc">$</span><span class="fu">update_state</span>(y, y_pred, <span class="at">sample_weight=</span>sample_weight)</span>
+<span id="cb78-24"><a href="#cb78-24" tabindex="-1"></a>    <span class="co"># Return a list mapping metric names to current value</span></span>
+<span id="cb78-25"><a href="#cb78-25" tabindex="-1"></a>    <span class="fu">list</span>(</span>
+<span id="cb78-26"><a href="#cb78-26" tabindex="-1"></a>      <span class="at">loss =</span> self<span class="sc">$</span>loss_tracker<span class="sc">$</span><span class="fu">result</span>(),</span>
+<span id="cb78-27"><a href="#cb78-27" tabindex="-1"></a>      <span class="at">accuracy =</span> self<span class="sc">$</span>accuracy<span class="sc">$</span><span class="fu">result</span>()</span>
+<span id="cb78-28"><a href="#cb78-28" tabindex="-1"></a>    )</span>
+<span id="cb78-29"><a href="#cb78-29" tabindex="-1"></a>  },</span>
+<span id="cb78-30"><a href="#cb78-30" tabindex="-1"></a>  <span class="at">metrics =</span> <span class="fu">mark_active</span>(<span class="cf">function</span>() {</span>
+<span id="cb78-31"><a href="#cb78-31" tabindex="-1"></a>    <span class="fu">list</span>(self<span class="sc">$</span>loss_tracker, self<span class="sc">$</span>accuracy)</span>
+<span id="cb78-32"><a href="#cb78-32" tabindex="-1"></a>  })</span>
+<span id="cb78-33"><a href="#cb78-33" tabindex="-1"></a>)</span>
+<span id="cb78-34"><a href="#cb78-34" tabindex="-1"></a></span>
+<span id="cb78-35"><a href="#cb78-35" tabindex="-1"></a>inputs <span class="ot">&lt;-</span> <span class="fu">layer_input</span>(<span class="at">shape =</span> <span class="dv">784</span>, <span class="at">dtype=</span><span class="st">&quot;float32&quot;</span>)</span>
+<span id="cb78-36"><a href="#cb78-36" tabindex="-1"></a>outputs <span class="ot">&lt;-</span> inputs <span class="sc">%&gt;%</span></span>
+<span id="cb78-37"><a href="#cb78-37" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">32</span>, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb78-38"><a href="#cb78-38" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">32</span>, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb78-39"><a href="#cb78-39" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">10</span>)</span>
+<span id="cb78-40"><a href="#cb78-40" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">CustomModel</span>(inputs, outputs)</span>
+<span id="cb78-41"><a href="#cb78-41" tabindex="-1"></a>model <span class="sc">%&gt;%</span> <span class="fu">compile</span>()</span>
+<span id="cb78-42"><a href="#cb78-42" tabindex="-1"></a>model <span class="sc">%&gt;%</span> <span class="fu">fit</span>(dataset, <span class="at">epochs=</span><span class="dv">2</span>)</span></code></pre></div>
+<pre><code>## Epoch 1/2
+## 938/938 - 2s - 2ms/step - loss: 0.3869 - sparse_categorical_accuracy: 0.8924
+## Epoch 2/2
+## 938/938 - 1s - 1ms/step - loss: 0.2163 - sparse_categorical_accuracy: 0.9370</code></pre>
+</div>
+<div id="end-to-end-experiment-example-1-variational-autoencoders." class="section level2">
+<h2>End-to-end experiment example 1: variational autoencoders.</h2>
+<p>Here are some of the things you’ve learned so far:</p>
+<ul>
+<li>A <code>Layer</code> encapsulates a state (created in
+<code>__init__</code> or <code>build</code>) and some computation
+(defined in <code>call</code>).</li>
+<li>Layers can be recursively nested to create new, bigger computation
+blocks.</li>
+<li>You can easily write highly hackable training loops by opening a
+<code>GradientTape</code>, calling your model inside the tape’s scope,
+then retrieving gradients and applying them via an optimizer.</li>
+<li>You can speed up your training loops using the
+<code>@tf.function</code> decorator.</li>
+<li>Layers can create and track losses (typically regularization losses)
+via <code>self.add_loss()</code>.</li>
+</ul>
+<p>Let’s put all of these things together into an end-to-end example:
+we’re going to implement a Variational AutoEncoder (VAE). We’ll train it
+on MNIST digits.</p>
+<p>Our VAE will be a subclass of <code>Layer</code>, built as a nested
+composition of layers that subclass <code>Layer</code>. It will feature
+a regularization loss (KL divergence).</p>
+<p>Below is our model definition.</p>
+<p>First, we have an <code>Encoder</code> class, which uses a
+<code>Sampling</code> layer to map a MNIST digit to a latent-space
+triplet <code>(z_mean, z_log_var, z)</code>.</p>
+<div class="sourceCode" id="cb80"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" tabindex="-1"></a>Sampling <span class="ot">&lt;-</span> <span class="fu">new_layer_class</span>(</span>
+<span id="cb80-2"><a href="#cb80-2" tabindex="-1"></a>  <span class="st">&quot;Sampling&quot;</span>,</span>
+<span id="cb80-3"><a href="#cb80-3" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
+<span id="cb80-4"><a href="#cb80-4" tabindex="-1"></a>    <span class="fu">c</span>(z_mean, z_log_var) <span class="sc">%&lt;-%</span> inputs</span>
+<span id="cb80-5"><a href="#cb80-5" tabindex="-1"></a>    batch <span class="ot">&lt;-</span> <span class="fu">op_shape</span>(z_mean)[[<span class="dv">1</span>]]</span>
+<span id="cb80-6"><a href="#cb80-6" tabindex="-1"></a>    dim <span class="ot">&lt;-</span> <span class="fu">op_shape</span>(z_mean)[[<span class="dv">2</span>]]</span>
+<span id="cb80-7"><a href="#cb80-7" tabindex="-1"></a>    epsilon <span class="ot">&lt;-</span> <span class="fu">random_normal</span>(<span class="at">shape =</span> <span class="fu">c</span>(batch, dim))</span>
+<span id="cb80-8"><a href="#cb80-8" tabindex="-1"></a>    z_mean <span class="sc">+</span> <span class="fu">op_exp</span>(<span class="fl">0.5</span> <span class="sc">*</span> z_log_var) <span class="sc">*</span> epsilon</span>
+<span id="cb80-9"><a href="#cb80-9" tabindex="-1"></a>  }</span>
+<span id="cb80-10"><a href="#cb80-10" tabindex="-1"></a>)</span>
+<span id="cb80-11"><a href="#cb80-11" tabindex="-1"></a></span>
+<span id="cb80-12"><a href="#cb80-12" tabindex="-1"></a>Encoder <span class="ot">&lt;-</span> <span class="fu">new_layer_class</span>(</span>
+<span id="cb80-13"><a href="#cb80-13" tabindex="-1"></a>  <span class="st">&quot;Encoder&quot;</span>,</span>
+<span id="cb80-14"><a href="#cb80-14" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>(<span class="at">latent_dim =</span> <span class="dv">32</span>, <span class="at">intermediate_dim =</span> <span class="dv">64</span>, ...) {</span>
+<span id="cb80-15"><a href="#cb80-15" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>(...)</span>
+<span id="cb80-16"><a href="#cb80-16" tabindex="-1"></a>    self<span class="sc">$</span>dense_proj <span class="ot">&lt;-</span> <span class="fu">layer_dense</span>(<span class="at">units =</span> intermediate_dim, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>)</span>
+<span id="cb80-17"><a href="#cb80-17" tabindex="-1"></a>    self<span class="sc">$</span>dense_mean <span class="ot">&lt;-</span> <span class="fu">layer_dense</span>(<span class="at">units =</span> latent_dim)</span>
+<span id="cb80-18"><a href="#cb80-18" tabindex="-1"></a>    self<span class="sc">$</span>dense_log_var <span class="ot">&lt;-</span> <span class="fu">layer_dense</span>(<span class="at">units =</span> latent_dim)</span>
+<span id="cb80-19"><a href="#cb80-19" tabindex="-1"></a>    self<span class="sc">$</span>sampling <span class="ot">&lt;-</span> <span class="fu">Sampling</span>()</span>
+<span id="cb80-20"><a href="#cb80-20" tabindex="-1"></a>  },</span>
+<span id="cb80-21"><a href="#cb80-21" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
+<span id="cb80-22"><a href="#cb80-22" tabindex="-1"></a>    x <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">dense_proj</span>(inputs)</span>
+<span id="cb80-23"><a href="#cb80-23" tabindex="-1"></a>    z_mean <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">dense_mean</span>(x)</span>
+<span id="cb80-24"><a href="#cb80-24" tabindex="-1"></a>    z_log_var <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">dense_log_var</span>(x)</span>
+<span id="cb80-25"><a href="#cb80-25" tabindex="-1"></a>    z <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">sampling</span>(<span class="fu">list</span>(z_mean, z_log_var))</span>
+<span id="cb80-26"><a href="#cb80-26" tabindex="-1"></a>    <span class="fu">list</span>(z_mean, z_log_var, z)</span>
+<span id="cb80-27"><a href="#cb80-27" tabindex="-1"></a>  }</span>
+<span id="cb80-28"><a href="#cb80-28" tabindex="-1"></a>)</span></code></pre></div>
+<p>Next, we have a <code>Decoder</code> class, which maps the
+probabilistic latent space coordinates back to a MNIST digit.</p>
+<div class="sourceCode" id="cb81"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" tabindex="-1"></a>Decoder <span class="ot">&lt;-</span> <span class="fu">new_layer_class</span>(</span>
+<span id="cb81-2"><a href="#cb81-2" tabindex="-1"></a>  <span class="st">&quot;Decoder&quot;</span>,</span>
+<span id="cb81-3"><a href="#cb81-3" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>(original_dim, <span class="at">intermediate_dim =</span> <span class="dv">64</span>, ...) {</span>
+<span id="cb81-4"><a href="#cb81-4" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>(...)</span>
+<span id="cb81-5"><a href="#cb81-5" tabindex="-1"></a>    self<span class="sc">$</span>dense_proj <span class="ot">&lt;-</span> <span class="fu">layer_dense</span>(<span class="at">units =</span> intermediate_dim, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>)</span>
+<span id="cb81-6"><a href="#cb81-6" tabindex="-1"></a>    self<span class="sc">$</span>dense_output <span class="ot">&lt;-</span> <span class="fu">layer_dense</span>(<span class="at">units =</span> original_dim, <span class="at">activation =</span> <span class="st">&quot;sigmoid&quot;</span>)</span>
+<span id="cb81-7"><a href="#cb81-7" tabindex="-1"></a>  },</span>
+<span id="cb81-8"><a href="#cb81-8" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
+<span id="cb81-9"><a href="#cb81-9" tabindex="-1"></a>    x <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">dense_proj</span>(inputs)</span>
+<span id="cb81-10"><a href="#cb81-10" tabindex="-1"></a>    self<span class="sc">$</span><span class="fu">dense_output</span>(x)</span>
+<span id="cb81-11"><a href="#cb81-11" tabindex="-1"></a>  }</span>
+<span id="cb81-12"><a href="#cb81-12" tabindex="-1"></a>)</span></code></pre></div>
+<p>Finally, our <code>VariationalAutoEncoder</code> composes together an
+encoder and a decoder, and creates a KL divergence regularization loss
+via <code>add_loss()</code>.</p>
+<div class="sourceCode" id="cb82"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb82-1"><a href="#cb82-1" tabindex="-1"></a>VariationalAutoEncoder <span class="ot">&lt;-</span> <span class="fu">new_model_class</span>(</span>
+<span id="cb82-2"><a href="#cb82-2" tabindex="-1"></a>  <span class="st">&quot;VariationalAutoEncoder&quot;</span>,</span>
+<span id="cb82-3"><a href="#cb82-3" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>(original_dim,</span>
+<span id="cb82-4"><a href="#cb82-4" tabindex="-1"></a>        <span class="at">intermediate_dim=</span><span class="dv">64</span>,</span>
+<span id="cb82-5"><a href="#cb82-5" tabindex="-1"></a>        <span class="at">latent_dim=</span><span class="dv">32</span>,</span>
+<span id="cb82-6"><a href="#cb82-6" tabindex="-1"></a>        <span class="at">name=</span><span class="st">&quot;autoencoder&quot;</span>, ...) {</span>
+<span id="cb82-7"><a href="#cb82-7" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>(<span class="at">name =</span> name, ...)</span>
+<span id="cb82-8"><a href="#cb82-8" tabindex="-1"></a>    self<span class="sc">$</span>original_dim <span class="ot">&lt;-</span> original_dim</span>
+<span id="cb82-9"><a href="#cb82-9" tabindex="-1"></a>    self<span class="sc">$</span>encoder <span class="ot">&lt;-</span> <span class="fu">Encoder</span>(</span>
+<span id="cb82-10"><a href="#cb82-10" tabindex="-1"></a>      <span class="at">latent_dim =</span> latent_dim,</span>
+<span id="cb82-11"><a href="#cb82-11" tabindex="-1"></a>      <span class="at">intermediate_dim =</span> intermediate_dim</span>
+<span id="cb82-12"><a href="#cb82-12" tabindex="-1"></a>    )</span>
+<span id="cb82-13"><a href="#cb82-13" tabindex="-1"></a>    self<span class="sc">$</span>decoder <span class="ot">&lt;-</span> <span class="fu">Decoder</span>(</span>
+<span id="cb82-14"><a href="#cb82-14" tabindex="-1"></a>      <span class="at">original_dim =</span> original_dim,</span>
+<span id="cb82-15"><a href="#cb82-15" tabindex="-1"></a>      <span class="at">intermediate_dim =</span> intermediate_dim</span>
+<span id="cb82-16"><a href="#cb82-16" tabindex="-1"></a>    )</span>
+<span id="cb82-17"><a href="#cb82-17" tabindex="-1"></a>  },</span>
+<span id="cb82-18"><a href="#cb82-18" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
+<span id="cb82-19"><a href="#cb82-19" tabindex="-1"></a>    <span class="fu">c</span>(z_mean, z_log_var, z) <span class="sc">%&lt;-%</span> self<span class="sc">$</span><span class="fu">encoder</span>(inputs)</span>
+<span id="cb82-20"><a href="#cb82-20" tabindex="-1"></a>    reconstructed <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">decoder</span>(z)</span>
+<span id="cb82-21"><a href="#cb82-21" tabindex="-1"></a>    <span class="co"># Add KL divergence regularization loss.</span></span>
+<span id="cb82-22"><a href="#cb82-22" tabindex="-1"></a>    kl_loss <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">op_mean</span>(</span>
+<span id="cb82-23"><a href="#cb82-23" tabindex="-1"></a>      z_log_var <span class="sc">-</span> <span class="fu">op_square</span>(z_mean) <span class="sc">-</span> <span class="fu">op_exp</span>(z_log_var) <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb82-24"><a href="#cb82-24" tabindex="-1"></a>    )</span>
+<span id="cb82-25"><a href="#cb82-25" tabindex="-1"></a>    self<span class="sc">$</span><span class="fu">add_loss</span>(kl_loss)</span>
+<span id="cb82-26"><a href="#cb82-26" tabindex="-1"></a>    reconstructed</span>
+<span id="cb82-27"><a href="#cb82-27" tabindex="-1"></a>  }</span>
+<span id="cb82-28"><a href="#cb82-28" tabindex="-1"></a>)</span></code></pre></div>
+<p>Now, let’s write a training loop. Our training step is decorated with
+a <code>@tf.function</code> to compile into a super fast graph
+function.</p>
+<div class="sourceCode" id="cb83"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" tabindex="-1"></a><span class="co"># Our model.</span></span>
+<span id="cb83-2"><a href="#cb83-2" tabindex="-1"></a>vae <span class="ot">&lt;-</span> <span class="fu">VariationalAutoEncoder</span>(</span>
+<span id="cb83-3"><a href="#cb83-3" tabindex="-1"></a>  <span class="at">original_dim =</span> <span class="dv">784</span>,</span>
+<span id="cb83-4"><a href="#cb83-4" tabindex="-1"></a>  <span class="at">intermediate_dim =</span> <span class="dv">64</span>,</span>
+<span id="cb83-5"><a href="#cb83-5" tabindex="-1"></a>  <span class="at">latent_dim =</span> <span class="dv">32</span></span>
+<span id="cb83-6"><a href="#cb83-6" tabindex="-1"></a>)</span>
+<span id="cb83-7"><a href="#cb83-7" tabindex="-1"></a></span>
+<span id="cb83-8"><a href="#cb83-8" tabindex="-1"></a><span class="co"># Loss and optimizer.</span></span>
+<span id="cb83-9"><a href="#cb83-9" tabindex="-1"></a>loss_fn <span class="ot">&lt;-</span> <span class="fu">loss_mean_squared_error</span>()</span>
+<span id="cb83-10"><a href="#cb83-10" tabindex="-1"></a>optimizer <span class="ot">=</span> <span class="fu">optimizer_adam</span>(<span class="at">learning_rate=</span><span class="fl">1e-3</span>)</span>
+<span id="cb83-11"><a href="#cb83-11" tabindex="-1"></a></span>
+<span id="cb83-12"><a href="#cb83-12" tabindex="-1"></a><span class="co"># Prepare a dataset.</span></span>
+<span id="cb83-13"><a href="#cb83-13" tabindex="-1"></a><span class="fu">c</span>(<span class="fu">c</span>(x_train, .), .) <span class="sc">%&lt;-%</span> <span class="fu">dataset_mnist</span>()</span>
+<span id="cb83-14"><a href="#cb83-14" tabindex="-1"></a>x_train <span class="ot">&lt;-</span> <span class="fu">array_reshape</span>(x_train, <span class="fu">c</span>(<span class="dv">60000</span>, <span class="dv">784</span>)) <span class="sc">/</span> <span class="dv">255</span></span>
+<span id="cb83-15"><a href="#cb83-15" tabindex="-1"></a></span>
+<span id="cb83-16"><a href="#cb83-16" tabindex="-1"></a>dataset <span class="ot">&lt;-</span> tfdatasets<span class="sc">::</span><span class="fu">tensor_slices_dataset</span>(x_train) <span class="sc">%&gt;%</span></span>
+<span id="cb83-17"><a href="#cb83-17" tabindex="-1"></a>  tfdatasets<span class="sc">::</span><span class="fu">dataset_shuffle</span>(<span class="at">buffer_size=</span><span class="dv">1024</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb83-18"><a href="#cb83-18" tabindex="-1"></a>  tfdatasets<span class="sc">::</span><span class="fu">dataset_batch</span>(<span class="dv">32</span>)</span>
+<span id="cb83-19"><a href="#cb83-19" tabindex="-1"></a></span>
+<span id="cb83-20"><a href="#cb83-20" tabindex="-1"></a></span>
+<span id="cb83-21"><a href="#cb83-21" tabindex="-1"></a>training_step <span class="ot">&lt;-</span> <span class="fu">tf_function</span>(<span class="cf">function</span>(x) {</span>
+<span id="cb83-22"><a href="#cb83-22" tabindex="-1"></a>  <span class="fu">with</span>(tf<span class="sc">$</span><span class="fu">GradientTape</span>() <span class="sc">%as%</span> tape, {</span>
+<span id="cb83-23"><a href="#cb83-23" tabindex="-1"></a>    reconstructed <span class="ot">&lt;-</span> <span class="fu">vae</span>(x)  <span class="co"># Compute input reconstruction.</span></span>
+<span id="cb83-24"><a href="#cb83-24" tabindex="-1"></a>    <span class="co"># Compute loss.</span></span>
+<span id="cb83-25"><a href="#cb83-25" tabindex="-1"></a>    loss <span class="ot">&lt;-</span> <span class="fu">loss_fn</span>(x, reconstructed)</span>
+<span id="cb83-26"><a href="#cb83-26" tabindex="-1"></a>    loss <span class="ot">&lt;-</span> loss <span class="sc">+</span> <span class="fu">op_sum</span>(vae<span class="sc">$</span>losses)  <span class="co"># Add KLD term.</span></span>
+<span id="cb83-27"><a href="#cb83-27" tabindex="-1"></a>  })</span>
+<span id="cb83-28"><a href="#cb83-28" tabindex="-1"></a>  <span class="co"># Update the weights of the VAE.</span></span>
+<span id="cb83-29"><a href="#cb83-29" tabindex="-1"></a>  grads <span class="ot">&lt;-</span> tape<span class="sc">$</span><span class="fu">gradient</span>(loss, vae<span class="sc">$</span>trainable_weights)</span>
+<span id="cb83-30"><a href="#cb83-30" tabindex="-1"></a>  optimizer<span class="sc">$</span><span class="fu">apply_gradients</span>(<span class="fu">zip_lists</span>(grads, vae<span class="sc">$</span>trainable_weights))</span>
+<span id="cb83-31"><a href="#cb83-31" tabindex="-1"></a>  loss</span>
+<span id="cb83-32"><a href="#cb83-32" tabindex="-1"></a>})</span>
+<span id="cb83-33"><a href="#cb83-33" tabindex="-1"></a></span>
+<span id="cb83-34"><a href="#cb83-34" tabindex="-1"></a>losses <span class="ot">&lt;-</span> <span class="fu">c</span>()  <span class="co"># Keep track of the losses over time.</span></span>
+<span id="cb83-35"><a href="#cb83-35" tabindex="-1"></a>coro<span class="sc">::</span><span class="fu">loop</span>(<span class="cf">for</span>(data <span class="cf">in</span> dataset) {</span>
+<span id="cb83-36"><a href="#cb83-36" tabindex="-1"></a>  loss <span class="ot">&lt;-</span> <span class="fu">training_step</span>(data)</span>
+<span id="cb83-37"><a href="#cb83-37" tabindex="-1"></a></span>
+<span id="cb83-38"><a href="#cb83-38" tabindex="-1"></a>  <span class="co"># Logging.</span></span>
+<span id="cb83-39"><a href="#cb83-39" tabindex="-1"></a>  losses[<span class="fu">length</span>(losses) <span class="sc">+</span> <span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(loss)</span>
+<span id="cb83-40"><a href="#cb83-40" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(losses) <span class="sc">%%</span> <span class="dv">100</span> <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb83-41"><a href="#cb83-41" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">&quot;Step:&quot;</span>, <span class="fu">length</span>(losses), <span class="st">&quot;Loss:&quot;</span>, <span class="fu">mean</span>(losses), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb83-42"><a href="#cb83-42" tabindex="-1"></a>  }</span>
+<span id="cb83-43"><a href="#cb83-43" tabindex="-1"></a>  <span class="co"># Stop after 1000 steps.</span></span>
+<span id="cb83-44"><a href="#cb83-44" tabindex="-1"></a>  <span class="co"># Training the model to convergence is left</span></span>
+<span id="cb83-45"><a href="#cb83-45" tabindex="-1"></a>  <span class="co"># as an exercise to the reader.</span></span>
+<span id="cb83-46"><a href="#cb83-46" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(losses) <span class="sc">&gt;=</span> <span class="dv">1000</span>) {</span>
+<span id="cb83-47"><a href="#cb83-47" tabindex="-1"></a>    <span class="cf">break</span></span>
+<span id="cb83-48"><a href="#cb83-48" tabindex="-1"></a>  }</span>
+<span id="cb83-49"><a href="#cb83-49" tabindex="-1"></a>})</span></code></pre></div>
+<pre><code>## Step: 100 Loss: 0.1270978
+## Step: 200 Loss: 0.1003238
+## Step: 300 Loss: 0.09001128
+## Step: 400 Loss: 0.08493649
+## Step: 500 Loss: 0.08171404
+## Step: 600 Loss: 0.07926706
+## Step: 700 Loss: 0.07790599
+## Step: 800 Loss: 0.07670419
+## Step: 900 Loss: 0.07570736
+## Step: 1000 Loss: 0.07476593</code></pre>
+<p>As you can see, building and training this type of model in Keras is
+quick and painless.</p>
+</div>
+<div id="end-to-end-experiment-example-2-hypernetworks." class="section level2">
+<h2>End-to-end experiment example 2: hypernetworks.</h2>
+<p>Let’s take a look at another kind of research experiment:
+hypernetworks.</p>
+<p>The idea is to use a small deep neural network (the hypernetwork) to
+generate the weights for a larger network (the main network).</p>
+<p>Let’s implement a really trivial hypernetwork: we’ll use a small
+2-layer network to generate the weights of a larger 3-layer network.</p>
+<div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" tabindex="-1"></a>input_dim <span class="ot">&lt;-</span> <span class="dv">784</span></span>
+<span id="cb85-2"><a href="#cb85-2" tabindex="-1"></a>classes <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb85-3"><a href="#cb85-3" tabindex="-1"></a></span>
+<span id="cb85-4"><a href="#cb85-4" tabindex="-1"></a><span class="co"># This is the main network we&#39;ll actually use to predict labels.</span></span>
+<span id="cb85-5"><a href="#cb85-5" tabindex="-1"></a>inputs <span class="ot">&lt;-</span> <span class="fu">layer_input</span>(<span class="at">shape =</span> input_dim)</span>
+<span id="cb85-6"><a href="#cb85-6" tabindex="-1"></a>dense1 <span class="ot">&lt;-</span> <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">64</span>, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>)</span>
+<span id="cb85-7"><a href="#cb85-7" tabindex="-1"></a>dense1<span class="sc">$</span>built <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span>
+<span id="cb85-8"><a href="#cb85-8" tabindex="-1"></a></span>
+<span id="cb85-9"><a href="#cb85-9" tabindex="-1"></a>dense2 <span class="ot">&lt;-</span> <span class="fu">layer_dense</span>(<span class="at">units =</span> classes)</span>
+<span id="cb85-10"><a href="#cb85-10" tabindex="-1"></a>dense2<span class="sc">$</span>built <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span>
+<span id="cb85-11"><a href="#cb85-11" tabindex="-1"></a></span>
+<span id="cb85-12"><a href="#cb85-12" tabindex="-1"></a>outputs <span class="ot">&lt;-</span> inputs <span class="sc">%&gt;%</span> <span class="fu">dense1</span>() <span class="sc">%&gt;%</span> <span class="fu">dense2</span>()</span>
+<span id="cb85-13"><a href="#cb85-13" tabindex="-1"></a>main_network <span class="ot">&lt;-</span> <span class="fu">keras_model</span>(inputs, outputs)</span>
+<span id="cb85-14"><a href="#cb85-14" tabindex="-1"></a></span>
+<span id="cb85-15"><a href="#cb85-15" tabindex="-1"></a><span class="co"># This is the number of weight coefficients to generate. Each layer in the</span></span>
+<span id="cb85-16"><a href="#cb85-16" tabindex="-1"></a><span class="co"># main network requires output_dim * input_dim + output_dim coefficients.</span></span>
+<span id="cb85-17"><a href="#cb85-17" tabindex="-1"></a>num_weights_to_generate <span class="ot">&lt;-</span> (classes <span class="sc">*</span> <span class="dv">64</span> <span class="sc">+</span> classes) <span class="sc">+</span> (<span class="dv">64</span> <span class="sc">*</span> input_dim <span class="sc">+</span> <span class="dv">64</span>)</span>
+<span id="cb85-18"><a href="#cb85-18" tabindex="-1"></a></span>
+<span id="cb85-19"><a href="#cb85-19" tabindex="-1"></a><span class="co"># This is the hypernetwork that generates the weights of the `main_network` above.</span></span>
+<span id="cb85-20"><a href="#cb85-20" tabindex="-1"></a>hypernetwork <span class="ot">&lt;-</span> <span class="fu">keras_model_sequential</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb85-21"><a href="#cb85-21" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units=</span><span class="dv">16</span>, <span class="at">activation=</span><span class="st">&quot;relu&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb85-22"><a href="#cb85-22" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units=</span>num_weights_to_generate, <span class="at">activation=</span><span class="st">&quot;sigmoid&quot;</span>)</span></code></pre></div>
+<p>This is our training loop. For each batch of data:</p>
+<ul>
+<li>We use <code>hypernetwork</code> to generate an array of weight
+coefficients, <code>weights_pred</code></li>
+<li>We reshape these coefficients into kernel &amp; bias tensors for the
+<code>main_network</code></li>
+<li>We run the forward pass of the <code>main_network</code> to compute
+the actual MNIST predictions</li>
+<li>We run backprop through the weights of the <code>hypernetwork</code>
+to minimize the final classification loss</li>
+</ul>
+<div class="sourceCode" id="cb86"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb86-1"><a href="#cb86-1" tabindex="-1"></a><span class="co"># Loss and optimizer.</span></span>
+<span id="cb86-2"><a href="#cb86-2" tabindex="-1"></a>loss_fn <span class="ot">&lt;-</span> <span class="fu">loss_sparse_categorical_crossentropy</span>(<span class="at">from_logits =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb86-3"><a href="#cb86-3" tabindex="-1"></a>optimizer <span class="ot">&lt;-</span> <span class="fu">optimizer_adam</span>(<span class="at">learning_rate=</span><span class="fl">1e-4</span>)</span>
+<span id="cb86-4"><a href="#cb86-4" tabindex="-1"></a></span>
+<span id="cb86-5"><a href="#cb86-5" tabindex="-1"></a><span class="co"># Prepare a dataset.</span></span>
+<span id="cb86-6"><a href="#cb86-6" tabindex="-1"></a><span class="fu">c</span>(<span class="fu">c</span>(x_train, y_train), .) <span class="sc">%&lt;-%</span> <span class="fu">dataset_mnist</span>()</span>
+<span id="cb86-7"><a href="#cb86-7" tabindex="-1"></a>x_train <span class="ot">&lt;-</span> <span class="fu">array_reshape</span>(x_train, <span class="fu">c</span>(<span class="dv">60000</span>, <span class="dv">784</span>)) <span class="sc">/</span> <span class="dv">255</span></span>
+<span id="cb86-8"><a href="#cb86-8" tabindex="-1"></a></span>
+<span id="cb86-9"><a href="#cb86-9" tabindex="-1"></a>dataset <span class="ot">&lt;-</span> tfdatasets<span class="sc">::</span><span class="fu">tensor_slices_dataset</span>(<span class="fu">list</span>(x_train, y_train)) <span class="sc">%&gt;%</span></span>
+<span id="cb86-10"><a href="#cb86-10" tabindex="-1"></a>  tfdatasets<span class="sc">::</span><span class="fu">dataset_shuffle</span>(<span class="at">buffer_size=</span><span class="dv">1024</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb86-11"><a href="#cb86-11" tabindex="-1"></a>  <span class="co"># We&#39;ll use a batch size of 1 for this experiment.</span></span>
+<span id="cb86-12"><a href="#cb86-12" tabindex="-1"></a>  tfdatasets<span class="sc">::</span><span class="fu">dataset_batch</span>(<span class="dv">1</span>)</span>
+<span id="cb86-13"><a href="#cb86-13" tabindex="-1"></a></span>
+<span id="cb86-14"><a href="#cb86-14" tabindex="-1"></a>train_step <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y) {</span>
+<span id="cb86-15"><a href="#cb86-15" tabindex="-1"></a>  <span class="fu">with</span>(tf<span class="sc">$</span><span class="fu">GradientTape</span>() <span class="sc">%as%</span> tape, {</span>
+<span id="cb86-16"><a href="#cb86-16" tabindex="-1"></a>    weights_pred <span class="ot">&lt;-</span> <span class="fu">hypernetwork</span>(x)</span>
+<span id="cb86-17"><a href="#cb86-17" tabindex="-1"></a></span>
+<span id="cb86-18"><a href="#cb86-18" tabindex="-1"></a>    <span class="co"># Reshape them to the expected shapes for w and b for the outer model.</span></span>
+<span id="cb86-19"><a href="#cb86-19" tabindex="-1"></a>    <span class="co"># Layer 1 kernel.</span></span>
+<span id="cb86-20"><a href="#cb86-20" tabindex="-1"></a>    start_index <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb86-21"><a href="#cb86-21" tabindex="-1"></a>    w1_shape <span class="ot">&lt;-</span> <span class="fu">c</span>(input_dim, <span class="dv">64</span>)</span>
+<span id="cb86-22"><a href="#cb86-22" tabindex="-1"></a>    w1_coeffs <span class="ot">&lt;-</span> weights_pred[, start_index<span class="sc">:</span>(start_index <span class="sc">+</span> <span class="fu">prod</span>(w1_shape) <span class="sc">-</span> <span class="dv">1</span>)]</span>
+<span id="cb86-23"><a href="#cb86-23" tabindex="-1"></a>    w1 <span class="ot">&lt;-</span> tf<span class="sc">$</span><span class="fu">reshape</span>(w1_coeffs, <span class="fu">as.integer</span>(w1_shape))</span>
+<span id="cb86-24"><a href="#cb86-24" tabindex="-1"></a>    start_index <span class="ot">&lt;-</span> start_index <span class="sc">+</span> <span class="fu">prod</span>(w1_shape)</span>
+<span id="cb86-25"><a href="#cb86-25" tabindex="-1"></a></span>
+<span id="cb86-26"><a href="#cb86-26" tabindex="-1"></a>    <span class="co"># Layer 1 bias.</span></span>
+<span id="cb86-27"><a href="#cb86-27" tabindex="-1"></a>    b1_shape <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">64</span>)</span>
+<span id="cb86-28"><a href="#cb86-28" tabindex="-1"></a>    b1_coeffs <span class="ot">&lt;-</span> weights_pred[, start_index<span class="sc">:</span>(start_index <span class="sc">+</span> <span class="fu">prod</span>(b1_shape) <span class="sc">-</span> <span class="dv">1</span>)]</span>
+<span id="cb86-29"><a href="#cb86-29" tabindex="-1"></a>    b1 <span class="ot">&lt;-</span> tf<span class="sc">$</span><span class="fu">reshape</span>(b1_coeffs, <span class="fu">as.integer</span>(b1_shape))</span>
+<span id="cb86-30"><a href="#cb86-30" tabindex="-1"></a>    start_index <span class="ot">&lt;-</span> start_index <span class="sc">+</span> <span class="fu">prod</span>(b1_shape)</span>
+<span id="cb86-31"><a href="#cb86-31" tabindex="-1"></a></span>
+<span id="cb86-32"><a href="#cb86-32" tabindex="-1"></a>    <span class="co"># Layer 2 kernel.</span></span>
+<span id="cb86-33"><a href="#cb86-33" tabindex="-1"></a>    w2_shape <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">64</span>, classes)</span>
+<span id="cb86-34"><a href="#cb86-34" tabindex="-1"></a>    w2_coeffs <span class="ot">&lt;-</span> weights_pred[, start_index<span class="sc">:</span>(start_index <span class="sc">+</span> <span class="fu">prod</span>(w2_shape) <span class="sc">-</span> <span class="dv">1</span>)]</span>
+<span id="cb86-35"><a href="#cb86-35" tabindex="-1"></a>    w2 <span class="ot">&lt;-</span> tf<span class="sc">$</span><span class="fu">reshape</span>(w2_coeffs, <span class="fu">as.integer</span>(w2_shape))</span>
+<span id="cb86-36"><a href="#cb86-36" tabindex="-1"></a>    start_index <span class="ot">&lt;-</span> start_index <span class="sc">+</span> <span class="fu">prod</span>(w2_shape)</span>
+<span id="cb86-37"><a href="#cb86-37" tabindex="-1"></a></span>
+<span id="cb86-38"><a href="#cb86-38" tabindex="-1"></a>    <span class="co"># Layer 2 bias.</span></span>
+<span id="cb86-39"><a href="#cb86-39" tabindex="-1"></a>    b2_shape <span class="ot">&lt;-</span> <span class="fu">c</span>(classes)</span>
+<span id="cb86-40"><a href="#cb86-40" tabindex="-1"></a>    b2_coeffs <span class="ot">&lt;-</span> weights_pred[, start_index<span class="sc">:</span>(start_index <span class="sc">+</span> <span class="fu">prod</span>(b2_shape) <span class="sc">-</span> <span class="dv">1</span>)]</span>
+<span id="cb86-41"><a href="#cb86-41" tabindex="-1"></a>    b2 <span class="ot">&lt;-</span> tf<span class="sc">$</span><span class="fu">reshape</span>(b2_coeffs, <span class="fu">as.integer</span>(b2_shape))</span>
+<span id="cb86-42"><a href="#cb86-42" tabindex="-1"></a>    start_index <span class="ot">&lt;-</span> start_index <span class="sc">+</span> <span class="fu">prod</span>(b2_shape)</span>
+<span id="cb86-43"><a href="#cb86-43" tabindex="-1"></a></span>
+<span id="cb86-44"><a href="#cb86-44" tabindex="-1"></a>    <span class="co"># Set the weight predictions as the weight variables on the outer model.</span></span>
+<span id="cb86-45"><a href="#cb86-45" tabindex="-1"></a>    dense1<span class="sc">$</span>kernel <span class="ot">&lt;-</span> w1</span>
+<span id="cb86-46"><a href="#cb86-46" tabindex="-1"></a>    dense1<span class="sc">$</span>bias <span class="ot">&lt;-</span> b1</span>
+<span id="cb86-47"><a href="#cb86-47" tabindex="-1"></a>    dense2<span class="sc">$</span>kernel <span class="ot">&lt;-</span> w2</span>
+<span id="cb86-48"><a href="#cb86-48" tabindex="-1"></a>    dense2<span class="sc">$</span>bias <span class="ot">&lt;-</span> b2</span>
+<span id="cb86-49"><a href="#cb86-49" tabindex="-1"></a></span>
+<span id="cb86-50"><a href="#cb86-50" tabindex="-1"></a>    <span class="co"># Inference on the outer model.</span></span>
+<span id="cb86-51"><a href="#cb86-51" tabindex="-1"></a>    preds <span class="ot">&lt;-</span> <span class="fu">main_network</span>(x)</span>
+<span id="cb86-52"><a href="#cb86-52" tabindex="-1"></a>    loss <span class="ot">&lt;-</span> <span class="fu">loss_fn</span>(y, preds)</span>
+<span id="cb86-53"><a href="#cb86-53" tabindex="-1"></a>  })</span>
+<span id="cb86-54"><a href="#cb86-54" tabindex="-1"></a></span>
+<span id="cb86-55"><a href="#cb86-55" tabindex="-1"></a>  grads <span class="ot">&lt;-</span> tape<span class="sc">$</span><span class="fu">gradient</span>(loss, hypernetwork<span class="sc">$</span>trainable_weights)</span>
+<span id="cb86-56"><a href="#cb86-56" tabindex="-1"></a>  optimizer<span class="sc">$</span><span class="fu">apply_gradients</span>(<span class="fu">zip_lists</span>(grads, hypernetwork<span class="sc">$</span>trainable_weights))</span>
+<span id="cb86-57"><a href="#cb86-57" tabindex="-1"></a>  loss</span>
+<span id="cb86-58"><a href="#cb86-58" tabindex="-1"></a>}</span>
+<span id="cb86-59"><a href="#cb86-59" tabindex="-1"></a></span>
+<span id="cb86-60"><a href="#cb86-60" tabindex="-1"></a>losses <span class="ot">&lt;-</span> <span class="fu">c</span>()  <span class="co"># Keep track of the losses over time.</span></span>
+<span id="cb86-61"><a href="#cb86-61" tabindex="-1"></a>coro<span class="sc">::</span><span class="fu">loop</span>(<span class="cf">for</span> (data <span class="cf">in</span> dataset) {</span>
+<span id="cb86-62"><a href="#cb86-62" tabindex="-1"></a>  x <span class="ot">&lt;-</span> data[[<span class="dv">1</span>]]</span>
+<span id="cb86-63"><a href="#cb86-63" tabindex="-1"></a>  y <span class="ot">&lt;-</span> data[[<span class="dv">2</span>]]</span>
+<span id="cb86-64"><a href="#cb86-64" tabindex="-1"></a>  loss <span class="ot">&lt;-</span> <span class="fu">train_step</span>(x, y)</span>
+<span id="cb86-65"><a href="#cb86-65" tabindex="-1"></a></span>
+<span id="cb86-66"><a href="#cb86-66" tabindex="-1"></a>  <span class="co"># Logging.</span></span>
+<span id="cb86-67"><a href="#cb86-67" tabindex="-1"></a>  losses[<span class="fu">length</span>(losses) <span class="sc">+</span> <span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(loss)</span>
+<span id="cb86-68"><a href="#cb86-68" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(losses) <span class="sc">%%</span> <span class="dv">100</span> <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb86-69"><a href="#cb86-69" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">&quot;Step:&quot;</span>, <span class="fu">length</span>(losses), <span class="st">&quot;Loss:&quot;</span>, <span class="fu">mean</span>(losses), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb86-70"><a href="#cb86-70" tabindex="-1"></a>  }</span>
+<span id="cb86-71"><a href="#cb86-71" tabindex="-1"></a>  <span class="co"># Stop after 1000 steps.</span></span>
+<span id="cb86-72"><a href="#cb86-72" tabindex="-1"></a>  <span class="co"># Training the model to convergence is left</span></span>
+<span id="cb86-73"><a href="#cb86-73" tabindex="-1"></a>  <span class="co"># as an exercise to the reader.</span></span>
+<span id="cb86-74"><a href="#cb86-74" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(losses) <span class="sc">&gt;=</span> <span class="dv">1000</span>) {</span>
+<span id="cb86-75"><a href="#cb86-75" tabindex="-1"></a>    <span class="cf">break</span></span>
+<span id="cb86-76"><a href="#cb86-76" tabindex="-1"></a>  }</span>
+<span id="cb86-77"><a href="#cb86-77" tabindex="-1"></a>})</span></code></pre></div>
+<pre><code>## Step: 100 Loss: 2.536778
+## Step: 200 Loss: 2.236472
+## Step: 300 Loss: 2.119417
+## Step: 400 Loss: 2.040341
+## Step: 500 Loss: 1.949125
+## Step: 600 Loss: 1.859384
+## Step: 700 Loss: 1.845726
+## Step: 800 Loss: 1.820594
+## Step: 900 Loss: 1.771334
+## Step: 1000 Loss: 1.730648</code></pre>
+<p>Implementing arbitrary research ideas with Keras is straightforward
+and highly productive. Imagine trying out 25 ideas per day (20 minutes
+per experiment on average)!</p>
+<p>Keras has been designed to go from idea to results as fast as
+possible, because we believe this is the key to doing great
+research.</p>
+<p>We hope you enjoyed this quick introduction. Let us know what you
+build with Keras!</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
