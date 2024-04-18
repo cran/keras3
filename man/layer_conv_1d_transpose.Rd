@@ -121,7 +121,7 @@ ValueError: when both \code{strides > 1} and \code{dilation_rate > 1}.
 }
 }
 
-\section{Examples}{
+\section{Example}{
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{x <- random_uniform(c(4, 10, 128))
 y <- x |> layer_conv_1d_transpose(32, 3, 2, activation='relu')
 shape(y)
@@ -191,6 +191,7 @@ Other layers: \cr
 \code{\link{layer_embedding}()} \cr
 \code{\link{layer_feature_space}()} \cr
 \code{\link{layer_flatten}()} \cr
+\code{\link{layer_flax_module_wrapper}()} \cr
 \code{\link{layer_gaussian_dropout}()} \cr
 \code{\link{layer_gaussian_noise}()} \cr
 \code{\link{layer_global_average_pooling_1d}()} \cr
@@ -206,6 +207,7 @@ Other layers: \cr
 \code{\link{layer_hashing}()} \cr
 \code{\link{layer_identity}()} \cr
 \code{\link{layer_integer_lookup}()} \cr
+\code{\link{layer_jax_model_wrapper}()} \cr
 \code{\link{layer_lambda}()} \cr
 \code{\link{layer_layer_normalization}()} \cr
 \code{\link{layer_lstm}()} \cr
@@ -214,6 +216,7 @@ Other layers: \cr
 \code{\link{layer_max_pooling_2d}()} \cr
 \code{\link{layer_max_pooling_3d}()} \cr
 \code{\link{layer_maximum}()} \cr
+\code{\link{layer_mel_spectrogram}()} \cr
 \code{\link{layer_minimum}()} \cr
 \code{\link{layer_multi_head_attention}()} \cr
 \code{\link{layer_multiply}()} \cr

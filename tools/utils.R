@@ -275,7 +275,6 @@ local({
 py_eval("tf.experimental.numpy.experimental_enable_numpy_behavior()")
 
 source_python("tools/common.py") # keras_class_type()
-rm(r) # TODO: fix in reticulate, don't export r
 
 
 # ---- collect endpoints ----
@@ -835,8 +834,12 @@ make_r_name <- function(endpoint, module = py_eval(endpoint)$`__module__`) {
     # layer_preprocess_feature_space()? or
 
 
-    "keras.ops.in_top_k" = "k_in_top_k"
-    "keras.ops.top_k" = "k_top_k"
+    "keras.ops.in_top_k" = "op_in_top_k"
+    "keras.ops.top_k" = "op_top_k"
+    "keras.ops.image.pad_images" = "op_image_pad"
+
+    "keras.layers.StackedRNNCells" = "rnn_cells_stack"
+    "keras.layers.SimpleRNNCell" = "rnn_cell_simple"
 
     "keras.random.randint" = "random_integer"
 
@@ -850,8 +853,9 @@ make_r_name <- function(endpoint, module = py_eval(endpoint)$`__module__`) {
                                 "keras" = character(),
                                 "preprocessing" = character(),
                                 "utils" = character(),
+                                "distribution" = "distributed",
                                 # "preprocessing" = character(),
-                                ops = "k",
+                                # ops = "k",
                                 .x
                                 ))
 
@@ -943,6 +947,8 @@ make_r_name <- function(endpoint, module = py_eval(endpoint)$`__module__`) {
     # replace_val("callback_callback_list", "callback_list") |>
     identity()
 
+  if(grepl("^layer_.*_cell$", name))
+    name <- sub("layer_(.*)_cell$", "rnn_cell_\\1", name)
 
   name
 }
@@ -1149,17 +1155,18 @@ make_r_fn.op <- function(endpoint, py_obj, transformers) {
     # k_array(c(1,2,3), "int32") fails because implicitly casting eager
     # float tensors to int throws a python error. So we explicitly cast first.
     return(function(x, dtype = NULL) {
-      if(!is.null(dtype) && !inherits(x, "python.builtin.object"))
+      if(!is.null(dtype) && !is_py_object(x))
         x <- np_array(x, dtype)
       keras$ops$array(x, dtype)
     })
   }
 
   if(endpoint == "keras.ops.reshape") {
-    stopifnot(identical(names(frmls), c("x", "new_shape")))
+    if(!identical(names(frmls), c("x", "newshape")))
+      browser()
 
-    return(function(x, ..., new_shape = list(...)) {
-      keras$ops$reshape(x, tuple(lapply(shape(new_shape), function(d) d %||% -1L)))
+    return(function(x, ..., newshape = list(...)) {
+      keras$ops$reshape(x, tuple(lapply(shape(newshape), function(d) d %||% -1L)))
     })
   }
 
@@ -1931,7 +1938,7 @@ man_src_render_translated <- function(directories = dir_ls("man-src/", type = "d
 
 # ---- vignettes ----
 
-tutobook_to_rmd <- function(path_to_tutobook, outfile = NA, tutobook_text = NULL) {
+tutobook_to_rmd <- function(path_to_tutobook = NULL, outfile = NA, tutobook_text = NULL) {
   if(is.null(tutobook_text))
     tutobook_text <- readLines(path_to_tutobook)
   stopifnot(isTRUE(is.na(outfile)) || is_string(outfile) || is.null(outfile) || isFALSE(outfile))
@@ -1945,7 +1952,7 @@ tutobook_to_rmd <- function(path_to_tutobook, outfile = NA, tutobook_text = NULL
       outfile <- FALSE
   }
 
-  rmd_text <- try({ .tutobook_to_rmd(tutobook_text) }, silent = TRUE)
+  rmd_text <- try({ .tutobook_to_rmd(tutobook_text, tether = path_to_tutobook) }, silent = TRUE)
   if(inherits(rmd_text, "try-error")) {
     message("converting failed: ", path_to_tutobook)
     warning(rmd_text)
@@ -1963,7 +1970,7 @@ tutobook_to_rmd <- function(path_to_tutobook, outfile = NA, tutobook_text = NULL
   invisible(outfile)
 }
 
-.tutobook_to_rmd <- function(tutobook) {
+.tutobook_to_rmd <- function(tutobook, tether = NULL) {
   stopifnot(is.character(tutobook))
 
   df <- tibble(
@@ -1988,7 +1995,8 @@ tutobook_to_rmd <- function(path_to_tutobook, outfile = NA, tutobook_text = NULL
         x[,1] %<>% snakecase::to_snake_case() %<>% str_replace_all("_", "-")
         x <- rlang::set_names(nm = x[,1], as.list(x[,2]))
         x$output <- "rmarkdown::html_vignette"
-        x$knit <- '({source(here::here("tools/knit.R")); knit_vignette)'
+        x$knit <- '({source(here::here("tools/knit.R")); knit_vignette})'
+        x$tether <- x$tether %||% tether
         # # x$repo <- https://github.com/rstudio/keras
 
         frontmatter <- yaml::as.yaml(x) |> str_trim("right")
@@ -2316,3 +2324,17 @@ if(FALSE) {
 #   )--")
 # rep <- "`\\1`"
 # str_replace_all(x, rx, rep)
+
+
+if(FALSE) {
+
+  # for(dir in list.dirs("tools/raw"))
+  list.dirs("tools/raw") %>%
+    lapply(function(d) {
+      withr::local_dir(d)
+      if(any(startsWith(dir(), "gpt")))
+        system(paste("code -d r_wrapper.R", dir(pattern = "^gpt-4")[1]))
+    }) %>%
+    invisible()
+
+}

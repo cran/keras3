@@ -688,13 +688,13 @@ automatically summed and added to the main loss, if any):</p>
 <span id="cb36-6"><a href="#cb36-6" tabindex="-1"></a><span class="co"># losses get added to it</span></span>
 <span id="cb36-7"><a href="#cb36-7" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">compile</span>(<span class="at">optimizer =</span> <span class="st">&quot;adam&quot;</span>, <span class="at">loss =</span> <span class="st">&quot;mse&quot;</span>)</span>
 <span id="cb36-8"><a href="#cb36-8" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(<span class="fu">random_normal</span>(<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>)), <span class="fu">random_normal</span>(<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>)), <span class="at">epochs =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## 1/1 - 0s - 132ms/step - loss: 1.8971</code></pre>
+<pre><code>## 1/1 - 0s - 140ms/step - loss: 1.8971</code></pre>
 <div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" tabindex="-1"></a><span class="co"># It&#39;s also possible not to pass any loss in `compile`,</span></span>
 <span id="cb38-2"><a href="#cb38-2" tabindex="-1"></a><span class="co"># since the model already has a loss to minimize, via the `add_loss`</span></span>
 <span id="cb38-3"><a href="#cb38-3" tabindex="-1"></a><span class="co"># call during the forward pass!</span></span>
 <span id="cb38-4"><a href="#cb38-4" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">compile</span>(<span class="at">optimizer =</span> <span class="st">&quot;adam&quot;</span>)</span>
 <span id="cb38-5"><a href="#cb38-5" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(<span class="fu">random_normal</span>(<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>)), <span class="fu">random_normal</span>(<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>)), <span class="at">epochs =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## 1/1 - 0s - 104ms/step - loss: -3.3344e-03</code></pre>
+<pre><code>## 1/1 - 0s - 89ms/step - loss: -3.3344e-03</code></pre>
 </div>
 <div id="you-can-optionally-enable-serialization-on-your-layers" class="section level2">
 <h2>You can optionally enable serialization on your layers</h2>
@@ -802,13 +802,15 @@ correctly use the layer in training and inference.</p>
 <span id="cb47-3"><a href="#cb47-3" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>(rate, ...) {</span>
 <span id="cb47-4"><a href="#cb47-4" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>(...)</span>
 <span id="cb47-5"><a href="#cb47-5" tabindex="-1"></a>    self<span class="sc">$</span>rate <span class="ot">&lt;-</span> rate</span>
-<span id="cb47-6"><a href="#cb47-6" tabindex="-1"></a>  },</span>
-<span id="cb47-7"><a href="#cb47-7" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs, <span class="at">training =</span> <span class="cn">NULL</span>) {</span>
-<span id="cb47-8"><a href="#cb47-8" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">isTRUE</span>(training))</span>
-<span id="cb47-9"><a href="#cb47-9" tabindex="-1"></a>      <span class="fu">return</span>(<span class="fu">random_dropout</span>(inputs, <span class="at">rate =</span> self<span class="sc">$</span>rate))</span>
-<span id="cb47-10"><a href="#cb47-10" tabindex="-1"></a>    inputs</span>
-<span id="cb47-11"><a href="#cb47-11" tabindex="-1"></a>  }</span>
-<span id="cb47-12"><a href="#cb47-12" tabindex="-1"></a>)</span></code></pre></div>
+<span id="cb47-6"><a href="#cb47-6" tabindex="-1"></a>    self<span class="sc">$</span>seed_generator <span class="ot">&lt;-</span> <span class="fu">random_seed_generator</span>(<span class="dv">1337</span>)</span>
+<span id="cb47-7"><a href="#cb47-7" tabindex="-1"></a>  },</span>
+<span id="cb47-8"><a href="#cb47-8" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs, <span class="at">training =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb47-9"><a href="#cb47-9" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">isTRUE</span>(training))</span>
+<span id="cb47-10"><a href="#cb47-10" tabindex="-1"></a>      <span class="fu">return</span>(<span class="fu">random_dropout</span>(inputs, <span class="at">rate =</span> self<span class="sc">$</span>rate,</span>
+<span id="cb47-11"><a href="#cb47-11" tabindex="-1"></a>                            <span class="at">seed =</span> self.seed_generator))</span>
+<span id="cb47-12"><a href="#cb47-12" tabindex="-1"></a>    inputs</span>
+<span id="cb47-13"><a href="#cb47-13" tabindex="-1"></a>  }</span>
+<span id="cb47-14"><a href="#cb47-14" tabindex="-1"></a>)</span></code></pre></div>
 </div>
 <div id="privileged-mask-argument-in-the-call-method" class="section level2">
 <h2>Privileged <code>mask</code> argument in the <code>call()</code>
@@ -912,78 +914,83 @@ composition of layers that subclass <code>Layer</code>. It will feature
 a regularization loss (KL divergence).</p>
 <div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" tabindex="-1"></a>layer_sampling <span class="ot">&lt;-</span> <span class="fu">Layer</span>(</span>
 <span id="cb49-2"><a href="#cb49-2" tabindex="-1"></a>  <span class="st">&quot;Sampling&quot;</span>,</span>
-<span id="cb49-3"><a href="#cb49-3" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
-<span id="cb49-4"><a href="#cb49-4" tabindex="-1"></a>    <span class="fu">c</span>(z_mean, z_log_var) <span class="sc">%&lt;-%</span> inputs</span>
-<span id="cb49-5"><a href="#cb49-5" tabindex="-1"></a>    batch <span class="ot">&lt;-</span> <span class="fu">op_shape</span>(z_mean)[[<span class="dv">1</span>]]</span>
-<span id="cb49-6"><a href="#cb49-6" tabindex="-1"></a>    dim <span class="ot">&lt;-</span> <span class="fu">op_shape</span>(z_mean)[[<span class="dv">2</span>]]</span>
-<span id="cb49-7"><a href="#cb49-7" tabindex="-1"></a>    epsilon <span class="ot">&lt;-</span> <span class="fu">random_normal</span>(<span class="at">shape =</span> <span class="fu">c</span>(batch, dim))</span>
-<span id="cb49-8"><a href="#cb49-8" tabindex="-1"></a>    z_mean <span class="sc">+</span> <span class="fu">op_exp</span>(<span class="fl">0.5</span> <span class="sc">*</span> z_log_var) <span class="sc">*</span> epsilon</span>
-<span id="cb49-9"><a href="#cb49-9" tabindex="-1"></a>  }</span>
-<span id="cb49-10"><a href="#cb49-10" tabindex="-1"></a>)</span>
-<span id="cb49-11"><a href="#cb49-11" tabindex="-1"></a></span>
-<span id="cb49-12"><a href="#cb49-12" tabindex="-1"></a><span class="co"># Maps MNIST digits to a triplet (z_mean, z_log_var, z).</span></span>
-<span id="cb49-13"><a href="#cb49-13" tabindex="-1"></a>layer_encoder <span class="ot">&lt;-</span> <span class="fu">Layer</span>(</span>
-<span id="cb49-14"><a href="#cb49-14" tabindex="-1"></a>  <span class="st">&quot;Encoder&quot;</span>,</span>
-<span id="cb49-15"><a href="#cb49-15" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>(<span class="at">latent_dim =</span> <span class="dv">32</span>, <span class="at">intermediate_dim =</span> <span class="dv">64</span>, ...) {</span>
-<span id="cb49-16"><a href="#cb49-16" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>(...)</span>
-<span id="cb49-17"><a href="#cb49-17" tabindex="-1"></a>    self<span class="sc">$</span>dense_proj <span class="ot">&lt;-</span></span>
-<span id="cb49-18"><a href="#cb49-18" tabindex="-1"></a>      <span class="fu">layer_dense</span>(<span class="at">units =</span> intermediate_dim,  <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>)</span>
-<span id="cb49-19"><a href="#cb49-19" tabindex="-1"></a>    self<span class="sc">$</span>dense_mean <span class="ot">&lt;-</span> <span class="fu">layer_dense</span>(<span class="at">units =</span> latent_dim)</span>
-<span id="cb49-20"><a href="#cb49-20" tabindex="-1"></a>    self<span class="sc">$</span>dense_log_var <span class="ot">&lt;-</span> <span class="fu">layer_dense</span>(<span class="at">units =</span> latent_dim)</span>
-<span id="cb49-21"><a href="#cb49-21" tabindex="-1"></a>    self<span class="sc">$</span>sampling <span class="ot">&lt;-</span> <span class="fu">layer_sampling</span>()</span>
-<span id="cb49-22"><a href="#cb49-22" tabindex="-1"></a>  },</span>
-<span id="cb49-23"><a href="#cb49-23" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
-<span id="cb49-24"><a href="#cb49-24" tabindex="-1"></a>    x <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">dense_proj</span>(inputs)</span>
-<span id="cb49-25"><a href="#cb49-25" tabindex="-1"></a>    z_mean <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">dense_mean</span>(x)</span>
-<span id="cb49-26"><a href="#cb49-26" tabindex="-1"></a>    z_log_var <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">dense_log_var</span>(x)</span>
-<span id="cb49-27"><a href="#cb49-27" tabindex="-1"></a>    z <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">sampling</span>(<span class="fu">list</span>(z_mean, z_log_var))</span>
-<span id="cb49-28"><a href="#cb49-28" tabindex="-1"></a>    <span class="fu">list</span>(z_mean, z_log_var, z)</span>
-<span id="cb49-29"><a href="#cb49-29" tabindex="-1"></a>  }</span>
-<span id="cb49-30"><a href="#cb49-30" tabindex="-1"></a>)</span>
-<span id="cb49-31"><a href="#cb49-31" tabindex="-1"></a></span>
-<span id="cb49-32"><a href="#cb49-32" tabindex="-1"></a><span class="co"># Converts z, the encoded digit vector, back into a readable digit.</span></span>
-<span id="cb49-33"><a href="#cb49-33" tabindex="-1"></a>layer_decoder <span class="ot">&lt;-</span> <span class="fu">Layer</span>(</span>
-<span id="cb49-34"><a href="#cb49-34" tabindex="-1"></a>  <span class="st">&quot;Decoder&quot;</span>,</span>
-<span id="cb49-35"><a href="#cb49-35" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>(original_dim, <span class="at">intermediate_dim =</span> <span class="dv">64</span>, ...) {</span>
-<span id="cb49-36"><a href="#cb49-36" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>(...)</span>
-<span id="cb49-37"><a href="#cb49-37" tabindex="-1"></a>    self<span class="sc">$</span>dense_proj <span class="ot">&lt;-</span></span>
-<span id="cb49-38"><a href="#cb49-38" tabindex="-1"></a>      <span class="fu">layer_dense</span>(<span class="at">units =</span> intermediate_dim, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>)</span>
-<span id="cb49-39"><a href="#cb49-39" tabindex="-1"></a>    self<span class="sc">$</span>dense_output <span class="ot">&lt;-</span></span>
-<span id="cb49-40"><a href="#cb49-40" tabindex="-1"></a>      <span class="fu">layer_dense</span>(<span class="at">units =</span> original_dim, <span class="at">activation =</span> <span class="st">&quot;sigmoid&quot;</span>)</span>
-<span id="cb49-41"><a href="#cb49-41" tabindex="-1"></a>  },</span>
-<span id="cb49-42"><a href="#cb49-42" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
-<span id="cb49-43"><a href="#cb49-43" tabindex="-1"></a>    x <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">dense_proj</span>(inputs)</span>
-<span id="cb49-44"><a href="#cb49-44" tabindex="-1"></a>    self<span class="sc">$</span><span class="fu">dense_output</span>(x)</span>
-<span id="cb49-45"><a href="#cb49-45" tabindex="-1"></a>  }</span>
-<span id="cb49-46"><a href="#cb49-46" tabindex="-1"></a>)</span>
-<span id="cb49-47"><a href="#cb49-47" tabindex="-1"></a></span>
-<span id="cb49-48"><a href="#cb49-48" tabindex="-1"></a><span class="co"># Combines the encoder and decoder into an end-to-end model for training.</span></span>
-<span id="cb49-49"><a href="#cb49-49" tabindex="-1"></a>VariationalAutoEncoder <span class="ot">&lt;-</span> <span class="fu">Model</span>(</span>
-<span id="cb49-50"><a href="#cb49-50" tabindex="-1"></a>  <span class="st">&quot;VariationalAutoEncoder&quot;</span>,</span>
-<span id="cb49-51"><a href="#cb49-51" tabindex="-1"></a></span>
-<span id="cb49-52"><a href="#cb49-52" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>(original_dim, <span class="at">intermediate_dim =</span> <span class="dv">64</span>, <span class="at">latent_dim =</span> <span class="dv">32</span>,</span>
-<span id="cb49-53"><a href="#cb49-53" tabindex="-1"></a>                        <span class="at">name =</span> <span class="st">&quot;autoencoder&quot;</span>, ...) {</span>
-<span id="cb49-54"><a href="#cb49-54" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>(<span class="at">name =</span> name, ...)</span>
-<span id="cb49-55"><a href="#cb49-55" tabindex="-1"></a>    self<span class="sc">$</span>original_dim <span class="ot">&lt;-</span> original_dim</span>
-<span id="cb49-56"><a href="#cb49-56" tabindex="-1"></a>    self<span class="sc">$</span>encoder <span class="ot">&lt;-</span> <span class="fu">layer_encoder</span>(<span class="at">latent_dim =</span> latent_dim,</span>
-<span id="cb49-57"><a href="#cb49-57" tabindex="-1"></a>                            <span class="at">intermediate_dim =</span> intermediate_dim)</span>
-<span id="cb49-58"><a href="#cb49-58" tabindex="-1"></a>    self<span class="sc">$</span>decoder <span class="ot">&lt;-</span> <span class="fu">layer_decoder</span>(<span class="at">original_dim =</span> original_dim,</span>
-<span id="cb49-59"><a href="#cb49-59" tabindex="-1"></a>                            <span class="at">intermediate_dim =</span> intermediate_dim)</span>
-<span id="cb49-60"><a href="#cb49-60" tabindex="-1"></a>  },</span>
-<span id="cb49-61"><a href="#cb49-61" tabindex="-1"></a></span>
-<span id="cb49-62"><a href="#cb49-62" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
-<span id="cb49-63"><a href="#cb49-63" tabindex="-1"></a>    <span class="fu">c</span>(z_mean, z_log_var, z) <span class="sc">%&lt;-%</span> self<span class="sc">$</span><span class="fu">encoder</span>(inputs)</span>
-<span id="cb49-64"><a href="#cb49-64" tabindex="-1"></a>    reconstructed <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">decoder</span>(z)</span>
-<span id="cb49-65"><a href="#cb49-65" tabindex="-1"></a>    <span class="co"># Add KL divergence regularization loss.</span></span>
-<span id="cb49-66"><a href="#cb49-66" tabindex="-1"></a>    kl_loss <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">op_mean</span>(z_log_var <span class="sc">-</span> <span class="fu">op_square</span>(z_mean) <span class="sc">-</span> <span class="fu">op_exp</span>(z_log_var) <span class="sc">+</span> <span class="dv">1</span>)</span>
-<span id="cb49-67"><a href="#cb49-67" tabindex="-1"></a>    self<span class="sc">$</span><span class="fu">add_loss</span>(kl_loss)</span>
-<span id="cb49-68"><a href="#cb49-68" tabindex="-1"></a>    reconstructed</span>
-<span id="cb49-69"><a href="#cb49-69" tabindex="-1"></a>  }</span>
-<span id="cb49-70"><a href="#cb49-70" tabindex="-1"></a>)</span></code></pre></div>
+<span id="cb49-3"><a href="#cb49-3" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>(...) {</span>
+<span id="cb49-4"><a href="#cb49-4" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>(...)</span>
+<span id="cb49-5"><a href="#cb49-5" tabindex="-1"></a>    self<span class="sc">$</span>seed_generator <span class="ot">&lt;-</span> <span class="fu">random_seed_generator</span>(<span class="dv">1337</span>)</span>
+<span id="cb49-6"><a href="#cb49-6" tabindex="-1"></a>  },</span>
+<span id="cb49-7"><a href="#cb49-7" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
+<span id="cb49-8"><a href="#cb49-8" tabindex="-1"></a>    <span class="fu">c</span>(z_mean, z_log_var) <span class="sc">%&lt;-%</span> inputs</span>
+<span id="cb49-9"><a href="#cb49-9" tabindex="-1"></a>    batch <span class="ot">&lt;-</span> <span class="fu">op_shape</span>(z_mean)[[<span class="dv">1</span>]]</span>
+<span id="cb49-10"><a href="#cb49-10" tabindex="-1"></a>    dim <span class="ot">&lt;-</span> <span class="fu">op_shape</span>(z_mean)[[<span class="dv">2</span>]]</span>
+<span id="cb49-11"><a href="#cb49-11" tabindex="-1"></a>    epsilon <span class="ot">&lt;-</span> <span class="fu">random_normal</span>(<span class="at">shape =</span> <span class="fu">c</span>(batch, dim),</span>
+<span id="cb49-12"><a href="#cb49-12" tabindex="-1"></a>                             <span class="at">seed=</span>self<span class="sc">$</span>seed_generator)</span>
+<span id="cb49-13"><a href="#cb49-13" tabindex="-1"></a>    z_mean <span class="sc">+</span> <span class="fu">op_exp</span>(<span class="fl">0.5</span> <span class="sc">*</span> z_log_var) <span class="sc">*</span> epsilon</span>
+<span id="cb49-14"><a href="#cb49-14" tabindex="-1"></a>  }</span>
+<span id="cb49-15"><a href="#cb49-15" tabindex="-1"></a>)</span>
+<span id="cb49-16"><a href="#cb49-16" tabindex="-1"></a></span>
+<span id="cb49-17"><a href="#cb49-17" tabindex="-1"></a><span class="co"># Maps MNIST digits to a triplet (z_mean, z_log_var, z).</span></span>
+<span id="cb49-18"><a href="#cb49-18" tabindex="-1"></a>layer_encoder <span class="ot">&lt;-</span> <span class="fu">Layer</span>(</span>
+<span id="cb49-19"><a href="#cb49-19" tabindex="-1"></a>  <span class="st">&quot;Encoder&quot;</span>,</span>
+<span id="cb49-20"><a href="#cb49-20" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>(<span class="at">latent_dim =</span> <span class="dv">32</span>, <span class="at">intermediate_dim =</span> <span class="dv">64</span>, ...) {</span>
+<span id="cb49-21"><a href="#cb49-21" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>(...)</span>
+<span id="cb49-22"><a href="#cb49-22" tabindex="-1"></a>    self<span class="sc">$</span>dense_proj <span class="ot">&lt;-</span></span>
+<span id="cb49-23"><a href="#cb49-23" tabindex="-1"></a>      <span class="fu">layer_dense</span>(<span class="at">units =</span> intermediate_dim,  <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>)</span>
+<span id="cb49-24"><a href="#cb49-24" tabindex="-1"></a>    self<span class="sc">$</span>dense_mean <span class="ot">&lt;-</span> <span class="fu">layer_dense</span>(<span class="at">units =</span> latent_dim)</span>
+<span id="cb49-25"><a href="#cb49-25" tabindex="-1"></a>    self<span class="sc">$</span>dense_log_var <span class="ot">&lt;-</span> <span class="fu">layer_dense</span>(<span class="at">units =</span> latent_dim)</span>
+<span id="cb49-26"><a href="#cb49-26" tabindex="-1"></a>    self<span class="sc">$</span>sampling <span class="ot">&lt;-</span> <span class="fu">layer_sampling</span>()</span>
+<span id="cb49-27"><a href="#cb49-27" tabindex="-1"></a>  },</span>
+<span id="cb49-28"><a href="#cb49-28" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
+<span id="cb49-29"><a href="#cb49-29" tabindex="-1"></a>    x <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">dense_proj</span>(inputs)</span>
+<span id="cb49-30"><a href="#cb49-30" tabindex="-1"></a>    z_mean <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">dense_mean</span>(x)</span>
+<span id="cb49-31"><a href="#cb49-31" tabindex="-1"></a>    z_log_var <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">dense_log_var</span>(x)</span>
+<span id="cb49-32"><a href="#cb49-32" tabindex="-1"></a>    z <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">sampling</span>(<span class="fu">list</span>(z_mean, z_log_var))</span>
+<span id="cb49-33"><a href="#cb49-33" tabindex="-1"></a>    <span class="fu">list</span>(z_mean, z_log_var, z)</span>
+<span id="cb49-34"><a href="#cb49-34" tabindex="-1"></a>  }</span>
+<span id="cb49-35"><a href="#cb49-35" tabindex="-1"></a>)</span>
+<span id="cb49-36"><a href="#cb49-36" tabindex="-1"></a></span>
+<span id="cb49-37"><a href="#cb49-37" tabindex="-1"></a><span class="co"># Converts z, the encoded digit vector, back into a readable digit.</span></span>
+<span id="cb49-38"><a href="#cb49-38" tabindex="-1"></a>layer_decoder <span class="ot">&lt;-</span> <span class="fu">Layer</span>(</span>
+<span id="cb49-39"><a href="#cb49-39" tabindex="-1"></a>  <span class="st">&quot;Decoder&quot;</span>,</span>
+<span id="cb49-40"><a href="#cb49-40" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>(original_dim, <span class="at">intermediate_dim =</span> <span class="dv">64</span>, ...) {</span>
+<span id="cb49-41"><a href="#cb49-41" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>(...)</span>
+<span id="cb49-42"><a href="#cb49-42" tabindex="-1"></a>    self<span class="sc">$</span>dense_proj <span class="ot">&lt;-</span></span>
+<span id="cb49-43"><a href="#cb49-43" tabindex="-1"></a>      <span class="fu">layer_dense</span>(<span class="at">units =</span> intermediate_dim, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>)</span>
+<span id="cb49-44"><a href="#cb49-44" tabindex="-1"></a>    self<span class="sc">$</span>dense_output <span class="ot">&lt;-</span></span>
+<span id="cb49-45"><a href="#cb49-45" tabindex="-1"></a>      <span class="fu">layer_dense</span>(<span class="at">units =</span> original_dim, <span class="at">activation =</span> <span class="st">&quot;sigmoid&quot;</span>)</span>
+<span id="cb49-46"><a href="#cb49-46" tabindex="-1"></a>  },</span>
+<span id="cb49-47"><a href="#cb49-47" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
+<span id="cb49-48"><a href="#cb49-48" tabindex="-1"></a>    x <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">dense_proj</span>(inputs)</span>
+<span id="cb49-49"><a href="#cb49-49" tabindex="-1"></a>    self<span class="sc">$</span><span class="fu">dense_output</span>(x)</span>
+<span id="cb49-50"><a href="#cb49-50" tabindex="-1"></a>  }</span>
+<span id="cb49-51"><a href="#cb49-51" tabindex="-1"></a>)</span>
+<span id="cb49-52"><a href="#cb49-52" tabindex="-1"></a></span>
+<span id="cb49-53"><a href="#cb49-53" tabindex="-1"></a><span class="co"># Combines the encoder and decoder into an end-to-end model for training.</span></span>
+<span id="cb49-54"><a href="#cb49-54" tabindex="-1"></a>VariationalAutoEncoder <span class="ot">&lt;-</span> <span class="fu">Model</span>(</span>
+<span id="cb49-55"><a href="#cb49-55" tabindex="-1"></a>  <span class="st">&quot;VariationalAutoEncoder&quot;</span>,</span>
+<span id="cb49-56"><a href="#cb49-56" tabindex="-1"></a></span>
+<span id="cb49-57"><a href="#cb49-57" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>(original_dim, <span class="at">intermediate_dim =</span> <span class="dv">64</span>, <span class="at">latent_dim =</span> <span class="dv">32</span>,</span>
+<span id="cb49-58"><a href="#cb49-58" tabindex="-1"></a>                        <span class="at">name =</span> <span class="st">&quot;autoencoder&quot;</span>, ...) {</span>
+<span id="cb49-59"><a href="#cb49-59" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>(<span class="at">name =</span> name, ...)</span>
+<span id="cb49-60"><a href="#cb49-60" tabindex="-1"></a>    self<span class="sc">$</span>original_dim <span class="ot">&lt;-</span> original_dim</span>
+<span id="cb49-61"><a href="#cb49-61" tabindex="-1"></a>    self<span class="sc">$</span>encoder <span class="ot">&lt;-</span> <span class="fu">layer_encoder</span>(<span class="at">latent_dim =</span> latent_dim,</span>
+<span id="cb49-62"><a href="#cb49-62" tabindex="-1"></a>                            <span class="at">intermediate_dim =</span> intermediate_dim)</span>
+<span id="cb49-63"><a href="#cb49-63" tabindex="-1"></a>    self<span class="sc">$</span>decoder <span class="ot">&lt;-</span> <span class="fu">layer_decoder</span>(<span class="at">original_dim =</span> original_dim,</span>
+<span id="cb49-64"><a href="#cb49-64" tabindex="-1"></a>                            <span class="at">intermediate_dim =</span> intermediate_dim)</span>
+<span id="cb49-65"><a href="#cb49-65" tabindex="-1"></a>  },</span>
+<span id="cb49-66"><a href="#cb49-66" tabindex="-1"></a></span>
+<span id="cb49-67"><a href="#cb49-67" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
+<span id="cb49-68"><a href="#cb49-68" tabindex="-1"></a>    <span class="fu">c</span>(z_mean, z_log_var, z) <span class="sc">%&lt;-%</span> self<span class="sc">$</span><span class="fu">encoder</span>(inputs)</span>
+<span id="cb49-69"><a href="#cb49-69" tabindex="-1"></a>    reconstructed <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">decoder</span>(z)</span>
+<span id="cb49-70"><a href="#cb49-70" tabindex="-1"></a>    <span class="co"># Add KL divergence regularization loss.</span></span>
+<span id="cb49-71"><a href="#cb49-71" tabindex="-1"></a>    kl_loss <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">op_mean</span>(z_log_var <span class="sc">-</span> <span class="fu">op_square</span>(z_mean) <span class="sc">-</span> <span class="fu">op_exp</span>(z_log_var) <span class="sc">+</span> <span class="dv">1</span>)</span>
+<span id="cb49-72"><a href="#cb49-72" tabindex="-1"></a>    self<span class="sc">$</span><span class="fu">add_loss</span>(kl_loss)</span>
+<span id="cb49-73"><a href="#cb49-73" tabindex="-1"></a>    reconstructed</span>
+<span id="cb49-74"><a href="#cb49-74" tabindex="-1"></a>  }</span>
+<span id="cb49-75"><a href="#cb49-75" tabindex="-1"></a>)</span></code></pre></div>
 <p>Let’s train it on MNIST using the <code>fit()</code> API:</p>
 <div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" tabindex="-1"></a><span class="fu">c</span>(<span class="fu">c</span>(x_train, .), .) <span class="sc">%&lt;-%</span> <span class="fu">dataset_mnist</span>()</span>
 <span id="cb50-2"><a href="#cb50-2" tabindex="-1"></a>x_train <span class="ot">&lt;-</span> x_train <span class="sc">|&gt;</span></span>
-<span id="cb50-3"><a href="#cb50-3" tabindex="-1"></a>  <span class="fu">op_reshape</span>(<span class="at">new_shape =</span> <span class="fu">c</span>(<span class="dv">60000</span>, <span class="dv">784</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb50-3"><a href="#cb50-3" tabindex="-1"></a>  <span class="fu">op_reshape</span>(<span class="fu">c</span>(<span class="dv">60000</span>, <span class="dv">784</span>)) <span class="sc">|&gt;</span></span>
 <span id="cb50-4"><a href="#cb50-4" tabindex="-1"></a>  <span class="fu">op_cast</span>(<span class="st">&quot;float32&quot;</span>) <span class="sc">|&gt;</span></span>
 <span id="cb50-5"><a href="#cb50-5" tabindex="-1"></a>  <span class="fu">op_divide</span>(<span class="dv">255</span>)</span>
 <span id="cb50-6"><a href="#cb50-6" tabindex="-1"></a></span>
@@ -999,9 +1006,9 @@ a regularization loss (KL divergence).</p>
 <span id="cb50-16"><a href="#cb50-16" tabindex="-1"></a></span>
 <span id="cb50-17"><a href="#cb50-17" tabindex="-1"></a>vae <span class="sc">|&gt;</span> <span class="fu">fit</span>(x_train, x_train, <span class="at">epochs =</span> <span class="dv">2</span>, <span class="at">batch_size =</span> <span class="dv">64</span>)</span></code></pre></div>
 <pre><code>## Epoch 1/2
-## 938/938 - 6s - 7ms/step - loss: 0.0748
+## 938/938 - 5s - 5ms/step - loss: 0.0748
 ## Epoch 2/2
-## 938/938 - 1s - 1ms/step - loss: 0.0676</code></pre>
+## 938/938 - 1s - 765us/step - loss: 0.0676</code></pre>
 </div>
 
 

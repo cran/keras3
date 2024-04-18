@@ -751,7 +751,7 @@ weight values.</li>
 weights to the values provided (as arrays).</li>
 </ul>
 <p>Examples:</p>
-<p><strong><em>Transfering weights from one layer to another, in
+<p><strong><em>Transferring weights from one layer to another, in
 memory</em></strong></p>
 <div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a>create_layer <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
 <span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a>  layer <span class="ot">&lt;-</span> <span class="fu">layer_dense</span>(, <span class="dv">64</span>, <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>, <span class="at">name =</span> <span class="st">&quot;dense_2&quot;</span>)</span>
@@ -764,7 +764,7 @@ memory</em></strong></p>
 <span id="cb23-9"><a href="#cb23-9" tabindex="-1"></a></span>
 <span id="cb23-10"><a href="#cb23-10" tabindex="-1"></a><span class="co"># Copy weights from layer 1 to layer 2</span></span>
 <span id="cb23-11"><a href="#cb23-11" tabindex="-1"></a>layer_2 <span class="sc">|&gt;</span> <span class="fu">set_weights</span>(<span class="fu">get_weights</span>(layer_1))</span></code></pre></div>
-<p><strong><em>Transfering weights from one model to another model with
+<p><strong><em>Transferring weights from one model to another model with
 a compatible architecture, in memory</em></strong></p>
 <div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a><span class="co"># Create a simple functional model</span></span>
 <span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a>inputs <span class="ot">&lt;-</span> <span class="fu">keras_input</span>(<span class="at">shape=</span><span class="fu">c</span>(<span class="dv">784</span>), <span class="at">name=</span><span class="st">&quot;digits&quot;</span>)</span>
@@ -884,15 +884,15 @@ and then extract the desired weights/layers into a new model.</p>
 <span id="cb27-20"><a href="#cb27-20" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="dv">5</span>, <span class="at">name =</span> <span class="st">&quot;dense_3&quot;</span>)</span>
 <span id="cb27-21"><a href="#cb27-21" tabindex="-1"></a><span class="fu">summary</span>(model)</span></code></pre></div>
 <pre><code>## [1mModel: &quot;sequential_4&quot;[0m
-## ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
-## ┃[1m [0m[1mLayer (type)                   [0m[1m [0m┃[1m [0m[1mOutput Shape             [0m[1m [0m┃[1m [0m[1m   Param #[0m[1m [0m┃
-## ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━┩
-## │ dense_1 ([38;5;33mDense[0m)                 │ ([38;5;45mNone[0m, [38;5;34m64[0m)                │     [38;5;34m50,240[0m │
-## ├─────────────────────────────────┼───────────────────────────┼────────────┤
-## │ dense_2 ([38;5;33mDense[0m)                 │ ([38;5;45mNone[0m, [38;5;34m64[0m)                │      [38;5;34m4,160[0m │
-## ├─────────────────────────────────┼───────────────────────────┼────────────┤
-## │ dense_3 ([38;5;33mDense[0m)                 │ ([38;5;45mNone[0m, [38;5;34m5[0m)                 │        [38;5;34m325[0m │
-## └─────────────────────────────────┴───────────────────────────┴────────────┘
+## ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
+## ┃[1m [0m[1mLayer (type)                   [0m[1m [0m┃[1m [0m[1mOutput Shape          [0m[1m [0m┃[1m [0m[1m      Param #[0m[1m [0m┃
+## ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩
+## │ dense_1 ([38;5;33mDense[0m)                 │ ([38;5;45mNone[0m, [38;5;34m64[0m)             │        [38;5;34m50,240[0m │
+## ├─────────────────────────────────┼────────────────────────┼───────────────┤
+## │ dense_2 ([38;5;33mDense[0m)                 │ ([38;5;45mNone[0m, [38;5;34m64[0m)             │         [38;5;34m4,160[0m │
+## ├─────────────────────────────────┼────────────────────────┼───────────────┤
+## │ dense_3 ([38;5;33mDense[0m)                 │ ([38;5;45mNone[0m, [38;5;34m5[0m)              │           [38;5;34m325[0m │
+## └─────────────────────────────────┴────────────────────────┴───────────────┘
 ## [1m Total params: [0m[38;5;34m54,725[0m (213.77 KB)
 ## [1m Trainable params: [0m[38;5;34m54,725[0m (213.77 KB)
 ## [1m Non-trainable params: [0m[38;5;34m0[0m (0.00 B)</code></pre>

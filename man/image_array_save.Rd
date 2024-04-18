@@ -47,6 +47,7 @@ Other image utils: \cr
 \code{\link{image_smart_resize}()} \cr
 \code{\link{image_to_array}()} \cr
 \code{\link{op_image_affine_transform}()} \cr
+\code{\link{op_image_crop}()} \cr
 \code{\link{op_image_extract_patches}()} \cr
 \code{\link{op_image_map_coordinates}()} \cr
 \code{\link{op_image_pad}()} \cr
@@ -69,7 +70,6 @@ Other utils: \cr
 \code{\link{image_smart_resize}()} \cr
 \code{\link{image_to_array}()} \cr
 \code{\link{layer_feature_space}()} \cr
-\code{\link{layer_torch_module_wrapper}()} \cr
 \code{\link{normalize}()} \cr
 \code{\link{pack_x_y_sample_weight}()} \cr
 \code{\link{pad_sequences}()} \cr

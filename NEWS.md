@@ -1,3 +1,70 @@
+# keras3 0.2.0
+
+New functions:
+
+  - `quantize_weights()`: quantize model or layer weights in-place. Currently,
+    only `Dense`, `EinsumDense`, and `Embedding` layers are supported (which is enough to
+    cover the majority of transformers today)
+  - `layer_mel_spectrogram()`
+  - `layer_flax_module_wrapper()`
+  - `layer_jax_model_wrapper()`
+
+  - `loss_dice()`
+
+  - `random_beta()`
+  - `random_binomial()`
+
+  - `config_set_backend()`: change the backend after Keras has initialized.
+  - `config_dtype_policy()`
+  - `config_set_dtype_policy()`
+
+  - New Ops
+    - `op_custom_gradient()`
+    - `op_batch_normalization()`
+    - `op_image_crop()`
+    - `op_divide_no_nan()`
+    - `op_normalize()`
+    - `op_correlate()`
+    - `
+  - New family of linear algebra ops
+    - `op_cholesky()`
+    - `op_det()`
+    - `op_eig()`
+    - `op_inv()`
+    - `op_lu_factor()`
+    - `op_norm()`
+    - `op_erfinv()`
+    - `op_solve_triangular()`
+    - `op_svd()`
+
+- `audio_dataset_from_directory()`, `image_dataset_from_directory()` and `text_dataset_from_directory()` gain a `verbose` argument (default `TRUE`)
+
+- `image_dataset_from_directory()` gains `pad_to_aspect_ratio` argument (default `FALSE`)
+
+- `to_categorical()`, `op_one_hot()`, and `fit()` can now accept R factors,
+  offset them to be 0-based (reported in `#1055`).
+
+- `op_convert_to_numpy()` now returns unconverted NumPy arrays.
+
+- `op_array()` and `op_convert_to_tensor()` no longer error when casting R
+   doubles to integer types.
+
+- `export_savedmodel()` now works with a Jax backend.
+
+- `Metric()$add_variable()` method gains arg: `aggregration`.
+- `Layer()$add_weight()` method gains args: `autocast`, `regularizer`, `aggregation`.
+
+- `op_bincount()`, `op_multi_hot()`, `op_one_hot()`, and `layer_category_encoding()` now support sparse tensors.
+
+- `op_custom_gradient()` now supports the PyTorch backend
+
+- `layer_lstm()` and `layer_gru()` gain arg `use_cudnn`, default `'auto'`.
+
+- Fixed an issue where `application_preprocess_inputs()` would error if supplied
+  an R array as input.
+
+- Doc improvements.
+
 # keras3 0.1.0
 
 - The package has been rebuilt for Keras 3.0. Refer to <blogpost> for an overview

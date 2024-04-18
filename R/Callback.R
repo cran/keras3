@@ -405,10 +405,25 @@ wrap_callback_method_sig_logs <- function(fn) {
   tools$wrap_sig_self_logs(fn)
 }
 
+import_kerastools <- function(x) {
+  import_from_path(
+    paste0(c("kerastools", x), collapse = "."),
+    path = system.file("python", package = "keras3")
+  )
+}
 
 
 import_callback_tools <- function() {
   import_from_path(
     "kerastools.callback",
     path = system.file("python", package = "keras3"))
+}
+
+#' @export
+# needed so `self$model$stop_training <- TRUE` doesn't try to reset
+# the `model` attr, which is a @property that raises AttributeError
+`$<-.keras.src.callbacks.callback.Callback` <- function(x, name, value) {
+  if(name == "model" && py_is(value, py_get_attr(x, "model", TRUE)))
+    return(x)
+  NextMethod()
 }

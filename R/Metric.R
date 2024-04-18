@@ -120,7 +120,7 @@
 #'   * `dtype`: (Optional) data type of the metric result.
 #'
 #' * ```r
-#'   add_variable(shape, initializer, dtype=NULL, name=NULL)
+#'   add_variable(shape, initializer, dtype=NULL, aggregation = 'sum', name=NULL)
 #'   ```
 #'
 #' * ```r
@@ -150,6 +150,9 @@
 #'
 #' * ```r
 #'   stateless_result(metric_variables)
+#'   ```
+#' * ```r
+#'   stateless_reset_state()
 #'   ```
 #' * ```r
 #'   stateless_update_state(metric_variables, ...)

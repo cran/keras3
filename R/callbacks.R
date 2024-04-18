@@ -362,13 +362,13 @@ as_callback_lambda_fn_sig_logs <- function(fn) {
 #'
 #' @description
 #' At the beginning of every epoch, this callback gets the updated learning
-#' rate value from `schedule` function provided at `__init__`, with the current
+#' rate value from `schedule` function provided, with the current
 #' epoch and current learning rate, and applies the updated learning rate on
 #' the optimizer.
 #'
 #' # Examples
 #' ```{r}
-#' # This function keeps the initial learning rate for the first ten epochs
+#' # This function keeps the initial learning rate steady for the first ten epochs
 #' # and decreases it exponentially after that.
 #' scheduler <- function(epoch, lr) {
 #'   if (epoch < 10)
@@ -408,7 +408,7 @@ as_callback_lambda_fn_sig_logs <- function(fn) {
 callback_learning_rate_scheduler <-
 function (schedule, verbose = 0L)
 {
-    args <- capture_args(list(schedule = as_integer, verbose = as_integer))
+    args <- capture_args(list(verbose = as_integer))
     do.call(keras$callbacks$LearningRateScheduler, args)
 }
 
@@ -679,7 +679,7 @@ function (monitor = "val_loss", factor = 0.1, patience = 10L,
 #' @param field
 #' String; JSON field under which the data will be stored.
 #' The field is used only if the payload is sent within a form
-#' (i.e. send_as_json is set to `FALSE`).
+#' (i.e. when `send_as_json = FALSE`).
 #'
 #' @param headers
 #' Named list; optional custom HTTP headers.
@@ -735,7 +735,6 @@ function (root = "http://localhost:9000", path = "/publish/epoch/end/",
 #' [here](https://www.tensorflow.org/get_started/summaries_and_tensorboard).
 #'
 #' # Examples
-#' Basic usage:
 #'
 #' ```{r, eval = FALSE}
 #' tensorboard_callback <- callback_tensorboard(log_dir = "./logs")

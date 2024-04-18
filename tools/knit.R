@@ -1,11 +1,19 @@
 #!source envir::attach_source(.file)
 
 
-knit_keras_init <- function() {
+knit_keras_init <- function(backend = NULL) {
+  if(!is.null(backend))
+    keras3::use_backend(backend)
   # reticulate::use_virtualenv("r-keras")
   options(width = 76)
-  keras3::clear_session()
-  keras3::set_random_seed(1)
+
+  keras_init <- function() {
+    keras3::clear_session()
+    keras3::set_random_seed(1)
+  }
+
+  # this eagerly just runs the hook if keras is already loaded
+  reticulate:::py_register_load_hook("keras", keras_init)
 }
 
 yaml.load <- getExportedValue("yaml", "yaml.load")
@@ -101,7 +109,16 @@ knit_keras_process_chunk_output <- function(x, options) {
 }
 
 
-knit_vignette <- function(input, ..., output_dir) {
+knit_vignette <- function(input, ..., output_dir, external = FALSE) {
+
+  if(external) {
+    return(callr::r(function(input, ...) {
+      Sys.setenv(CUDA_VISIBLE_DEVICES = "0")
+      options(conflicts.policy = "strict")
+      envir::import_from("tools/knit.R", knit_vignette)
+      knit_vignette(input)
+    }, args = list(input, ...), stdout = "", stderr = ""))
+  }
 
   input.Rmd <- fs::path_real(input)
   pkg_dir <- strsplit(input.Rmd, "/vignettes-src/", fixed = TRUE)[[1]][[1]]
@@ -139,7 +156,9 @@ knit_vignette <- function(input, ..., output_dir) {
     fig.path = paste0(fig.path, "/")
   )
 
-  knit_keras_init()
+  fm <- yaml_front_matter(input.Rmd)
+
+  knit_keras_init(fm$backend)
 
   withr::with_options(c(cli.num_colors = 256L), {
     knitr::knit(input.Rmd, output.md,
@@ -196,6 +215,8 @@ knit_vignette <- function(input, ..., output_dir) {
   output.Rmd <- sub("/vignettes-src/", "/vignettes/", fs::path_real(input.Rmd),
                     fixed = TRUE)
   message("postprocessed output file: ", output.Rmd)
+  if(!dir.exists(output.Rmd_dir <- dirname(output.Rmd)))
+    dir.create(output.Rmd_dir, recursive = TRUE)
   writeLines(lines, output.Rmd, useBytes = TRUE)
 
   # figures dir
@@ -217,6 +238,12 @@ evalq({
 # on.exit(options(o_knitr.graphics.rel_path), add = TRUE)
 
 
+yaml_front_matter <- function(infile, lines = readLines(infile)) {
+  end_fm_i <- which(lines == "---")[2]
+  x_fm <- lines[2:(end_fm_i-1)]
+  fm <- yaml.load(x_fm)
+  fm
+}
 
 # update absolute figure links so they're relative links to the vignette dir
 # lines <- sub(paste0("](", dirname(fig.path), "/"), "](", lines, fixed = TRUE) # md formatting

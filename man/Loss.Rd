@@ -64,8 +64,8 @@ model |> compile(loss = loss_custom_mse())
 # Standalone usage
 mse <- loss_custom_mse(name = "my_custom_mse_instance")
 
-y_true <- op_arange(20) |> op_reshape(4, 5)
-y_pred <- op_arange(20) |> op_reshape(4, 5) * 2
+y_true <- op_arange(20) |> op_reshape(c(4, 5))
+y_pred <- op_arange(20) |> op_reshape(c(4, 5)) * 2
 (loss <- mse(y_true, y_pred))
 }\if{html}{\out{</div>}}
 
@@ -142,6 +142,7 @@ Other losses: \cr
 \code{\link{loss_categorical_focal_crossentropy}()} \cr
 \code{\link{loss_categorical_hinge}()} \cr
 \code{\link{loss_cosine_similarity}()} \cr
+\code{\link{loss_dice}()} \cr
 \code{\link{loss_hinge}()} \cr
 \code{\link{loss_huber}()} \cr
 \code{\link{loss_kl_divergence}()} \cr

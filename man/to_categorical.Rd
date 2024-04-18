@@ -8,7 +8,9 @@ to_categorical(x, num_classes = NULL)
 }
 \arguments{
 \item{x}{Array-like with class values to be converted into a matrix
-(integers from 0 to \code{num_classes - 1}).}
+(integers from 0 to \code{num_classes - 1}).
+R factors are coerced to integer and offset to be 0-based, i.e.,
+\code{as.integer(x) - 1L}.}
 
 \item{num_classes}{Total number of classes. If \code{NULL}, this would be inferred
 as \code{max(x) + 1}. Defaults to \code{NULL}.}
@@ -86,7 +88,6 @@ Other utils: \cr
 \code{\link{image_smart_resize}()} \cr
 \code{\link{image_to_array}()} \cr
 \code{\link{layer_feature_space}()} \cr
-\code{\link{layer_torch_module_wrapper}()} \cr
 \code{\link{normalize}()} \cr
 \code{\link{pack_x_y_sample_weight}()} \cr
 \code{\link{pad_sequences}()} \cr

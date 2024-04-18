@@ -112,7 +112,7 @@ keras$ops$cond(pred, true_fn, false_fn)
 #' @tether keras.ops.convert_to_numpy
 op_convert_to_numpy <-
 function (x)
-keras$ops$convert_to_numpy(x)
+r_to_py(keras$ops)$convert_to_numpy(x)
 
 
 #' Convert an array to a tensor.
@@ -124,6 +124,7 @@ keras$ops$convert_to_numpy(x)
 #' x <- array(c(1, 2, 3))
 #' y <- op_convert_to_tensor(x)
 #' y
+#' op_convert_to_tensor(c(1, 3, 2, 0), "int32")
 #' ```
 #'
 #' @returns
@@ -149,8 +150,13 @@ keras$ops$convert_to_numpy(x)
 #  + <https://www.tensorflow.org/api_docs/python/tf/keras/ops/convert_to_tensor>
 #' @tether keras.ops.convert_to_tensor
 op_convert_to_tensor <-
-function (x, dtype = NULL, sparse = NULL)
-keras$ops$convert_to_tensor(x, dtype, sparse)
+function (x, dtype = NULL, sparse = NULL) {
+  if (!is.null(dtype) && is_string(dtype) &&
+      typeof(x) == "double" &&
+      grepl("int", dtype, fixed = TRUE))
+    storage.mode(x) <- "integer"
+  keras$ops$convert_to_tensor(x, dtype, sparse)
+}
 
 
 #' For loop implementation.
@@ -267,19 +273,20 @@ function (indices, values, shape)
 #' Update inputs via updates at scattered (sparse) indices.
 #'
 #' @description
-#' At a high level, this operation does `inputs[indices] = updates`.
+#' At a high level, this operation does `inputs[indices] <- updates`.
 #' Assume `inputs` is a tensor of shape `(D1, D2, ..., Dn)`, there are 2 main
 #' usages of `scatter_update`.
 #'
 #' 1. `indices` is a 2D tensor of shape `(num_updates, n)`, where `num_updates`
 #'     is the number of updates to perform, and `updates` is a 1D tensor of
 #'     shape `(num_updates)`. For example, if `inputs` is `op_zeros(c(4, 4, 4))`,
-#'     and we want to update `inputs[2, 3, 4]` and `inputs[1, 2, 4]` as 1, then
+#'     and we want to update `inputs[2, 3, 4]` and `inputs[1, 2, 4]` as `1`, then
 #'     we can use:
 #'
 #' ```{r}
 #' inputs <- op_zeros(c(4, 4, 4))
-#' indices <- rbind(c(2, 3, 4), c(1, 2, 4))
+#' indices <- rbind(c(2, 3, 4),
+#'                  c(1, 2, 4))
 #' updates <- op_array(c(1, 1), "float32")
 #' op_scatter_update(inputs, indices, updates)
 #' ```
@@ -287,16 +294,19 @@ function (indices, values, shape)
 #' 2 `indices` is a 2D tensor of shape `(num_updates, k)`, where `num_updates`
 #'     is the number of updates to perform, and `k` (`k <= n`) is the size of
 #'     each index in `indices`. `updates` is a `n - k`-D tensor of shape
-#'     `(num_updates, inputs.shape[k:))`. For example, if
-#'     `inputs = op_zeros(c(4, 4, 4))`, and we want to update `inputs[1, 2, ]`
+#'     `(num_updates, shape(inputs)[-(1:k)])`. For example, if
+#'     `inputs <- op_zeros(c(4, 4, 4))`, and we want to update `inputs[1, 2, ]`
 #'     and `inputs[2, 3, ]` as `[1, 1, 1, 1]`, then `indices` would have shape
 #'     `(num_updates, 2)` (`k = 2`), and `updates` would have shape
-#'     `(num_updates, 4)` (`inputs.shape[2:] = 4`). See the code below:
+#'     `(num_updates, 4)` (`shape(inputs)[3:4] == 4`). See the code below:
 #'
 #' ```{r}
 #' inputs <- op_zeros(c(4, 4, 4))
-#' indices <- rbind(c(2, 3), c(3, 4))
-#' updates <- op_array(rbind(c(1, 1, 1, 1), c(1, 1, 1, 1)), "float32")
+#' indices <- rbind(c(2, 3),
+#'                  c(3, 4))
+#' updates <- op_array(rbind(c(1, 1, 1, 1),
+#'                           c(1, 1, 1, 1)),
+#'                     "float32")
 #' op_scatter_update(inputs, indices, updates)
 #' ```
 #'
@@ -544,38 +554,102 @@ function (x, num = NULL, axis = 1L)
 #' Parallel map of function `f` on the first axis of tensor(s) `elements`.
 #'
 #' @description
-#' Schematically, `vectorized_map` implements the following,
-#' in the case of a single tensor input `elements`:
+#' Schematically, `op_vectorized_map()` maps over the first dimension of the provided tensors.
+#' If `elements` is a list of tensors, then each of the tensors are required to
+#' have the same size first dimension, and they are iterated over together.
 #'
-#' ```{r, eval = FALSE}
-#' op_vectorized_map <- function(elements, f) {
-#'   apply(elements, 1, f)
-#' }
-#' ```
-#'
-#' In the case of an iterable of tensors `elements`,
-#' it implements the following:
-#'
-#' ```{r, eval = FALSE}
-#' op_vectorized_map <- function(elements, f) {
-#'     batch_size <- elements[[1]] |> shape() |> _[[1]]
-#'     outputs <- vector("list", batch_size)
-#'     outputs <- lapply(seq(batch_size), \(index) {
-#'         f(lapply(elements, \(e) e[index, all_dims()]))
-#'     }
-#'     op_stack(outputs)
-#' }
-#' ```
-#'
-#' In this case, `function` is expected to take as input
-#' a single list of tensor arguments.
-#'
+#' # Examples
 #'
 #' ```{r}
-#' (x <- op_arange(4*4) |> op_reshape(c(4,4)))
+#' (x <- op_arange(12L) |> op_reshape(c(3, 4)))
 #' x |> op_vectorized_map(\(row) {row + 10})
 #' list(x, x, x) |> op_vectorized_map(\(rows) Reduce(`+`, rows))
 #' ```
+#'
+#' Note that `f` may be traced and compiled. Meaning, the R function may only
+#' evaluated once with symbolic tensors if using Jax or TensorFlow backends, and
+#' not with eager tensors. See the output from `str()` in these examples:
+#' ```{r}
+#' # simplest case, map f over rows of x,
+#' # where .x is 1 row of x
+#' input <- x
+#' output <- op_vectorized_map(input, function(.x) {
+#'   str(.x)
+#'   .x + 10
+#' })
+#' output
+#'
+#' # map f over two tensors simultaneously. Here, # `.x` is a list of two
+#' # tensors. The return values from each call of `f(row)` are stacked to form the
+#' # final output
+#' input <- list(x, x)
+#' output <- op_vectorized_map(input, function(.x) {
+#'   str(.x)
+#'   .x[[1]] + 10
+#' })
+#' output
+#'
+#' # same as above, but now returning two tensors in the final output
+#' output <- op_vectorized_map(input, function(.x) {
+#'   str(.x)
+#'   c(.x1, .x2) %<-% .x
+#'   list(.x1+10, .x2+20)
+#' })
+#' output
+#'
+#' # passing named lists.
+#' # WARNING: if passing a named list, the order of elements of `.x` supplied
+#' # to `f` is not stable. Only retrieve elements by name.
+#' input <- list(name1 = x, name2 = x)
+#' output <- op_vectorized_map(input, function(.x) {
+#'   str(.x)
+#'   list(outname1 = .x$name1 + 10,
+#'        outname2 = .x$name2 + 20)
+#' })
+#' output
+#'
+#' # passing a tuple() is equivalent to passing an unnamed list()
+#' input <- tuple(x, x)
+#' output <- op_vectorized_map(input, function(.x) {
+#'   str(.x)
+#'   list(.x[[1]] + 10)
+#' })
+#' output
+#' ```
+#'
+#' # Debugging `f`
+#'
+#' Even in eager contexts, `op_vectorized_map()` may trace `f`. In that case, if
+#' you want to eagerly debug `f` (e.g., with `browser()`), you can swap in a
+#' manual (slow) implementation of `op_vectorized_map()`. Note this example
+#' debug implementation does not handle all the same edge cases as
+#' `op_vectorized_map()`, in particular, if `f` returns a structure of multiple
+#' tensors.
+#'
+#' ```r
+#' op_vectorized_map_debug <- function(elements, fn) {
+#'
+#'   if (!is.list(elements)) {
+#'     # `elements` is a single tensor
+#'     batch_size <- op_shape(elements)[[1]]
+#'     out <- elements |>
+#'       op_split(batch_size) |>
+#'       lapply(fn) |>
+#'       op_stack()
+#'     return(out)
+#'   }
+#'
+#'   # `elements` is a list of tensors
+#'   batch_size <- elements[[1]] |> op_shape() |> _[[1]]
+#'   elements |>
+#'     lapply(\(e) op_split(e, batch_size)) |>
+#'     zip_lists() |>
+#'     lapply(fn) |>
+#'     op_stack()
+#'
+#' }
+#' ```
+#'
 #'
 #' @param elements
 #' see description
@@ -583,7 +657,7 @@ function (x, num = NULL, axis = 1L)
 #' @param f
 #' A function taking either a tensor, or list of tensors.
 #'
-#' @returns A tensor, the result of mapping `f` across `elements.`
+#' @returns A tensor or list of tensors, the result of mapping `f` across `elements.`
 #' @export
 #' @family core ops
 #' @family ops
@@ -614,20 +688,31 @@ keras$ops$vectorized_map(f, elements)
 #' op_while_loop(cond, body, loop_vars)
 #' ```
 #'
+#' ```{r}
+#' x <- 0; y <- 1
+#' cond <- \(x, y) x < 10
+#' body <- \(x, y) list(x+1, y+1)
+#' op_while_loop(cond, body, list(x, y))
+#' ```
+#'
 #' @returns
 #' A list of tensors, has the same shape and dtype as `loop_vars`.
 #'
 #' @param cond
 #' A callable that represents the termination condition of the loop.
-#' Must have the same number of args as `loop_vars`, and return a bool.
+#' Must accept a `loop_vars` like structure as an argument. If
+#'`loop_vars` is a tuple or unnamed list, each element of `loop_vars` will be
+#' passed positionally to the callable.
 #'
 #' @param body
-#' A callable that represents the loop body. Must have the same
-#' number of args as `loop_vars`, and return a list of the same
-#' length, shape and dtype as `loop_vars`.
+#' A callable that represents the loop body. Must accept a
+#' `loop_vars` like structure as an argument, and return update value
+#' with the same structure. If `loop_vars` is a tuple or unnamed list, each
+#' element of `loop_vars` will be passed positionally to the callable.
 #'
 #' @param loop_vars
-#' A list of tensors, the loop variables.
+#' An arbitrary nested structure of tensor state to persist
+#' across loop iterations.
 #'
 #' @param maximum_iterations
 #' Optional maximum number of iterations of the while
@@ -998,17 +1083,17 @@ function (x, axis = NULL, keepdims = FALSE)
 #' # Examples
 #' ```{r}
 #' x <- op_convert_to_tensor(rbind(c(1, 2), c(3, 4), c(5, 6)))
+#' op_qr(x)
 #' c(q, r) %<-% op_qr(x)
-#' q
 #' ```
 #'
 #' @returns
-#' A list containing two tensors. The first tensor represents the
-#' orthogonal matrix Q, and the second tensor represents the upper
-#' triangular matrix R.
+#' A list containing two tensors. The first tensor of shape `(..., M, K)`
+#' is the orthogonal matrix `q` and the second tensor of shape
+#' (..., K, N)` is the upper triangular matrix `r`, where `K = min(M, N)`.
 #'
 #' @param x
-#' Input tensor.
+#' Input tensor of shape `(..., M, N)`.
 #'
 #' @param mode
 #' A string specifying the mode of the QR decomposition.
@@ -1213,9 +1298,10 @@ function (data, segment_ids, num_segments = NULL, sorted = FALSE)
 }
 
 
-#' Solves for `x` in the equation `a %*% x == b`.
+#' Solves a linear system of equations given by `a x = b`.
 #'
 #' @description
+#' Solves for `x` in the equation `a %*% x == b`.
 #'
 #' # Examples
 #' ```{r}
@@ -1225,13 +1311,15 @@ function (data, segment_ids, num_segments = NULL, sorted = FALSE)
 #' ```
 #'
 #' @returns
-#' A tensor with the same shape and dtype as `a`.
+#' A tensor of shape `(..., M)` or `(..., M, N)` representing the solution
+#' of the linear system. Returned shape is identical to `b`.
 #'
 #' @param a
-#' Input tensor.
+#' A tensor of shape `(..., M, M)` representing the coefficients matrix.
 #'
 #' @param b
-#' Input tensor.
+#' A tensor of shape `(..., M)` or `(..., M, N)` represeting the
+#' right-hand side or "dependent variable" matrix.
 #'
 #' @export
 #' @family math ops
@@ -2082,6 +2170,10 @@ function (x, axes, keepdims = FALSE, synchronized = FALSE)
 #' (optional) The data type of the resulting tensor. Default
 #' is backend's float type.
 #'
+#' @param sparse
+#' Whether to return a sparse tensor; for backends that support
+#' sparse tensors.
+#'
 #' @param ... For forward/backwards compatability
 #'
 #' @export
@@ -2092,7 +2184,7 @@ function (x, axes, keepdims = FALSE, synchronized = FALSE)
 #'
 #' @tether keras.ops.multi_hot
 op_multi_hot <-
-function (inputs, num_classes, axis = -1L, dtype = NULL, ...)
+function (inputs, num_classes, axis = -1L, dtype = NULL, sparse = FALSE, ...)
 {
     args <- capture_args(list(inputs = as_integer, num_classes = as_integer,
         axis = as_axis))
@@ -2127,6 +2219,8 @@ function (inputs, num_classes, axis = -1L, dtype = NULL, ...)
 #' @param x
 #' Integer tensor to be encoded. The shape can be
 #' arbitrary, but the dtype should be integer.
+#' R factors are coerced to integer and offset to be 0-based, i.e.,
+#' `as.integer(x) - 1L`.
 #'
 #' @param num_classes
 #' Number of classes for the one-hot encoding.
@@ -2139,6 +2233,10 @@ function (inputs, num_classes, axis = -1L, dtype = NULL, ...)
 #' (Optional) Data type of the output tensor. If not
 #' provided, it defaults to the default data type of the backend.
 #'
+#' @param sparse
+#' Whether to return a sparse tensor; for backends that support
+#' sparse tensors.
+#'
 #' @export
 #' @family nn ops
 #' @family ops
@@ -2147,10 +2245,17 @@ function (inputs, num_classes, axis = -1L, dtype = NULL, ...)
 #  + <https://www.tensorflow.org/api_docs/python/tf/keras/ops/one_hot>
 #' @tether keras.ops.one_hot
 op_one_hot <-
-function (x, num_classes, axis = -1L, dtype = NULL)
+function (x, num_classes, axis = -1L, dtype = NULL, sparse = FALSE)
 {
-    args <- capture_args(list(x = as_integer, axis = as_axis,
-        num_classes = as_integer))
+    args <- capture_args(list(
+      x = function(x) {
+        if (inherits(x, "factor"))
+          array(as.integer(x) - 1L, dim = dim(x) %||% length(x))
+        else
+          as_integer_array(x)
+      },
+      axis = as_axis,
+      num_classes = as_integer))
     do.call(keras$ops$one_hot, args)
 }
 
@@ -2604,6 +2709,13 @@ keras$ops$absolute(x)
 #' op_add(x1, x2)
 #' ```
 #'
+#' Note that this function is automatically called when using the R operator `+` with tensors.
+#' ```{r}
+#' x <- op_ones(c(3))
+#' op_add(x, x)
+#' x + x
+#' ```
+#'
 #' @returns
 #' The tensor containing the element-wise sum of `x1` and `x2`.
 #'
@@ -2796,7 +2908,8 @@ function (x, axis = NULL, keepdims = FALSE)
 #'
 #' ```{r}
 #' (x <- op_reshape(c(FALSE, FALSE, FALSE,
-#'                   TRUE, FALSE, FALSE), c(2, 3)))
+#'                    TRUE, FALSE, FALSE),
+#'                  c(2, 3)))
 #' op_any(x, axis = 1)
 #' op_any(x, axis = 2)
 #' op_any(x, axis = -1)
@@ -2894,8 +3007,8 @@ function (x1, x2, axis = NULL)
 #' @description
 #' `arange` can be called with a varying number of positional arguments:
 #' * `arange(stop)`: Values are generated within the half-open interval
-#'     `[0, stop)` (in other words, the interval including start but excluding
-#'     stop).
+#'     `[0, stop)` (in other words, the interval including `start` but excluding
+#'     `stop`).
 #' * `arange(start, stop)`: Values are generated within the half-open interval
 #'     `[start, stop)`.
 #' * `arange(start, stop, step)`: Values are generated within the half-open
@@ -2946,11 +3059,12 @@ function (x1, x2, axis = NULL)
 op_arange <-
 function (start, stop = NULL, step = 1L, dtype = NULL)
 {
-    args <- capture_args(list(start = function (x)
-    np_array(x, dtype), stop = function (x)
-    np_array(x, dtype), step = function (x)
-    np_array(x, dtype)))
-    do.call(keras$ops$arange, args)
+  args <- capture_args(list(
+    start = function(x) np_array(x, dtype),
+    stop = function(x) np_array(x, dtype),
+    step = function(x) np_array(x, dtype)
+  ))
+  do.call(keras$ops$arange, args)
 }
 
 
@@ -3183,6 +3297,10 @@ keras$ops$arctanh(x)
 #' op_argmax(x, axis = 2)
 #' ```
 #'
+#' @note
+#' This is similar to R `max.col(x) - 1` for the case of a 2-d array (a matrix),
+#' or for an nd-array, `apply(x, axis, which.max) - 1`
+#'
 #' @returns
 #' Tensor of indices. It has the same shape as `x`, with the dimension
 #' along `axis` removed. Note that the returned integer is 0-based (i.e., if the
@@ -3222,6 +3340,10 @@ function (x, axis = NULL)
 #' op_argmin(x, axis = 1)
 #' op_argmin(x, axis = 2)
 #' ```
+#'
+#' @note
+#' This is similar to an R expression `apply(x, axis, which.min) - 1`, where `x`
+#' is a R array.
 #'
 #' @returns
 #' Tensor of indices. It has the same shape as `x`, with the dimension
@@ -3302,6 +3424,7 @@ function (x, axis = -1L)
 #' ```{r}
 #' op_array(c(1, 2, 3))
 #' op_array(c(1, 2, 3), dtype = "float32")
+#' op_array(c(1, 2, 3), dtype = "int32")
 #' ```
 #'
 #' @returns
@@ -3312,6 +3435,8 @@ function (x, axis = -1L)
 #'
 #' @param dtype
 #' The desired data-type for the tensor.
+# ' If `x` is an R double vector or array
+# ' `dtype` defaults to `config_floatx()` ("float32" by default)
 #'
 #' @export
 #' @family numpy ops
@@ -3323,9 +3448,11 @@ function (x, axis = -1L)
 op_array <-
 function (x, dtype = NULL)
 {
-    if (!is.null(dtype) && !inherits(x, "python.builtin.object"))
-        x <- np_array(x, dtype)
-    keras$ops$array(x, dtype)
+  if (!is.null(dtype) && is_string(dtype) &&
+      typeof(x) == "double" &&
+      grepl("int", dtype, fixed = TRUE))
+    storage.mode(x) <- "integer"
+  keras$ops$array(x, dtype)
 }
 
 
@@ -3435,6 +3562,10 @@ function (x, axis = NULL, weights = NULL)
 #' `max(x) + 1`, each value of the output at an index higher than
 #' `max(x)` is set to 0.
 #'
+#' @param sparse
+#' Whether to return a sparse tensor; for backends that support
+#' sparse tensors.
+#'
 #' @export
 #' @family numpy ops
 #' @family ops
@@ -3443,7 +3574,7 @@ function (x, axis = NULL, weights = NULL)
 #  + <https://www.tensorflow.org/api_docs/python/tf/keras/ops/bincount>
 #' @tether keras.ops.bincount
 op_bincount <-
-function (x, weights = NULL, minlength = 0L)
+function (x, weights = NULL, minlength = 0L, sparse = FALSE)
 {
     args <- capture_args(list(x = as_integer, minlength = as_integer))
     do.call(keras$ops$bincount, args)
@@ -3625,6 +3756,33 @@ op_copy <-
 function (x)
 keras$ops$copy(x)
 
+
+#' Compute the cross-correlation of two 1-dimensional tensors.
+#'
+#' @returns
+#' Output tensor, cross-correlation of `x1` and `x2`.
+#'
+#' @param x1
+#' First 1-dimensional input tensor of length M.
+#'
+#' @param x2
+#' Second 1-dimensional input tensor of length N.
+#'
+#' @param mode
+#' Either `"valid"`, `"same"` or `"full"`.
+#' By default the mode is set to `"valid"`, which returns
+#' an output of length `max(M, N) - min(M, N) + 1`.
+#' `"same"` returns an output of length `max(M, N)`.
+#' `"full"` mode returns the convolution at each point of
+#' overlap, with an output length of `N+M-1`.
+#'
+#' @export
+#' @family numpy ops
+#' @family ops
+#' @tether keras.ops.correlate
+op_correlate <-
+function (x1, x2, mode = "valid")
+keras$ops$correlate(as_array(x1), as_array(x2), mode)
 
 #' Cosine, element-wise.
 #'
@@ -4013,6 +4171,13 @@ function (x, bins)
 
 #' Divide arguments element-wise.
 #'
+#' Note that this function is automatically called when using the R operator `*` with a tensor.
+#' ```{r}
+#' (x <- op_arange(4))
+#' op_divide(x, 2)
+#' x / 2
+#' ```
+#'
 #' @returns
 #' Output tensor, the quotient `x1/x2`, element-wise.
 #'
@@ -4121,9 +4286,11 @@ keras$ops$dot(x1, x2)
 #' Compute a matrix transpose or reorder any number of axes:
 #'
 #' ```{r, results = 'hold'}
-#' op_einsum("ji", c)
-#' op_einsum("ij -> ji", c)
-#' op_transpose(c)
+#' op_einsum("ji", c) # return c unchanged
+#' ````
+#' ```{r, results = 'hold'}
+#' op_einsum("ij -> ji", c) # transpose
+#' op_transpose(c)          # same as above
 #' ```
 #'
 #' Matrix vector multiplication:
@@ -4187,6 +4354,13 @@ function (shape, dtype = NULL)
 
 
 #' Returns `(x1 == x2)` element-wise.
+#'
+#' Note that this function is automatically called when using the R operator `==` with a tensor.
+#' ```{r}
+#' (x <- op_arange(4))
+#' op_equal(x, 2)
+#' x == 2
+#' ```
 #'
 #' @returns
 #' Output tensor, element-wise comparison of `x1` and `x2`.
@@ -4368,6 +4542,13 @@ keras$ops$floor(x)
 
 #' Returns the largest integer smaller or equal to the division of inputs.
 #'
+#' Note that this function is automatically called when using the R operator `%/%` with a tensor.
+#' ```{r}
+#' (x <- op_arange(10))
+#' op_floor_divide(x, 2)
+#' x %/% 2
+#' ```
+#'
 #' @returns
 #' Output tensor, `y <- floor(x1/x2)`
 #'
@@ -4469,6 +4650,13 @@ keras$ops$get_item(x, key)
 
 #' Return the truth value of `x1 > x2` element-wise.
 #'
+#' Note that this function is automatically called when using the R operator `>` with a tensor.
+#' ```{r}
+#' (x <- op_arange(4))
+#' op_greater(x, 2)
+#' x > 2
+#' ```
+#'
 #' @returns
 #' Output tensor, element-wise comparison of `x1` and `x2`.
 #'
@@ -4492,6 +4680,12 @@ keras$ops$greater(x1, x2)
 
 #' Return the truth value of `x1 >= x2` element-wise.
 #'
+#' Note that this function is automatically called when using the R operator `>=` with a tensor.
+#' ```{r}
+#' (x <- op_arange(4))
+#' op_greater_equal(x, 2)
+#' x >= 2
+#' ```
 #' @returns
 #' Output tensor, element-wise comparison of `x1` and `x2`.
 #'
@@ -4674,6 +4868,13 @@ keras$ops$isnan(x)
 
 #' Return the truth value of `x1 < x2` element-wise.
 #'
+#' Note that this function is automatically called when using the R operator `<` with a tensor.
+#' ```{r}
+#' (x <- op_arange(4))
+#' op_less(x, 2)
+#' x < 2
+#' ```
+#'
 #' @returns
 #' Output tensor, element-wise comparison of `x1` and `x2`.
 #'
@@ -4696,6 +4897,13 @@ keras$ops$less(x1, x2)
 
 
 #' Return the truth value of `x1 <= x2` element-wise.
+#'
+#' Note that this function is automatically called when using the R operator `<=` with a tensor.
+#' ```{r}
+#' (x <- op_arange(4))
+#' op_less_equal(x, 2)
+#' x <= 2
+#' ```
 #'
 #' @returns
 #' Output tensor, element-wise comparison of `x1` and `x2`.
@@ -4889,6 +5097,8 @@ keras$ops$logaddexp(x1, x2)
 
 #' Computes the element-wise logical AND of the given input tensors.
 #'
+#' Note that this function is automatically called when using the R operator `&` with a tensor.
+#'
 #' @description
 #' Zeros are treated as `FALSE` and non-zeros are treated as `TRUE`.
 #'
@@ -4918,6 +5128,8 @@ keras$ops$logical_and(x1, x2)
 #' @description
 #' Zeros are treated as `FALSE` and non-zeros are treated as `TRUE`.
 #'
+#' Note that this function is automatically called when using the R operator `!` with a tensor.
+#'
 #' @returns
 #' Output tensor, element-wise logical NOT of the input.
 #'
@@ -4940,6 +5152,8 @@ keras$ops$logical_not(x)
 #'
 #' @description
 #' Zeros are treated as `FALSE` and non-zeros are treated as `TRUE`.
+#'
+#' Note that this function is automatically called when using the R operator `|` with a tensor.
 #'
 #' @returns
 #' Output tensor, element-wise logical OR of the inputs.
@@ -5239,8 +5453,8 @@ function (x, axis = NULL, keepdims = FALSE)
 #' 1-D tensors representing the coordinates of a grid.
 #'
 #' @param indexing
-#' Cartesian (`"xy"`, default) or matrix (`"ij"`) indexing
-#' of output.
+#' `"xy"` or `"ij"`. "xy" is cartesian; `"ij"` is matrix
+#' indexing of output. Defaults to `"xy"`.
 #'
 #' @export
 #' @family numpy ops
@@ -5335,6 +5549,13 @@ op_pmin <- op_minimum
 
 #' Returns the element-wise remainder of division.
 #'
+#' Note that this function is automatically called when using the R operator `%%` with a tensor.
+#' ```{r}
+#' (x <- op_arange(10))
+#' op_mod(x, 3)
+#' x %% 3
+#' ```
+#'
 #' @returns
 #' Output tensor, element-wise remainder of division.
 #'
@@ -5388,6 +5609,12 @@ keras$ops$moveaxis(x, as_axis(source), as_axis(destination))
 
 #' Multiply arguments element-wise.
 #'
+#' Note that this function is automatically called when using the R operator `*` with a tensor.
+#' ```{r}
+#' (x <- op_arange(4))
+#' op_multiply(x, x)
+#' x * x
+#' ```
 #' @returns
 #' Output tensor, element-wise product of `x1` and `x2`.
 #'
@@ -5451,6 +5678,13 @@ keras$ops$ndim(x)
 
 #' Numerical negative, element-wise.
 #'
+#' Note that this function is automatically called when using the unary R operator `-` with a tensor.
+#' ```{r}
+#' (x <- op_arange(4))
+#' op_negative(x)
+#' -x
+#' ```
+#'
 #' @returns
 #' Output tensor, `y = -x`.
 #'
@@ -5490,6 +5724,13 @@ keras$ops$nonzero(x)
 
 
 #' Return `(x1 != x2)` element-wise.
+#'
+#' Note that this function is automatically called when using the R operator `!=` with a tensor.
+#' ```{r}
+#' (x <- op_arange(4))
+#' op_not_equal(x, 2)
+#' x != 2
+#' ```
 #'
 #' @returns
 #' Output tensor, element-wise comparsion of `x1` and `x2`.
@@ -5647,6 +5888,12 @@ function (x, pad_width, mode = "constant", constant_values = NULL)
 
 #' First tensor elements raised to powers from second tensor, element-wise.
 #'
+#' Note that this function is automatically called when using the R operator `^` with a tensor.
+#' ```{r}
+#' (x <- op_arange(4))
+#' op_power(2, x)
+#' 2 ^ x
+#' ```
 #' @returns
 #' Output tensor, the bases in `x1` raised to the exponents in `x2`.
 #'
@@ -5857,13 +6104,11 @@ function (x, repeats, axis = NULL)
 #' @param x
 #' Input tensor.
 #'
-#' @param new_shape
+#' @param newshape
 #' The new shape should be compatible with the original shape.
-#' One shape dimension can be -1 in which case the value is
+#' One shape dimension can be `-1` in which case the value is
 #' inferred from the length of the array and remaining dimensions.
 #'
-#' @param ...
-#' For forward/backward compatability.
 #'
 #' @export
 #' @family numpy ops
@@ -5873,9 +6118,9 @@ function (x, repeats, axis = NULL)
 #  + <https://www.tensorflow.org/api_docs/python/tf/keras/ops/reshape>
 #' @tether keras.ops.reshape
 op_reshape <-
-function (x, ..., new_shape = list(...))
+function (x, newshape)
 {
-    keras$ops$reshape(x, tuple(lapply(shape(new_shape),
+    keras$ops$reshape(x, tuple(lapply(shape(newshape),
                                       function(d) d %||% -1L)))
 }
 
@@ -5960,7 +6205,7 @@ function (x)
 keras$ops$sign(x)
 
 
-#' Trigonomeric sine, element-wise.
+#' Trigonometric sine, element-wise.
 #'
 #' @returns
 #' Output tensor of same shape as `x`.
@@ -6216,6 +6461,13 @@ function (x, axis = NULL, keepdims = FALSE)
 
 
 #' Subtract arguments element-wise.
+#'
+#' Note that this function is automatically called when using the R operator `-` with a tensor.
+#' ```{r}
+#' x <- op_ones(c(3))
+#' op_subtract(x, x)
+#' x - x
+#' ```
 #'
 #' @returns
 #' Output tensor, element-wise difference of `x1` and `x2`.
@@ -6886,3 +7138,83 @@ keras$ops$hard_silu(x)
 op_hard_swish <-
 function (x)
 keras$ops$hard_swish(x)
+
+
+#' Decorator to define a function with a custom gradient.
+#'
+#' @description
+#' This decorator allows fine grained control over the gradients of a sequence
+#' for operations. This may be useful for multiple reasons, including providing
+#' a more efficient or numerically stable gradient for a sequence of
+#' operations.
+#'
+#' # Example
+#'
+#' Backend-agnostic example.
+#' ```{r}
+#' log1pexp <- op_custom_gradient(\(x) {
+#'
+#'     e <- op_exp(x)
+#'
+#'     grad <- function(..., upstream = NULL) {
+#'       upstream <- upstream %||% ..1
+#'       op_multiply(upstream, 1.0 - 1.0 / op_add(1, e))
+#'     }
+#'
+#'     tuple(op_log(1 + e), grad)
+#'
+#' })
+#'
+#' if(config_backend() == "tensorflow") {
+#'   tf <- tensorflow::tf
+#'   x <- op_convert_to_tensor(100.0)
+#'   with(tf$GradientTape() %as% tape, {
+#'     tape$watch(x)
+#'     y <- log1pexp(x)
+#'   })
+#'   dy_dx <- tape$gradient(y, x)
+#'   stopifnot(as.numeric(dy_dx) == 1)
+#' }
+#' ```
+#'
+#' @returns
+#' A function `h(...)` which returns the same value as `f(...)[[1]]` and whose
+#' gradient is determined by `f(...)[[2]]`.
+#'
+#' @param f
+#' Function `f(...)` that returns a tuple `(output, grad_fn)` where:
+#' - `...` is a sequence of unnamed arguments,
+#'   each a tensor input or nested structure of tensor inputs to the
+#'    function.
+#' - `output` is a (potentially nested structure of) tensor outputs of applying
+#'     operations in forward_fn `f()` to `...`.
+#' - `grad_fn` is a function with the signature `grad_fn(..., upstream)` which
+#'     returns a list of tensors the same size as (flattened) `...`: the
+#'     derivatives of tensors in `output` with respect to the tensors in
+#'     `...`. `upstream` is a tensor or
+#'     sequence of tensors holding the initial value gradients for each
+#'     tensor in `output`.
+#'
+#' @note
+#'
+#' Note that the `grad` function that returns gradient computation
+#' requires `...` as well as an `upstream` named argument, depending
+#' on the backend being set. With the JAX and TensorFlow backends,
+#' it requires only one argument, whereas it might use the `upstream`
+#' argument in the case of the PyTorch backend.
+#'
+#' When working with TensorFlow/JAX backend, `grad(upstream)`
+#' is sufficient. With PyTorch, the `grad` function requires
+#' `...` as well as `upstream`, e.g. `grad <- \(..., upstream)`.
+#' Follow the example above to use `op_custom_gradient()` in
+#' a way that is compatible with all backends.
+#'
+#' @export
+#' @family core ops
+#' @family ops
+#' @tether keras.ops.custom_gradient
+#' @seealso
+#' + <https://www.tensorflow.org/api_docs/python/tf/keras/ops/custom_gradient>
+op_custom_gradient <-
+function (f)
+keras$ops$custom_gradient(f)

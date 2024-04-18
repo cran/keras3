@@ -15,7 +15,8 @@ text_dataset_from_directory(
   seed = NULL,
   validation_split = NULL,
   subset = NULL,
-  follow_links = FALSE
+  follow_links = FALSE,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -73,6 +74,9 @@ When \code{subset="both"}, the utility returns a tuple of two datasets
 
 \item{follow_links}{Whether to visits subdirectories pointed to by symlinks.
 Defaults to \code{FALSE}.}
+
+\item{verbose}{Whether to display number information on classes and
+number of files found. Defaults to \code{TRUE}.}
 }
 \value{
 A \code{tf.data.Dataset} object.
@@ -142,7 +146,6 @@ Other utils: \cr
 \code{\link{image_smart_resize}()} \cr
 \code{\link{image_to_array}()} \cr
 \code{\link{layer_feature_space}()} \cr
-\code{\link{layer_torch_module_wrapper}()} \cr
 \code{\link{normalize}()} \cr
 \code{\link{pack_x_y_sample_weight}()} \cr
 \code{\link{pad_sequences}()} \cr

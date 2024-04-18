@@ -166,7 +166,7 @@ Args:
 }
 \item
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{add_variable(shape, initializer, dtype=NULL, name=NULL)
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{add_variable(shape, initializer, dtype=NULL, aggregation = 'sum', name=NULL)
 }\if{html}{\out{</div>}}
 \item
 
@@ -199,6 +199,10 @@ A scalar tensor, or a named list of scalar tensors.
 \item
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{stateless_result(metric_variables)
+}\if{html}{\out{</div>}}
+\item
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{stateless_reset_state()
 }\if{html}{\out{</div>}}
 \item
 

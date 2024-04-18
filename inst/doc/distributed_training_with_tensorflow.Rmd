@@ -42,8 +42,8 @@ industry workflows.
 
 ```r
 library(keras3)
-library(tfdatasets, exclude = "shape")
 library(tensorflow, exclude = c("shape", "set_random_seed"))
+library(tfdatasets, exclude = "shape")
 ```
 
 ## Single-host, multi-device synchronous training
@@ -193,18 +193,18 @@ with(strategy$scope(), {
 
 ```
 ## Epoch 1/2
-## 782/782 - 7s - 9ms/step - loss: 2.9199 - sparse_categorical_accuracy: 0.8580 - val_loss: 0.9377 - val_sparse_categorical_accuracy: 0.8986
+## 782/782 - 7s - 8ms/step - loss: 2.9056 - sparse_categorical_accuracy: 0.8634 - val_loss: 1.0609 - val_sparse_categorical_accuracy: 0.9140
 ## Epoch 2/2
-## 782/782 - 4s - 5ms/step - loss: 0.5622 - sparse_categorical_accuracy: 0.9254 - val_loss: 0.7505 - val_sparse_categorical_accuracy: 0.9044
-## 157/157 - 0s - 3ms/step - loss: 0.8129 - sparse_categorical_accuracy: 0.9042
+## 782/782 - 4s - 5ms/step - loss: 0.6237 - sparse_categorical_accuracy: 0.9285 - val_loss: 0.7154 - val_sparse_categorical_accuracy: 0.9168
+## 157/157 - 0s - 3ms/step - loss: 0.7418 - sparse_categorical_accuracy: 0.9134
 ```
 
 ```
 ## $loss
-## [1] 0.8128782
+## [1] 0.7417642
 ##
 ## $sparse_categorical_accuracy
-## [1] 0.9042
+## [1] 0.9134
 ```
 
 ## Using callbacks to ensure fault tolerance
@@ -274,7 +274,7 @@ run_training(epochs = 1)
 ```
 
 ```
-## 782/782 - 6s - 8ms/step - loss: 3.3305 - sparse_categorical_accuracy: 0.8592 - val_loss: 1.1806 - val_sparse_categorical_accuracy: 0.8930
+## 782/782 - 7s - 8ms/step - loss: 3.2576 - sparse_categorical_accuracy: 0.8585 - val_loss: 0.9629 - val_sparse_categorical_accuracy: 0.9046
 ```
 
 ```r
@@ -283,7 +283,7 @@ run_training(epochs = 1)
 ```
 
 ```
-## 782/782 - 4s - 5ms/step - loss: 0.6629 - sparse_categorical_accuracy: 0.9215 - val_loss: 0.8294 - val_sparse_categorical_accuracy: 0.9130
+## 782/782 - 4s - 5ms/step - loss: 0.6968 - sparse_categorical_accuracy: 0.9213 - val_loss: 0.7274 - val_sparse_categorical_accuracy: 0.9138
 ```
 
 ## `tf$data` performance tips

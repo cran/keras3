@@ -11,7 +11,7 @@ image_dataset_from_directory(
   class_names = NULL,
   color_mode = "rgb",
   batch_size = 32L,
-  image_size = list(256L, 256L),
+  image_size = c(256L, 256L),
   shuffle = TRUE,
   seed = NULL,
   validation_split = NULL,
@@ -19,7 +19,9 @@ image_dataset_from_directory(
   interpolation = "bilinear",
   follow_links = FALSE,
   crop_to_aspect_ratio = FALSE,
-  data_format = NULL
+  pad_to_aspect_ratio = FALSE,
+  data_format = NULL,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -97,17 +99,28 @@ return the largest possible window in the image
 default (\code{crop_to_aspect_ratio = FALSE}), aspect ratio may not be
 preserved.}
 
+\item{pad_to_aspect_ratio}{If \code{TRUE}, resize the images without aspect
+ratio distortion. When the original aspect ratio differs from the
+target aspect ratio, the output image will be padded so as to
+return the largest possible window in the image
+(of size \code{image_size}) that matches the target aspect ratio. By
+default (\code{pad_to_aspect_ratio=FALSE}), aspect ratio may not be
+preserved.}
+
 \item{data_format}{If \code{NULL} uses \code{\link[=config_image_data_format]{config_image_data_format()}}
 otherwise either \code{'channel_last'} or \code{'channel_first'}.}
+
+\item{verbose}{Whether to display number information on classes and
+number of files found. Defaults to \code{TRUE}.}
 }
 \value{
 A \code{tf.data.Dataset} object.
 \itemize{
 \item If \code{label_mode} is \code{NULL}, it yields \code{float32} tensors of shape
-\verb{(batch_size, image_size[0], image_size[1], num_channels)},
+\verb{(batch_size, image_size[1], image_size[2], num_channels)},
 encoding images (see below for rules regarding \code{num_channels}).
 \item Otherwise, it yields a tuple \verb{(images, labels)}, where \code{images} has
-shape \verb{(batch_size, image_size[0], image_size[1], num_channels)},
+shape \verb{(batch_size, image_size[1], image_size[2], num_channels)},
 and \code{labels} follows the format described below.
 }
 
@@ -179,7 +192,6 @@ Other utils: \cr
 \code{\link{image_smart_resize}()} \cr
 \code{\link{image_to_array}()} \cr
 \code{\link{layer_feature_space}()} \cr
-\code{\link{layer_torch_module_wrapper}()} \cr
 \code{\link{normalize}()} \cr
 \code{\link{pack_x_y_sample_weight}()} \cr
 \code{\link{pad_sequences}()} \cr

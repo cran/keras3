@@ -329,6 +329,8 @@ function (x, axis = -1L, order = 2L)
 #' @param x
 #' Array-like with class values to be converted into a matrix
 #' (integers from 0 to `num_classes - 1`).
+#' R factors are coerced to integer and offset to be 0-based, i.e.,
+#' `as.integer(x) - 1L`.
 #'
 #' @param num_classes
 #' Total number of classes. If `NULL`, this would be inferred
@@ -350,7 +352,12 @@ function (x, axis = -1L, order = 2L)
 to_categorical <-
 function (x, num_classes = NULL)
 {
-    args <- capture_args(list(x = as_integer_array, num_classes = as_integer))
+    args <- capture_args(list(x = function(x) {
+      if (inherits(x, "factor"))
+        array(as.integer(x) - 1L, dim = dim(x) %||% length(x))
+      else
+        as_integer_array(x)
+    }, num_classes = as_integer))
     do.call(keras$utils$to_categorical, args)
 }
 
@@ -366,9 +373,10 @@ function (x, num_classes = NULL)
 #'
 #' This sets:
 #' - the R session seed: [`set.seed()`]
-#' - the Python session seed: `import random; random.seed()`
-#' - the Python NumPy seed: `import numpy; numpy.random.seed()`
-#' - the TensorFlow seed: `tf$random$set_seed()`
+#' - the Python session seed: `import random; random.seed(seed)`
+#' - the Python NumPy seed: `import numpy; numpy.random.seed(seed)`
+#' - the TensorFlow seed: `tf$random$set_seed(seed)` (only if TF is installed)
+#' - The Torch seed: `import("torch")$manual_seed(seed)` (only if the backend is torch)
 #' - and disables Python hash randomization.
 #'
 #' Note that the TensorFlow seed is set even if you're not using TensorFlow
@@ -524,7 +532,7 @@ keras_array <- function(x, dtype = NULL) {
 
   # allow passing things like pandas.Series(), for workarounds like
   # https://github.com/rstudio/keras/issues/1341
-  if(inherits(x, "python.builtin.object"))
+  if(is_py_object(x))
     return(x)
 
   if (is.data.frame(x))

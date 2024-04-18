@@ -66,9 +66,9 @@ values can be of any range (e.g. \verb{[0., 1.)} or \verb{[0, 255]})
 The output value will be clipped to the range \verb{[0, 255]},
 the valid range of RGB colors, and
 rescaled based on the \code{value_range} if needed.
+}
 
-Sample usage:
-
+\section{Example}{
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{random_bright <- layer_random_brightness(factor=0.2, seed = 1)
 
 # An image with shape [2, 2, 3]
@@ -111,6 +111,7 @@ Other preprocessing layers: \cr
 \code{\link{layer_hashed_crossing}()} \cr
 \code{\link{layer_hashing}()} \cr
 \code{\link{layer_integer_lookup}()} \cr
+\code{\link{layer_mel_spectrogram}()} \cr
 \code{\link{layer_normalization}()} \cr
 \code{\link{layer_random_contrast}()} \cr
 \code{\link{layer_random_crop}()} \cr
@@ -167,6 +168,7 @@ Other layers: \cr
 \code{\link{layer_embedding}()} \cr
 \code{\link{layer_feature_space}()} \cr
 \code{\link{layer_flatten}()} \cr
+\code{\link{layer_flax_module_wrapper}()} \cr
 \code{\link{layer_gaussian_dropout}()} \cr
 \code{\link{layer_gaussian_noise}()} \cr
 \code{\link{layer_global_average_pooling_1d}()} \cr
@@ -182,6 +184,7 @@ Other layers: \cr
 \code{\link{layer_hashing}()} \cr
 \code{\link{layer_identity}()} \cr
 \code{\link{layer_integer_lookup}()} \cr
+\code{\link{layer_jax_model_wrapper}()} \cr
 \code{\link{layer_lambda}()} \cr
 \code{\link{layer_layer_normalization}()} \cr
 \code{\link{layer_lstm}()} \cr
@@ -190,6 +193,7 @@ Other layers: \cr
 \code{\link{layer_max_pooling_2d}()} \cr
 \code{\link{layer_max_pooling_3d}()} \cr
 \code{\link{layer_maximum}()} \cr
+\code{\link{layer_mel_spectrogram}()} \cr
 \code{\link{layer_minimum}()} \cr
 \code{\link{layer_multi_head_attention}()} \cr
 \code{\link{layer_multiply}()} \cr

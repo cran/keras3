@@ -19,6 +19,10 @@ along \code{axis} removed.
 \description{
 Returns the indices of the minimum values along an axis.
 }
+\note{
+This is similar to an R expression \code{apply(x, axis, which.min) - 1}, where \code{x}
+is a R array.
+}
 \section{Examples}{
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{x <- op_arange(6L) |> op_reshape(c(2, 3)) |> op_add(10)
 x
@@ -82,6 +86,7 @@ Other numpy ops: \cr
 \code{\link{op_concatenate}()} \cr
 \code{\link{op_conj}()} \cr
 \code{\link{op_copy}()} \cr
+\code{\link{op_correlate}()} \cr
 \code{\link{op_cos}()} \cr
 \code{\link{op_cosh}()} \cr
 \code{\link{op_count_nonzero}()} \cr
@@ -93,6 +98,7 @@ Other numpy ops: \cr
 \code{\link{op_diff}()} \cr
 \code{\link{op_digitize}()} \cr
 \code{\link{op_divide}()} \cr
+\code{\link{op_divide_no_nan}()} \cr
 \code{\link{op_dot}()} \cr
 \code{\link{op_einsum}()} \cr
 \code{\link{op_empty}()} \cr
@@ -210,12 +216,14 @@ Other ops: \cr
 \code{\link{op_array}()} \cr
 \code{\link{op_average}()} \cr
 \code{\link{op_average_pool}()} \cr
+\code{\link{op_batch_normalization}()} \cr
 \code{\link{op_binary_crossentropy}()} \cr
 \code{\link{op_bincount}()} \cr
 \code{\link{op_broadcast_to}()} \cr
 \code{\link{op_cast}()} \cr
 \code{\link{op_categorical_crossentropy}()} \cr
 \code{\link{op_ceil}()} \cr
+\code{\link{op_cholesky}()} \cr
 \code{\link{op_clip}()} \cr
 \code{\link{op_concatenate}()} \cr
 \code{\link{op_cond}()} \cr
@@ -225,6 +233,7 @@ Other ops: \cr
 \code{\link{op_convert_to_numpy}()} \cr
 \code{\link{op_convert_to_tensor}()} \cr
 \code{\link{op_copy}()} \cr
+\code{\link{op_correlate}()} \cr
 \code{\link{op_cos}()} \cr
 \code{\link{op_cosh}()} \cr
 \code{\link{op_count_nonzero}()} \cr
@@ -232,18 +241,23 @@ Other ops: \cr
 \code{\link{op_ctc_loss}()} \cr
 \code{\link{op_cumprod}()} \cr
 \code{\link{op_cumsum}()} \cr
+\code{\link{op_custom_gradient}()} \cr
 \code{\link{op_depthwise_conv}()} \cr
+\code{\link{op_det}()} \cr
 \code{\link{op_diag}()} \cr
 \code{\link{op_diagonal}()} \cr
 \code{\link{op_diff}()} \cr
 \code{\link{op_digitize}()} \cr
 \code{\link{op_divide}()} \cr
+\code{\link{op_divide_no_nan}()} \cr
 \code{\link{op_dot}()} \cr
+\code{\link{op_eig}()} \cr
 \code{\link{op_einsum}()} \cr
 \code{\link{op_elu}()} \cr
 \code{\link{op_empty}()} \cr
 \code{\link{op_equal}()} \cr
 \code{\link{op_erf}()} \cr
+\code{\link{op_erfinv}()} \cr
 \code{\link{op_exp}()} \cr
 \code{\link{op_expand_dims}()} \cr
 \code{\link{op_expm1}()} \cr
@@ -267,11 +281,13 @@ Other ops: \cr
 \code{\link{op_identity}()} \cr
 \code{\link{op_imag}()} \cr
 \code{\link{op_image_affine_transform}()} \cr
+\code{\link{op_image_crop}()} \cr
 \code{\link{op_image_extract_patches}()} \cr
 \code{\link{op_image_map_coordinates}()} \cr
 \code{\link{op_image_pad}()} \cr
 \code{\link{op_image_resize}()} \cr
 \code{\link{op_in_top_k}()} \cr
+\code{\link{op_inv}()} \cr
 \code{\link{op_irfft}()} \cr
 \code{\link{op_is_tensor}()} \cr
 \code{\link{op_isclose}()} \cr
@@ -296,6 +312,7 @@ Other ops: \cr
 \code{\link{op_logical_xor}()} \cr
 \code{\link{op_logspace}()} \cr
 \code{\link{op_logsumexp}()} \cr
+\code{\link{op_lu_factor}()} \cr
 \code{\link{op_matmul}()} \cr
 \code{\link{op_max}()} \cr
 \code{\link{op_max_pool}()} \cr
@@ -314,6 +331,8 @@ Other ops: \cr
 \code{\link{op_ndim}()} \cr
 \code{\link{op_negative}()} \cr
 \code{\link{op_nonzero}()} \cr
+\code{\link{op_norm}()} \cr
+\code{\link{op_normalize}()} \cr
 \code{\link{op_not_equal}()} \cr
 \code{\link{op_one_hot}()} \cr
 \code{\link{op_ones}()} \cr
@@ -354,6 +373,7 @@ Other ops: \cr
 \code{\link{op_softplus}()} \cr
 \code{\link{op_softsign}()} \cr
 \code{\link{op_solve}()} \cr
+\code{\link{op_solve_triangular}()} \cr
 \code{\link{op_sort}()} \cr
 \code{\link{op_sparse_categorical_crossentropy}()} \cr
 \code{\link{op_split}()} \cr
@@ -366,6 +386,7 @@ Other ops: \cr
 \code{\link{op_stop_gradient}()} \cr
 \code{\link{op_subtract}()} \cr
 \code{\link{op_sum}()} \cr
+\code{\link{op_svd}()} \cr
 \code{\link{op_swapaxes}()} \cr
 \code{\link{op_take}()} \cr
 \code{\link{op_take_along_axis}()} \cr

@@ -6,8 +6,7 @@
 #' This is a convenience utility for packing data into the list formats
 #' that `fit()` uses.
 #'
-#' # Usage
-#' Standalone usage:
+#' # Example
 #'
 #' ```{r}
 #' x <- op_ones(c(10, 1))
@@ -54,8 +53,7 @@ function (x, y = NULL, sample_weight = NULL)
 #' This utility makes it easy to support data of the form `(x,)`,
 #' `(x, y)`, or `(x, y, sample_weight)`.
 #'
-#' # Usage
-#' Standalone usage:
+#' # Example:
 #'
 #' ```{r}
 #' features_batch <- op_ones(c(10, 5))
@@ -65,6 +63,11 @@ function (x, y = NULL, sample_weight = NULL)
 #' c(x, y, sample_weight) %<-% unpack_x_y_sample_weight(data)
 #' ```
 #'
+#' You can also do the equivalent by providing default values to `%<-%`
+#'
+#' ```r
+#' c(x, y = NULL, sample_weight = NULL) %<-% data
+#' ```
 #' @returns
 #' The unpacked list, with `NULL`s for `y` and `sample_weight` if they are
 #' not provided.
@@ -200,6 +203,11 @@ function (data)
 #' Whether to visits subdirectories pointed to by symlinks.
 #' Defaults to `FALSE`.
 #'
+#' @param verbose
+#' Whether to display number information on classes and
+#' number of files found. Defaults to `TRUE`.
+#'
+#'
 #' @export
 #' @family dataset utils
 #' @family utils
@@ -211,7 +219,8 @@ audio_dataset_from_directory <-
 function (directory, labels = "inferred", label_mode = "int",
           class_names = NULL, batch_size = 32L, sampling_rate = NULL,
           output_sequence_length = NULL, ragged = FALSE, shuffle = TRUE,
-          seed = NULL, validation_split = NULL, subset = NULL, follow_links = FALSE)
+          seed = NULL, validation_split = NULL, subset = NULL, follow_links = FALSE,
+          verbose = TRUE)
 {
   args <- capture_args(list(labels = as_integer, label_mode = as_integer,
                              batch_size = as_integer, seed = as_integer))
@@ -307,10 +316,10 @@ function (dataset, left_size = NULL, right_size = NULL, shuffle = FALSE,
 #' A `tf.data.Dataset` object.
 #'
 #' - If `label_mode` is `NULL`, it yields `float32` tensors of shape
-#'     `(batch_size, image_size[0], image_size[1], num_channels)`,
+#'     `(batch_size, image_size[1], image_size[2], num_channels)`,
 #'     encoding images (see below for rules regarding `num_channels`).
 #' - Otherwise, it yields a tuple `(images, labels)`, where `images` has
-#'     shape `(batch_size, image_size[0], image_size[1], num_channels)`,
+#'     shape `(batch_size, image_size[1], image_size[2], num_channels)`,
 #'     and `labels` follows the format described below.
 #'
 #' Rules regarding labels format:
@@ -418,9 +427,22 @@ function (dataset, left_size = NULL, right_size = NULL, shuffle = FALSE,
 #' default (`crop_to_aspect_ratio = FALSE`), aspect ratio may not be
 #' preserved.
 #'
+#' @param pad_to_aspect_ratio
+#' If `TRUE`, resize the images without aspect
+#' ratio distortion. When the original aspect ratio differs from the
+#' target aspect ratio, the output image will be padded so as to
+#' return the largest possible window in the image
+#' (of size `image_size`) that matches the target aspect ratio. By
+#' default (`pad_to_aspect_ratio=FALSE`), aspect ratio may not be
+#' preserved.
+#'
 #' @param data_format
 #' If `NULL` uses [`config_image_data_format()`]
 #' otherwise either `'channel_last'` or `'channel_first'`.
+#'
+#' @param verbose
+#' Whether to display number information on classes and
+#' number of files found. Defaults to `TRUE`.
 #'
 #' @export
 #' @family dataset utils
@@ -434,12 +456,14 @@ function (dataset, left_size = NULL, right_size = NULL, shuffle = FALSE,
 image_dataset_from_directory <-
 function (directory, labels = "inferred", label_mode = "int",
           class_names = NULL, color_mode = "rgb", batch_size = 32L,
-          image_size = list(256L, 256L), shuffle = TRUE, seed = NULL,
+          image_size = c(256L, 256L), shuffle = TRUE, seed = NULL,
           validation_split = NULL, subset = NULL, interpolation = "bilinear",
-          follow_links = FALSE, crop_to_aspect_ratio = FALSE, data_format = NULL)
+          follow_links = FALSE, crop_to_aspect_ratio = FALSE,
+          pad_to_aspect_ratio = FALSE, data_format = NULL, verbose = TRUE)
 {
-  args <- capture_args(list(labels = as_integer, label_mode = as_integer,
-                             batch_size = as_integer, seed = as_integer))
+  args <- capture_args(list(labels = as_integer,
+                            image_size = function(x) lapply(x, as_integer),
+                            batch_size = as_integer, seed = as_integer))
   do.call(keras$utils$image_dataset_from_directory, args)
 }
 
@@ -550,6 +574,10 @@ function (directory, labels = "inferred", label_mode = "int",
 #' Whether to visits subdirectories pointed to by symlinks.
 #' Defaults to `FALSE`.
 #'
+#' @param verbose
+#' Whether to display number information on classes and
+#' number of files found. Defaults to `TRUE`.
+#'
 #' @export
 #' @family dataset utils
 #' @family text dataset utils
@@ -563,7 +591,7 @@ text_dataset_from_directory <-
 function (directory, labels = "inferred", label_mode = "int",
     class_names = NULL, batch_size = 32L, max_length = NULL,
     shuffle = TRUE, seed = NULL, validation_split = NULL, subset = NULL,
-    follow_links = FALSE)
+    follow_links = FALSE, verbose = TRUE)
 {
     args <- capture_args(list(labels = as_integer, label_mode = as_integer,
         batch_size = as_integer, seed = as_integer))
