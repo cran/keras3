@@ -1,7 +1,7 @@
 
 #' Tensor shape utility
 #'
-#' This function can be used to create or get the shape of an object.
+#' This function can be used to get or create a tensor shape.
 #'
 #' # Examples
 #' ```{r}
@@ -53,6 +53,15 @@
 #' A useful pattern is to unpack the `shape()` with `%<-%`, like this:
 #' ```r
 #' c(batch_size, seq_len, channels) %<-% shape(x)
+#'
+#' # `%<-%` also has support for skipping values
+#' # during unpacking with `.` and `...`. For example,
+#' # To retrieve just the first and/or last dim:
+#' c(batch_size, ...) %<-% shape(x)
+#' c(batch_size, ., .) %<-% shape(x)
+#' c(..., channels) %<-% shape(x)
+#' c(batch_size, ..., channels) %<-% shape(x)
+#' c(batch_size, ., channels) %<-% shape(x)
 #' ```
 #'
 #' ```{r}
@@ -98,8 +107,8 @@
 #'   via `as.integer()`.
 #'
 #' @returns A list with a `"keras_shape"` class attribute. Each element of the
-#'   list will be either a) `NULL`, b) an integer or c) a scalar integer tensor
-#'   (e.g., when supplied a TF tensor with a unspecified dimension in a function
+#'   list will be either a) `NULL`, b) an R integer or c) a scalar integer tensor
+#'   (e.g., when supplied a TF tensor with an unspecified dimension in a function
 #'   being traced).
 #'
 #' @export
@@ -130,32 +139,23 @@ shape <- function(...) {
       return(lapply(shp, function(d) d %||% NA_integer_))
     }
 
-    ## TODO: shape(<R array>)
-    ## Users may pass R arrays to shape(), expecting it to behave like dim().
-    ## If we accept them, the edgecase of 1-d arrays gets tricky (esp because
-    ## numpy vectors arrays get converted to 1d R arrays)
-    ## If we accept simple R arrays and treat them the same as Tensors,
-    ## i.e., shape() is synonym for dim(), return dim(x)
-    # if(!is.object(x) && is.atomic(x) &&
-    #    !is.null(attr(x, "dim", TRUE)))
-    #   return(dim(x))
-    ## or we warn
-    # if (!is.null(dim(x)) && length(x) > 200)
-    #  warning("Did you pass an R array to shape()? Did you mean to use dim()?")
+    if(is.array(x))
+      return(dim(x))
+
+    if (is.null(x) ||
+        identical(x, NA_integer_) ||
+        identical(x, NA_real_) ||
+        identical(x, NA) ||
+        (is.numeric(x) && isTRUE(suppressWarnings(x == -1L))))
+      return(NA_integer_) # so we can safely unlist()
 
     if (!is.atomic(x) || length(x) > 1)
-      lapply(x, fix)
-    else if (is.null(x) ||
-             identical(x, NA_integer_) ||
-             identical(x, NA_real_) ||
-             identical(x, NA) ||
-             (is.numeric(x) && isTRUE(suppressWarnings(x == -1L))))
-      NA_integer_ # so we can safely unlist()
-    else
-      as.integer(x)
+      return(lapply(x, fix)) # recurse
+
+    as.integer(x)
   }
 
-  shp <- unlist(fix(list(...)), use.names = FALSE)
+  shp <- unlist(lapply(list(...), fix), use.names = FALSE)
   shp <- lapply(shp, function(x) if (identical(x, NA_integer_)) NULL else x)
   class(shp) <- "keras_shape"
   shp
@@ -163,7 +163,7 @@ shape <- function(...) {
 
 #' @export
 #' @rdname shape
-#' @param x A 'keras_shape' object
+#' @param x A `keras_shape` object.
 #' @param prefix Whether to format the shape object with a prefix. Defaults to
 #'   `"shape"`.
 format.keras_shape <- function(x, ..., prefix = TRUE) {

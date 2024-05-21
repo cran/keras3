@@ -4,13 +4,16 @@
 \alias{op_argmin}
 \title{Returns the indices of the minimum values along an axis.}
 \usage{
-op_argmin(x, axis = NULL)
+op_argmin(x, axis = NULL, keepdims = FALSE)
 }
 \arguments{
 \item{x}{Input tensor.}
 
 \item{axis}{By default, the index is into the flattened tensor, otherwise
 along the specified axis.}
+
+\item{keepdims}{If this is set to \code{TRUE}, the axes which are reduced are left
+in the result as dimensions with size one. Defaults to \code{FALSE}.}
 }
 \value{
 Tensor of indices. It has the same shape as \code{x}, with the dimension
@@ -91,6 +94,7 @@ Other numpy ops: \cr
 \code{\link{op_cosh}()} \cr
 \code{\link{op_count_nonzero}()} \cr
 \code{\link{op_cross}()} \cr
+\code{\link{op_ctc_decode}()} \cr
 \code{\link{op_cumprod}()} \cr
 \code{\link{op_cumsum}()} \cr
 \code{\link{op_diag}()} \cr
@@ -165,6 +169,7 @@ Other numpy ops: \cr
 \code{\link{op_reshape}()} \cr
 \code{\link{op_roll}()} \cr
 \code{\link{op_round}()} \cr
+\code{\link{op_select}()} \cr
 \code{\link{op_sign}()} \cr
 \code{\link{op_sin}()} \cr
 \code{\link{op_sinh}()} \cr
@@ -192,6 +197,7 @@ Other numpy ops: \cr
 \code{\link{op_triu}()} \cr
 \code{\link{op_var}()} \cr
 \code{\link{op_vdot}()} \cr
+\code{\link{op_vectorize}()} \cr
 \code{\link{op_vstack}()} \cr
 \code{\link{op_where}()} \cr
 \code{\link{op_zeros}()} \cr
@@ -238,6 +244,7 @@ Other ops: \cr
 \code{\link{op_cosh}()} \cr
 \code{\link{op_count_nonzero}()} \cr
 \code{\link{op_cross}()} \cr
+\code{\link{op_ctc_decode}()} \cr
 \code{\link{op_ctc_loss}()} \cr
 \code{\link{op_cumprod}()} \cr
 \code{\link{op_cumsum}()} \cr
@@ -252,6 +259,7 @@ Other ops: \cr
 \code{\link{op_divide_no_nan}()} \cr
 \code{\link{op_dot}()} \cr
 \code{\link{op_eig}()} \cr
+\code{\link{op_eigh}()} \cr
 \code{\link{op_einsum}()} \cr
 \code{\link{op_elu}()} \cr
 \code{\link{op_empty}()} \cr
@@ -286,6 +294,7 @@ Other ops: \cr
 \code{\link{op_image_map_coordinates}()} \cr
 \code{\link{op_image_pad}()} \cr
 \code{\link{op_image_resize}()} \cr
+\code{\link{op_image_rgb_to_grayscale}()} \cr
 \code{\link{op_in_top_k}()} \cr
 \code{\link{op_inv}()} \cr
 \code{\link{op_irfft}()} \cr
@@ -341,6 +350,7 @@ Other ops: \cr
 \code{\link{op_pad}()} \cr
 \code{\link{op_power}()} \cr
 \code{\link{op_prod}()} \cr
+\code{\link{op_psnr}()} \cr
 \code{\link{op_qr}()} \cr
 \code{\link{op_quantile}()} \cr
 \code{\link{op_ravel}()} \cr
@@ -358,6 +368,7 @@ Other ops: \cr
 \code{\link{op_scatter_update}()} \cr
 \code{\link{op_segment_max}()} \cr
 \code{\link{op_segment_sum}()} \cr
+\code{\link{op_select}()} \cr
 \code{\link{op_selu}()} \cr
 \code{\link{op_separable_conv}()} \cr
 \code{\link{op_shape}()} \cr
@@ -369,6 +380,7 @@ Other ops: \cr
 \code{\link{op_size}()} \cr
 \code{\link{op_slice}()} \cr
 \code{\link{op_slice_update}()} \cr
+\code{\link{op_slogdet}()} \cr
 \code{\link{op_softmax}()} \cr
 \code{\link{op_softplus}()} \cr
 \code{\link{op_softsign}()} \cr
@@ -403,6 +415,7 @@ Other ops: \cr
 \code{\link{op_unstack}()} \cr
 \code{\link{op_var}()} \cr
 \code{\link{op_vdot}()} \cr
+\code{\link{op_vectorize}()} \cr
 \code{\link{op_vectorized_map}()} \cr
 \code{\link{op_vstack}()} \cr
 \code{\link{op_where}()} \cr

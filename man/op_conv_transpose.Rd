@@ -87,6 +87,7 @@ Other nn ops: \cr
 \code{\link{op_multi_hot}()} \cr
 \code{\link{op_normalize}()} \cr
 \code{\link{op_one_hot}()} \cr
+\code{\link{op_psnr}()} \cr
 \code{\link{op_relu}()} \cr
 \code{\link{op_relu6}()} \cr
 \code{\link{op_selu}()} \cr
@@ -139,6 +140,7 @@ Other ops: \cr
 \code{\link{op_cosh}()} \cr
 \code{\link{op_count_nonzero}()} \cr
 \code{\link{op_cross}()} \cr
+\code{\link{op_ctc_decode}()} \cr
 \code{\link{op_ctc_loss}()} \cr
 \code{\link{op_cumprod}()} \cr
 \code{\link{op_cumsum}()} \cr
@@ -153,6 +155,7 @@ Other ops: \cr
 \code{\link{op_divide_no_nan}()} \cr
 \code{\link{op_dot}()} \cr
 \code{\link{op_eig}()} \cr
+\code{\link{op_eigh}()} \cr
 \code{\link{op_einsum}()} \cr
 \code{\link{op_elu}()} \cr
 \code{\link{op_empty}()} \cr
@@ -187,6 +190,7 @@ Other ops: \cr
 \code{\link{op_image_map_coordinates}()} \cr
 \code{\link{op_image_pad}()} \cr
 \code{\link{op_image_resize}()} \cr
+\code{\link{op_image_rgb_to_grayscale}()} \cr
 \code{\link{op_in_top_k}()} \cr
 \code{\link{op_inv}()} \cr
 \code{\link{op_irfft}()} \cr
@@ -242,6 +246,7 @@ Other ops: \cr
 \code{\link{op_pad}()} \cr
 \code{\link{op_power}()} \cr
 \code{\link{op_prod}()} \cr
+\code{\link{op_psnr}()} \cr
 \code{\link{op_qr}()} \cr
 \code{\link{op_quantile}()} \cr
 \code{\link{op_ravel}()} \cr
@@ -259,6 +264,7 @@ Other ops: \cr
 \code{\link{op_scatter_update}()} \cr
 \code{\link{op_segment_max}()} \cr
 \code{\link{op_segment_sum}()} \cr
+\code{\link{op_select}()} \cr
 \code{\link{op_selu}()} \cr
 \code{\link{op_separable_conv}()} \cr
 \code{\link{op_shape}()} \cr
@@ -270,6 +276,7 @@ Other ops: \cr
 \code{\link{op_size}()} \cr
 \code{\link{op_slice}()} \cr
 \code{\link{op_slice_update}()} \cr
+\code{\link{op_slogdet}()} \cr
 \code{\link{op_softmax}()} \cr
 \code{\link{op_softplus}()} \cr
 \code{\link{op_softsign}()} \cr
@@ -304,6 +311,7 @@ Other ops: \cr
 \code{\link{op_unstack}()} \cr
 \code{\link{op_var}()} \cr
 \code{\link{op_vdot}()} \cr
+\code{\link{op_vectorize}()} \cr
 \code{\link{op_vectorized_map}()} \cr
 \code{\link{op_vstack}()} \cr
 \code{\link{op_where}()} \cr

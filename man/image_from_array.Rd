@@ -50,6 +50,7 @@ Other image utils: \cr
 \code{\link{op_image_map_coordinates}()} \cr
 \code{\link{op_image_pad}()} \cr
 \code{\link{op_image_resize}()} \cr
+\code{\link{op_image_rgb_to_grayscale}()} \cr
 
 Other utils: \cr
 \code{\link{audio_dataset_from_directory}()} \cr
@@ -69,14 +70,12 @@ Other utils: \cr
 \code{\link{image_to_array}()} \cr
 \code{\link{layer_feature_space}()} \cr
 \code{\link{normalize}()} \cr
-\code{\link{pack_x_y_sample_weight}()} \cr
 \code{\link{pad_sequences}()} \cr
 \code{\link{set_random_seed}()} \cr
 \code{\link{split_dataset}()} \cr
 \code{\link{text_dataset_from_directory}()} \cr
 \code{\link{timeseries_dataset_from_array}()} \cr
 \code{\link{to_categorical}()} \cr
-\code{\link{unpack_x_y_sample_weight}()} \cr
 \code{\link{zip_lists}()} \cr
 }
 \concept{image utils}

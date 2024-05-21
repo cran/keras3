@@ -413,15 +413,15 @@ cases)</li>
 ## ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
 ## ┃[1m [0m[1mLayer (type)                   [0m[1m [0m┃[1m [0m[1mOutput Shape          [0m[1m [0m┃[1m [0m[1m      Param #[0m[1m [0m┃
 ## ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩
-## │ conv2d_3 ([38;5;33mConv2D[0m)               │ ([38;5;45mNone[0m, [38;5;34m26[0m, [38;5;34m26[0m, [38;5;34m64[0m)     │           [38;5;34m640[0m │
+## │ conv2d ([38;5;33mConv2D[0m)                 │ ([38;5;45mNone[0m, [38;5;34m26[0m, [38;5;34m26[0m, [38;5;34m64[0m)     │           [38;5;34m640[0m │
 ## ├─────────────────────────────────┼────────────────────────┼───────────────┤
-## │ conv2d_2 ([38;5;33mConv2D[0m)               │ ([38;5;45mNone[0m, [38;5;34m24[0m, [38;5;34m24[0m, [38;5;34m64[0m)     │        [38;5;34m36,928[0m │
+## │ conv2d_1 ([38;5;33mConv2D[0m)               │ ([38;5;45mNone[0m, [38;5;34m24[0m, [38;5;34m24[0m, [38;5;34m64[0m)     │        [38;5;34m36,928[0m │
 ## ├─────────────────────────────────┼────────────────────────┼───────────────┤
 ## │ max_pooling2d ([38;5;33mMaxPooling2D[0m)    │ ([38;5;45mNone[0m, [38;5;34m12[0m, [38;5;34m12[0m, [38;5;34m64[0m)     │             [38;5;34m0[0m │
 ## ├─────────────────────────────────┼────────────────────────┼───────────────┤
-## │ conv2d_1 ([38;5;33mConv2D[0m)               │ ([38;5;45mNone[0m, [38;5;34m10[0m, [38;5;34m10[0m, [38;5;34m128[0m)    │        [38;5;34m73,856[0m │
+## │ conv2d_2 ([38;5;33mConv2D[0m)               │ ([38;5;45mNone[0m, [38;5;34m10[0m, [38;5;34m10[0m, [38;5;34m128[0m)    │        [38;5;34m73,856[0m │
 ## ├─────────────────────────────────┼────────────────────────┼───────────────┤
-## │ conv2d ([38;5;33mConv2D[0m)                 │ ([38;5;45mNone[0m, [38;5;34m8[0m, [38;5;34m8[0m, [38;5;34m128[0m)      │       [38;5;34m147,584[0m │
+## │ conv2d_3 ([38;5;33mConv2D[0m)               │ ([38;5;45mNone[0m, [38;5;34m8[0m, [38;5;34m8[0m, [38;5;34m128[0m)      │       [38;5;34m147,584[0m │
 ## ├─────────────────────────────────┼────────────────────────┼───────────────┤
 ## │ global_average_pooling2d        │ ([38;5;45mNone[0m, [38;5;34m128[0m)            │             [38;5;34m0[0m │
 ## │ ([38;5;33mGlobalAveragePooling2D[0m)        │                        │               │
@@ -462,25 +462,23 @@ unseen data.</p>
 <span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a>  <span class="at">callbacks =</span> callbacks</span>
 <span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a>)</span></code></pre></div>
 <pre><code>## Epoch 1/10
-## 399/399 - 7s - 18ms/step - acc: 0.7323 - loss: 0.7863 - val_acc: 0.9598 - val_loss: 0.1396
+## 399/399 - 6s - 16ms/step - acc: 0.7450 - loss: 0.7521 - val_acc: 0.9642 - val_loss: 0.1234
 ## Epoch 2/10
-## 399/399 - 2s - 5ms/step - acc: 0.9276 - loss: 0.2407 - val_acc: 0.9701 - val_loss: 0.0958
+## 399/399 - 2s - 5ms/step - acc: 0.9387 - loss: 0.2054 - val_acc: 0.9769 - val_loss: 0.0751
 ## Epoch 3/10
-## 399/399 - 2s - 5ms/step - acc: 0.9478 - loss: 0.1789 - val_acc: 0.9796 - val_loss: 0.0685
+## 399/399 - 2s - 5ms/step - acc: 0.9575 - loss: 0.1455 - val_acc: 0.9824 - val_loss: 0.0609
 ## Epoch 4/10
-## 399/399 - 2s - 5ms/step - acc: 0.9574 - loss: 0.1447 - val_acc: 0.9836 - val_loss: 0.0584
+## 399/399 - 2s - 5ms/step - acc: 0.9662 - loss: 0.1148 - val_acc: 0.9863 - val_loss: 0.0483
 ## Epoch 5/10
-## 399/399 - 2s - 5ms/step - acc: 0.9641 - loss: 0.1224 - val_acc: 0.9858 - val_loss: 0.0483
+## 399/399 - 2s - 5ms/step - acc: 0.9726 - loss: 0.0972 - val_acc: 0.9869 - val_loss: 0.0479
 ## Epoch 6/10
-## 399/399 - 2s - 5ms/step - acc: 0.9685 - loss: 0.1060 - val_acc: 0.9857 - val_loss: 0.0488
+## 399/399 - 2s - 5ms/step - acc: 0.9750 - loss: 0.0857 - val_acc: 0.9892 - val_loss: 0.0379
 ## Epoch 7/10
-## 399/399 - 2s - 5ms/step - acc: 0.9720 - loss: 0.0958 - val_acc: 0.9886 - val_loss: 0.0431
+## 399/399 - 2s - 5ms/step - acc: 0.9768 - loss: 0.0768 - val_acc: 0.9906 - val_loss: 0.0358
 ## Epoch 8/10
-## 399/399 - 2s - 5ms/step - acc: 0.9742 - loss: 0.0876 - val_acc: 0.9899 - val_loss: 0.0385
+## 399/399 - 2s - 5ms/step - acc: 0.9794 - loss: 0.0671 - val_acc: 0.9876 - val_loss: 0.0422
 ## Epoch 9/10
-## 399/399 - 2s - 5ms/step - acc: 0.9762 - loss: 0.0798 - val_acc: 0.9912 - val_loss: 0.0332
-## Epoch 10/10
-## 399/399 - 2s - 5ms/step - acc: 0.9788 - loss: 0.0722 - val_acc: 0.9886 - val_loss: 0.0386</code></pre>
+## 399/399 - 2s - 5ms/step - acc: 0.9808 - loss: 0.0639 - val_acc: 0.9887 - val_loss: 0.0387</code></pre>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>score <span class="ot">&lt;-</span> model <span class="sc">|&gt;</span> <span class="fu">evaluate</span>(x_test, y_test, <span class="at">verbose =</span> <span class="dv">0</span>)</span></code></pre></div>
 <p>During training, we were saving a model at the end of each epoch. You
 can also save the model in its latest state like this:</p>
@@ -490,7 +488,7 @@ can also save the model in its latest state like this:</p>
 <p>Next, you can query predictions of class probabilities with
 <code>predict()</code>:</p>
 <div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>predictions <span class="ot">&lt;-</span> model <span class="sc">|&gt;</span> <span class="fu">predict</span>(x_test)</span></code></pre></div>
-<pre><code>## 313/313 - 0s - 2ms/step</code></pre>
+<pre><code>## 313/313 - 0s - 1ms/step</code></pre>
 <div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="fu">dim</span>(predictions)</span></code></pre></div>
 <pre><code>## [1] 10000    10</code></pre>
 <p>That’s it for the basics!</p>
@@ -599,7 +597,7 @@ layers:</p>
 <span id="cb22-13"><a href="#cb22-13" tabindex="-1"></a>  <span class="at">epochs =</span> <span class="dv">1</span>, <span class="co"># For speed</span></span>
 <span id="cb22-14"><a href="#cb22-14" tabindex="-1"></a>  <span class="at">validation_split =</span> <span class="fl">0.15</span></span>
 <span id="cb22-15"><a href="#cb22-15" tabindex="-1"></a>)</span></code></pre></div>
-<pre><code>## 399/399 - 7s - 18ms/step - acc: 0.7409 - loss: 0.7573 - val_acc: 0.9252 - val_loss: 0.2461</code></pre>
+<pre><code>## 399/399 - 6s - 16ms/step - acc: 0.7356 - loss: 0.7726 - val_acc: 0.9301 - val_loss: 0.2358</code></pre>
 </div>
 <div id="training-models-on-arbitrary-data-sources" class="section level2">
 <h2>Training models on arbitrary data sources</h2>
@@ -665,7 +663,7 @@ your Keras backend.</p>
 <span id="cb24-20"><a href="#cb24-20" tabindex="-1"></a>)</span>
 <span id="cb24-21"><a href="#cb24-21" tabindex="-1"></a></span>
 <span id="cb24-22"><a href="#cb24-22" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(train_dataset, <span class="at">epochs =</span> <span class="dv">1</span>, <span class="at">validation_data =</span> test_dataset)</span></code></pre></div>
-<pre><code>## 469/469 - 8s - 17ms/step - acc: 0.7601 - loss: 0.7126 - val_acc: 0.9056 - val_loss: 0.2990</code></pre>
+<pre><code>## 469/469 - 7s - 16ms/step - acc: 0.7542 - loss: 0.7342 - val_acc: 0.9026 - val_loss: 0.3192</code></pre>
 </div>
 <div id="further-reading" class="section level2">
 <h2>Further reading</h2>

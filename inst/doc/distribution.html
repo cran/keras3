@@ -491,15 +491,15 @@ input data.</p>
 <span id="cb6-38"><a href="#cb6-38" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">compile</span>(<span class="at">loss =</span> <span class="st">&quot;mse&quot;</span>)</span>
 <span id="cb6-39"><a href="#cb6-39" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(dataset, <span class="at">epochs =</span> <span class="dv">3</span>)</span></code></pre></div>
 <pre><code>## Epoch 1/3
-## 8/8 - 0s - 44ms/step - loss: 1.0604
+## 8/8 - 0s - 37ms/step - loss: 1.0629
 ## Epoch 2/3
-## 8/8 - 0s - 5ms/step - loss: 0.9732
+## 8/8 - 0s - 5ms/step - loss: 0.9712
 ## Epoch 3/3
-## 8/8 - 0s - 5ms/step - loss: 0.9253</code></pre>
+## 8/8 - 0s - 5ms/step - loss: 0.9322</code></pre>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">evaluate</span>(dataset)</span></code></pre></div>
-<pre><code>## 8/8 - 0s - 7ms/step - loss: 0.8825</code></pre>
+<pre><code>## 8/8 - 0s - 7ms/step - loss: 0.8859</code></pre>
 <pre><code>## $loss
-## [1] 0.8825469</code></pre>
+## [1] 0.8858577</code></pre>
 </div>
 <div id="modelparallel-and-layoutmap" class="section level2">
 <h2><code>ModelParallel</code> and <code>LayoutMap</code></h2>
@@ -570,15 +570,15 @@ input key again. If there are multiple matches, a
 <span id="cb11-37"><a href="#cb11-37" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">compile</span>(<span class="at">loss =</span> <span class="st">&quot;mse&quot;</span>)</span>
 <span id="cb11-38"><a href="#cb11-38" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(dataset, <span class="at">epochs =</span> <span class="dv">3</span>)</span></code></pre></div>
 <pre><code>## Epoch 1/3
-## 8/8 - 0s - 37ms/step - loss: 1.0650
+## 8/8 - 0s - 29ms/step - loss: 1.0714
 ## Epoch 2/3
-## 8/8 - 0s - 6ms/step - loss: 0.9721
+## 8/8 - 0s - 3ms/step - loss: 0.9744
 ## Epoch 3/3
-## 8/8 - 0s - 6ms/step - loss: 0.9290</code></pre>
+## 8/8 - 0s - 4ms/step - loss: 0.9280</code></pre>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">evaluate</span>(dataset)</span></code></pre></div>
-<pre><code>## 8/8 - 0s - 9ms/step - loss: 0.8810</code></pre>
+<pre><code>## 8/8 - 0s - 7ms/step - loss: 0.8802</code></pre>
 <pre><code>## $loss
-## [1] 0.8810369</code></pre>
+## [1] 0.8802156</code></pre>
 <p>It is also easy to change the mesh structure to tune the computation
 between more data parallel or model parallel. You can do this by
 adjusting the shape of the mesh. And no changes are needed for any other

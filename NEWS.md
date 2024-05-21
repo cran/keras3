@@ -1,3 +1,58 @@
+# keras3 1.0.0
+
+- Chains of `layer_*` calls with `|>` now instantiate layers in the
+  same order as `%>%` pipe chains: left-hand-side first (#1440).
+
+- `iterate()`, `iter_next()` and `as_iterator()` are now reexported from reticulate.
+
+
+User facing changes with upstream Keras v3.3.3:
+
+- new functions: `op_slogdet()`, `op_psnr()`
+
+- `clone_model()` gains new args: `call_function`, `recursive`
+  Updated example usage. 
+
+- `op_ctc_decode()` strategy argument has new default: `"greedy"`.
+  Updated docs. 
+
+- `loss_ctc()` default name fixed, changed to `"ctc"`
+
+User facing changes with upstream Keras v3.3.2:
+
+- new function: `op_ctc_decode()`
+- new function: `op_eigh()`
+- new function: `op_select()`
+- new function: `op_vectorize()`
+- new function: `op_image_rgb_to_grayscale()`
+- new function: `loss_tversky()`
+
+- new args: `layer_resizing(pad_to_aspect_ratio, fill_mode, fill_value)`
+- new arg: `layer_embedding(weights)` for providing an initial weights matrix
+
+- new args: `op_nan_to_num(nan, posinf, neginf)`
+- new args: `op_image_resize(crop_to_aspect_ratio, pad_to_aspect_ratio, fill_mode, fill_value)`
+- new args: `op_argmax(keepdims)` and `op_argmin(keepdims)`
+
+- new arg: `clear_session(free_memory)` for clearing without invoking the garbage collector.
+
+- `metric_kl_divergence()` and `loss_kl_divergence()` clip inputs
+  (`y_true` and `y_pred`) to the `[0, 1]` range.
+
+- new `Layer()` attributes: `metrics`, `dtype_policy`
+
+- Added initial support for float8 training
+
+- `layer_conv_*d()` layers now support LoRa
+
+- `op_digitize()` now supports sparse tensors.
+
+- Models and layers now return owned metrics recursively.
+
+- Add pickling support for Keras models. (e.g., via `reticulate::py_save_object()`)
+  Note that pickling is not recommended, prefer using Keras saving APIs.
+
+
 # keras3 0.2.0
 
 New functions:

@@ -2642,7 +2642,7 @@ function (input_shape = NULL, alpha = 1, include_top = TRUE,
 #'
 #' # Reference
 #' - [Searching for MobileNetV3](
-#'     https://arxiv.org/pdf/1905.02244.pdf) (ICCV 2019)
+#'     https://arxiv.org/pdf/1905.02244) (ICCV 2019)
 #'
 #' The following table describes the performance of MobileNets v3:
 #' ------------------------------------------------------------------------
@@ -2788,7 +2788,7 @@ function (input_shape = NULL, alpha = 1, minimalistic = FALSE,
 #'
 #' # Reference
 #' - [Searching for MobileNetV3](
-#'     https://arxiv.org/pdf/1905.02244.pdf) (ICCV 2019)
+#'     https://arxiv.org/pdf/1905.02244) (ICCV 2019)
 #'
 #' The following table describes the performance of MobileNets v3:
 #' ------------------------------------------------------------------------
@@ -3961,8 +3961,7 @@ set_preprocessing_attributes <- function(object, module) {
         x = function(x) {
           if (!is_py_object(x))
             x <- np_array(x)
-          if (inherits(x, "numpy.ndarray") &&
-              !py_bool(x$flags$writeable))
+          if (inherits(x, "numpy.ndarray") && !py_bool(x$flags$writeable))
             x <- x$copy()
           x
         }

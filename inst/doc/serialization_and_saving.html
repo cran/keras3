@@ -445,7 +445,7 @@ method.</p>
 <span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="st">&quot;CustomLayer&quot;</span>,</span>
 <span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="at">initialize =</span> <span class="cf">function</span>(sublayer, ...) {</span>
 <span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>    super<span class="sc">$</span><span class="fu">initialize</span>(...)</span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>    self<span class="sc">$</span>sublayer <span class="ot">&lt;-</span> layer</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>    self<span class="sc">$</span>sublayer <span class="ot">&lt;-</span> sublayer</span>
 <span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  },</span>
 <span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>  <span class="at">call =</span> <span class="cf">function</span>(x) {</span>
 <span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>    self<span class="sc">$</span><span class="fu">sublayer</span>(x)</span>
@@ -558,7 +558,7 @@ custom activation function to demonstrate this.</p>
 <span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="co"># Upon loading, pass a named list containing the custom objects used in the</span></span>
 <span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co"># `custom_objects` argument of `load_model()`.</span></span>
 <span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>reconstructed_model <span class="ot">&lt;-</span>  <span class="fu">load_model</span>(</span>
-<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>  <span class="st">&quot;custom_model.keras&quot;</span>,</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a> <span class="st">&quot;custom_model.keras&quot;</span>,</span>
 <span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>  <span class="at">custom_objects =</span> <span class="fu">list</span>(<span class="at">CustomLayer =</span> layer_custom,</span>
 <span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>                        <span class="at">custom_fn =</span> custom_fn),</span>
 <span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a>)</span>
@@ -725,7 +725,8 @@ the object</li>
 <p>Now we can reconstruct the regularizer.</p>
 <div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a>new_reg <span class="ot">&lt;-</span> <span class="fu">deserialize_keras_object</span>(config)</span>
 <span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a>new_reg</span></code></pre></div>
-<pre><code>## &lt;keras.src.regularizers.regularizers.L1 object&gt;</code></pre>
+<pre><code>## &lt;keras.src.regularizers.regularizers.L1 object&gt;
+##  signature: (x)</code></pre>
 </div>
 </div>
 <div id="model-weights-saving" class="section level3">
@@ -939,40 +940,37 @@ either in <code>initialize</code> itself or overriding the
 <span id="cb29-16"><a href="#cb29-16" tabindex="-1"></a>    <span class="at">get_config =</span> <span class="cf">function</span>() {</span>
 <span id="cb29-17"><a href="#cb29-17" tabindex="-1"></a>      config <span class="ot">&lt;-</span> super<span class="sc">$</span><span class="fu">get_config</span>()</span>
 <span id="cb29-18"><a href="#cb29-18" tabindex="-1"></a>      <span class="co"># Update the config with the custom layer&#39;s parameters</span></span>
-<span id="cb29-19"><a href="#cb29-19" tabindex="-1"></a>      config <span class="ot">&lt;-</span> <span class="fu">modifyList</span>(</span>
-<span id="cb29-20"><a href="#cb29-20" tabindex="-1"></a>        config,</span>
-<span id="cb29-21"><a href="#cb29-21" tabindex="-1"></a>        <span class="fu">list</span>(</span>
-<span id="cb29-22"><a href="#cb29-22" tabindex="-1"></a>          <span class="at">units =</span> self<span class="sc">$</span>hidden_units,</span>
-<span id="cb29-23"><a href="#cb29-23" tabindex="-1"></a>          <span class="at">kernel_regularizer =</span> self<span class="sc">$</span>kernel_regularizer,</span>
-<span id="cb29-24"><a href="#cb29-24" tabindex="-1"></a>          <span class="at">kernel_initializer =</span> self<span class="sc">$</span>kernel_initializer,</span>
-<span id="cb29-25"><a href="#cb29-25" tabindex="-1"></a>          <span class="at">nested_model =</span> self<span class="sc">$</span>nested_model</span>
-<span id="cb29-26"><a href="#cb29-26" tabindex="-1"></a>        )</span>
-<span id="cb29-27"><a href="#cb29-27" tabindex="-1"></a>      )</span>
-<span id="cb29-28"><a href="#cb29-28" tabindex="-1"></a>      config</span>
-<span id="cb29-29"><a href="#cb29-29" tabindex="-1"></a>    },</span>
-<span id="cb29-30"><a href="#cb29-30" tabindex="-1"></a>    <span class="at">build =</span> <span class="cf">function</span>(input_shape) {</span>
-<span id="cb29-31"><a href="#cb29-31" tabindex="-1"></a>      input_units <span class="ot">&lt;-</span> <span class="fu">tail</span>(input_shape, <span class="dv">1</span>)</span>
-<span id="cb29-32"><a href="#cb29-32" tabindex="-1"></a>      self<span class="sc">$</span>kernel <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">add_weight</span>(</span>
-<span id="cb29-33"><a href="#cb29-33" tabindex="-1"></a>        <span class="at">name =</span> <span class="st">&quot;kernel&quot;</span>,</span>
-<span id="cb29-34"><a href="#cb29-34" tabindex="-1"></a>        <span class="at">shape =</span> <span class="fu">shape</span>(input_units, self<span class="sc">$</span>hidden_units),</span>
-<span id="cb29-35"><a href="#cb29-35" tabindex="-1"></a>        <span class="at">regularizer =</span> self<span class="sc">$</span>kernel_regularizer,</span>
-<span id="cb29-36"><a href="#cb29-36" tabindex="-1"></a>        <span class="at">initializer =</span> self<span class="sc">$</span>kernel_initializer,</span>
-<span id="cb29-37"><a href="#cb29-37" tabindex="-1"></a>      )</span>
-<span id="cb29-38"><a href="#cb29-38" tabindex="-1"></a>    },</span>
-<span id="cb29-39"><a href="#cb29-39" tabindex="-1"></a>    <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
-<span id="cb29-40"><a href="#cb29-40" tabindex="-1"></a>      <span class="fu">op_matmul</span>(inputs, self<span class="sc">$</span>kernel)</span>
-<span id="cb29-41"><a href="#cb29-41" tabindex="-1"></a>    }</span>
-<span id="cb29-42"><a href="#cb29-42" tabindex="-1"></a>  )</span>
-<span id="cb29-43"><a href="#cb29-43" tabindex="-1"></a>)</span>
-<span id="cb29-44"><a href="#cb29-44" tabindex="-1"></a></span>
-<span id="cb29-45"><a href="#cb29-45" tabindex="-1"></a></span>
-<span id="cb29-46"><a href="#cb29-46" tabindex="-1"></a>layer <span class="ot">&lt;-</span> <span class="fu">layer_my_dense</span>(<span class="at">units =</span> <span class="dv">16</span>,</span>
-<span id="cb29-47"><a href="#cb29-47" tabindex="-1"></a>                        <span class="at">kernel_regularizer =</span> <span class="st">&quot;l1&quot;</span>,</span>
-<span id="cb29-48"><a href="#cb29-48" tabindex="-1"></a>                        <span class="at">kernel_initializer =</span> <span class="st">&quot;ones&quot;</span>)</span>
-<span id="cb29-49"><a href="#cb29-49" tabindex="-1"></a>layer3 <span class="ot">&lt;-</span> <span class="fu">layer_my_dense</span>(<span class="at">units =</span> <span class="dv">64</span>, <span class="at">nested_model =</span> layer)</span>
-<span id="cb29-50"><a href="#cb29-50" tabindex="-1"></a></span>
-<span id="cb29-51"><a href="#cb29-51" tabindex="-1"></a>config <span class="ot">&lt;-</span> <span class="fu">serialize_keras_object</span>(layer3)</span>
-<span id="cb29-52"><a href="#cb29-52" tabindex="-1"></a><span class="fu">str</span>(config)</span></code></pre></div>
+<span id="cb29-19"><a href="#cb29-19" tabindex="-1"></a>      config <span class="ot">&lt;-</span> <span class="fu">modifyList</span>(config, <span class="fu">list</span>(</span>
+<span id="cb29-20"><a href="#cb29-20" tabindex="-1"></a>        <span class="at">units =</span> self<span class="sc">$</span>hidden_units,</span>
+<span id="cb29-21"><a href="#cb29-21" tabindex="-1"></a>        <span class="at">kernel_regularizer =</span> self<span class="sc">$</span>kernel_regularizer,</span>
+<span id="cb29-22"><a href="#cb29-22" tabindex="-1"></a>        <span class="at">kernel_initializer =</span> self<span class="sc">$</span>kernel_initializer,</span>
+<span id="cb29-23"><a href="#cb29-23" tabindex="-1"></a>        <span class="at">nested_model =</span> self<span class="sc">$</span>nested_model</span>
+<span id="cb29-24"><a href="#cb29-24" tabindex="-1"></a>      ))</span>
+<span id="cb29-25"><a href="#cb29-25" tabindex="-1"></a>      config</span>
+<span id="cb29-26"><a href="#cb29-26" tabindex="-1"></a>    },</span>
+<span id="cb29-27"><a href="#cb29-27" tabindex="-1"></a>    <span class="at">build =</span> <span class="cf">function</span>(input_shape) {</span>
+<span id="cb29-28"><a href="#cb29-28" tabindex="-1"></a>      input_units <span class="ot">&lt;-</span> <span class="fu">tail</span>(input_shape, <span class="dv">1</span>)</span>
+<span id="cb29-29"><a href="#cb29-29" tabindex="-1"></a>      self<span class="sc">$</span>kernel <span class="ot">&lt;-</span> self<span class="sc">$</span><span class="fu">add_weight</span>(</span>
+<span id="cb29-30"><a href="#cb29-30" tabindex="-1"></a>        <span class="at">name =</span> <span class="st">&quot;kernel&quot;</span>,</span>
+<span id="cb29-31"><a href="#cb29-31" tabindex="-1"></a>        <span class="at">shape =</span> <span class="fu">shape</span>(input_units, self<span class="sc">$</span>hidden_units),</span>
+<span id="cb29-32"><a href="#cb29-32" tabindex="-1"></a>        <span class="at">regularizer =</span> self<span class="sc">$</span>kernel_regularizer,</span>
+<span id="cb29-33"><a href="#cb29-33" tabindex="-1"></a>        <span class="at">initializer =</span> self<span class="sc">$</span>kernel_initializer,</span>
+<span id="cb29-34"><a href="#cb29-34" tabindex="-1"></a>      )</span>
+<span id="cb29-35"><a href="#cb29-35" tabindex="-1"></a>    },</span>
+<span id="cb29-36"><a href="#cb29-36" tabindex="-1"></a>    <span class="at">call =</span> <span class="cf">function</span>(inputs) {</span>
+<span id="cb29-37"><a href="#cb29-37" tabindex="-1"></a>      <span class="fu">op_matmul</span>(inputs, self<span class="sc">$</span>kernel)</span>
+<span id="cb29-38"><a href="#cb29-38" tabindex="-1"></a>    }</span>
+<span id="cb29-39"><a href="#cb29-39" tabindex="-1"></a>  )</span>
+<span id="cb29-40"><a href="#cb29-40" tabindex="-1"></a>)</span>
+<span id="cb29-41"><a href="#cb29-41" tabindex="-1"></a></span>
+<span id="cb29-42"><a href="#cb29-42" tabindex="-1"></a></span>
+<span id="cb29-43"><a href="#cb29-43" tabindex="-1"></a>layer <span class="ot">&lt;-</span> <span class="fu">layer_my_dense</span>(<span class="at">units =</span> <span class="dv">16</span>,</span>
+<span id="cb29-44"><a href="#cb29-44" tabindex="-1"></a>                        <span class="at">kernel_regularizer =</span> <span class="st">&quot;l1&quot;</span>,</span>
+<span id="cb29-45"><a href="#cb29-45" tabindex="-1"></a>                        <span class="at">kernel_initializer =</span> <span class="st">&quot;ones&quot;</span>)</span>
+<span id="cb29-46"><a href="#cb29-46" tabindex="-1"></a>layer3 <span class="ot">&lt;-</span> <span class="fu">layer_my_dense</span>(<span class="at">units =</span> <span class="dv">64</span>, <span class="at">nested_model =</span> layer)</span>
+<span id="cb29-47"><a href="#cb29-47" tabindex="-1"></a></span>
+<span id="cb29-48"><a href="#cb29-48" tabindex="-1"></a>config <span class="ot">&lt;-</span> <span class="fu">serialize_keras_object</span>(layer3)</span>
+<span id="cb29-49"><a href="#cb29-49" tabindex="-1"></a><span class="fu">str</span>(config)</span></code></pre></div>
 <pre><code>## List of 4
 ##  $ module         : chr &quot;&lt;r-globalenv&gt;&quot;
 ##  $ class_name     : chr &quot;MyDense&quot;
@@ -995,7 +993,8 @@ either in <code>initialize</code> itself or overriding the
 ##  $ registered_name: chr &quot;MyLayers&gt;KernelMult&quot;</code></pre>
 <div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" tabindex="-1"></a>new_layer <span class="ot">&lt;-</span> <span class="fu">deserialize_keras_object</span>(config)</span>
 <span id="cb31-2"><a href="#cb31-2" tabindex="-1"></a>new_layer</span></code></pre></div>
-<pre><code>## &lt;MyDense name=my_dense_1, built=False&gt;</code></pre>
+<pre><code>## &lt;MyDense name=my_dense_1, built=False&gt;
+##  signature: (*args, **kwargs)</code></pre>
 <p>Note that overriding <code>from_config</code> is unnecessary above
 for <code>MyDense</code> because <code>hidden_units</code>,
 <code>kernel_initializer</code>, and <code>kernel_regularizer</code> are
