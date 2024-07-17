@@ -22,7 +22,7 @@ vignette: >
 
 ## Overview
 
-[Keras](https://keras.posit.co/) is a high-level neural networks API developed with a focus on enabling fast experimentation. *Being able to go from idea to result with the least possible delay is key to doing good research.* Keras has the following key features:
+[Keras](https://keras3.posit.co/) is a high-level neural networks API developed with a focus on enabling fast experimentation. *Being able to go from idea to result with the least possible delay is key to doing good research.* Keras has the following key features:
 
 - Allows the same code to run on CPU or on GPU, seamlessly.
 
@@ -196,15 +196,15 @@ model |> evaluate(x_test, y_test)
 ```
 
 ```
-## 313/313 - 1s - 2ms/step - accuracy: 0.9814 - loss: 0.0844
+## 313/313 - 1s - 3ms/step - accuracy: 0.9806 - loss: 0.0880
 ```
 
 ```
 ## $accuracy
-## [1] 0.9814
+## [1] 0.9806
 ##
 ## $loss
-## [1] 0.08441389
+## [1] 0.08797418
 ```
 
 Generate predictions on new data:

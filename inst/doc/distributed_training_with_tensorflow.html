@@ -504,10 +504,10 @@ objects to load data in a multi-device or distributed workflow.</p>
 <span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a></span>
 <span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>})</span></code></pre></div>
 <pre><code>## Epoch 1/2
-## 782/782 - 5s - 7ms/step - loss: 3.0622 - sparse_categorical_accuracy: 0.8615 - val_loss: 1.1367 - val_sparse_categorical_accuracy: 0.9006
+## 782/782 - 7s - 9ms/step - loss: 3.0622 - sparse_categorical_accuracy: 0.8615 - val_loss: 1.1367 - val_sparse_categorical_accuracy: 0.9006
 ## Epoch 2/2
-## 782/782 - 3s - 4ms/step - loss: 0.5774 - sparse_categorical_accuracy: 0.9259 - val_loss: 0.6612 - val_sparse_categorical_accuracy: 0.9210
-## 157/157 - 0s - 2ms/step - loss: 0.6729 - sparse_categorical_accuracy: 0.9150</code></pre>
+## 782/782 - 4s - 5ms/step - loss: 0.5774 - sparse_categorical_accuracy: 0.9259 - val_loss: 0.6612 - val_sparse_categorical_accuracy: 0.9210
+## 157/157 - 1s - 3ms/step - loss: 0.6729 - sparse_categorical_accuracy: 0.9150</code></pre>
 <pre><code>## $loss
 ## [1] 0.6728871
 ##
@@ -532,7 +532,7 @@ saved model.</p>
 <span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>make_or_restore_model <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
 <span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>  <span class="co"># Either restore the latest model, or create a fresh one</span></span>
 <span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>  <span class="co"># if there is no checkpoint available.</span></span>
-<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>  checkpoints <span class="ot">&lt;-</span> <span class="fu">list.files</span>(checkpoint_dir, <span class="co">#pattern = &quot;ckpt-.*\\.keras&quot;,</span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>  checkpoints <span class="ot">&lt;-</span> <span class="fu">list.files</span>(checkpoint_dir, <span class="at">pattern =</span> <span class="st">&quot;ckpt-.*</span><span class="sc">\\</span><span class="st">.keras&quot;</span>,</span>
 <span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>                            <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a></span>
 <span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(checkpoints) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
@@ -575,10 +575,10 @@ saved model.</p>
 <span id="cb8-50"><a href="#cb8-50" tabindex="-1"></a></span>
 <span id="cb8-51"><a href="#cb8-51" tabindex="-1"></a><span class="co"># Running the first time creates the model</span></span>
 <span id="cb8-52"><a href="#cb8-52" tabindex="-1"></a><span class="fu">run_training</span>(<span class="at">epochs =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## 782/782 - 4s - 6ms/step - loss: 2.9519 - sparse_categorical_accuracy: 0.8655 - val_loss: 1.3110 - val_sparse_categorical_accuracy: 0.8836</code></pre>
+<pre><code>## 782/782 - 3s - 4ms/step - loss: 0.2194 - sparse_categorical_accuracy: 0.9532 - val_loss: 0.3217 - val_sparse_categorical_accuracy: 0.9456</code></pre>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># Calling the same function again will resume from where we left off</span></span>
 <span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="fu">run_training</span>(<span class="at">epochs =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## 782/782 - 3s - 4ms/step - loss: 0.5998 - sparse_categorical_accuracy: 0.9270 - val_loss: 0.8736 - val_sparse_categorical_accuracy: 0.9128</code></pre>
+<pre><code>## 782/782 - 3s - 4ms/step - loss: 0.1876 - sparse_categorical_accuracy: 0.9584 - val_loss: 0.3629 - val_sparse_categorical_accuracy: 0.9396</code></pre>
 </div>
 <div id="tfdata-performance-tips" class="section level2">
 <h2><code>tf$data</code> performance tips</h2>

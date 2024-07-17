@@ -1113,7 +1113,7 @@ training &amp; evaluation loops: <code>fit()</code>,
 <code>compile()</code> method). These built-in functions give you access
 to the following built-in training infrastructure features:</p>
 <ul>
-<li><a href="https://keras.posit.co/reference/index.html#callbacks">Callbacks</a>.
+<li><a href="https://keras3.posit.co/reference/index.html#callbacks">Callbacks</a>.
 You can leverage built-in callbacks for early-stopping, model
 checkpointing, and monitoring training with TensorBoard. You can also <a href="writing_your_own_callbacks.html">implement custom callbacks</a> if
 needed.</li>
@@ -1121,7 +1121,7 @@ needed.</li>
 training</a>. You can easily scale up your training to multiple GPUs,
 TPU, or even multiple machines with the <code>tf.distribute</code> API –
 with no changes to your code.</li>
-<li><a href="https://keras.posit.co/reference/compile.keras.src.models.model.Model.html">Step
+<li><a href="https://keras3.posit.co/reference/compile.keras.src.models.model.Model.html">Step
 fusing</a>. With the <code>steps_per_execution</code> argument in
 <code>Model.compile()</code>, you can process multiple batches in a
 single <code>tf.function</code> call, which greatly improves device

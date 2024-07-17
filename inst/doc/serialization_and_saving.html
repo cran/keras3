@@ -644,7 +644,12 @@ or layer.</p>
 <pre><code>## List of 12
 ##  $ name              : chr &quot;dense_4&quot;
 ##  $ trainable         : logi TRUE
-##  $ dtype             : chr &quot;float32&quot;
+##  $ dtype             :List of 4
+##   ..$ module         : chr &quot;keras&quot;
+##   ..$ class_name     : chr &quot;DTypePolicy&quot;
+##   ..$ config         :List of 1
+##   .. ..$ name: chr &quot;float32&quot;
+##   ..$ registered_name: NULL
 ##  $ units             : int 3
 ##  $ activation        : chr &quot;relu&quot;
 ##  $ use_bias          : logi TRUE
@@ -977,7 +982,12 @@ either in <code>initialize</code> itself or overriding the
 ##  $ config         :List of 5
 ##   ..$ name        : chr &quot;my_dense_1&quot;
 ##   ..$ trainable   : logi TRUE
-##   ..$ dtype       : chr &quot;float32&quot;
+##   ..$ dtype       :List of 4
+##   .. ..$ module         : chr &quot;keras&quot;
+##   .. ..$ class_name     : chr &quot;DTypePolicy&quot;
+##   .. ..$ config         :List of 1
+##   .. .. ..$ name: chr &quot;float32&quot;
+##   .. ..$ registered_name: NULL
 ##   ..$ units       : num 64
 ##   ..$ nested_model:List of 4
 ##   .. ..$ module         : chr &quot;&lt;r-globalenv&gt;&quot;
@@ -985,7 +995,12 @@ either in <code>initialize</code> itself or overriding the
 ##   .. ..$ config         :List of 6
 ##   .. .. ..$ name              : chr &quot;my_dense&quot;
 ##   .. .. ..$ trainable         : logi TRUE
-##   .. .. ..$ dtype             : chr &quot;float32&quot;
+##   .. .. ..$ dtype             :List of 4
+##   .. .. .. ..$ module         : chr &quot;keras&quot;
+##   .. .. .. ..$ class_name     : chr &quot;DTypePolicy&quot;
+##   .. .. .. ..$ config         :List of 1
+##   .. .. .. .. ..$ name: chr &quot;float32&quot;
+##   .. .. .. ..$ registered_name: NULL
 ##   .. .. ..$ units             : num 16
 ##   .. .. ..$ kernel_regularizer: chr &quot;l1&quot;
 ##   .. .. ..$ kernel_initializer: chr &quot;ones&quot;
@@ -1075,7 +1090,12 @@ naming.</p>
 ##  $ config         :List of 6
 ##   ..$ name              : chr &quot;my_dense_2&quot;
 ##   ..$ trainable         : logi TRUE
-##   ..$ dtype             : chr &quot;float32&quot;
+##   ..$ dtype             :List of 4
+##   .. ..$ module         : chr &quot;keras&quot;
+##   .. ..$ class_name     : chr &quot;DTypePolicy&quot;
+##   .. ..$ config         :List of 1
+##   .. .. ..$ name: chr &quot;float32&quot;
+##   .. ..$ registered_name: NULL
 ##   ..$ units             : num 16
 ##   ..$ kernel_regularizer:List of 4
 ##   .. ..$ module         : chr &quot;keras.regularizers&quot;

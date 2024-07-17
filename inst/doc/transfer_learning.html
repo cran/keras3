@@ -461,7 +461,7 @@ updated during training.</p>
 <span id="cb20-16"><a href="#cb20-16" tabindex="-1"></a><span class="co"># Train the model</span></span>
 <span id="cb20-17"><a href="#cb20-17" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">compile</span>(<span class="at">optimizer =</span> <span class="st">&quot;adam&quot;</span>, <span class="at">loss =</span> <span class="st">&quot;mse&quot;</span>)</span>
 <span id="cb20-18"><a href="#cb20-18" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(<span class="fu">random_normal</span>(<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>)), <span class="fu">random_normal</span>(<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>)), <span class="at">epochs =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## 1/1 - 1s - 544ms/step - loss: 2.1868</code></pre>
+<pre><code>## 1/1 - 0s - 472ms/step - loss: 2.1868</code></pre>
 <div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a><span class="co"># Check that the weights of layer1 have not changed during training</span></span>
 <span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a>final_layer1_weights_values <span class="ot">&lt;-</span> <span class="fu">get_weights</span>(layer1)</span>
 <span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a></span>
@@ -816,7 +816,7 @@ fine-tuning.</li>
 <span id="cb40-28"><a href="#cb40-28" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">keras_model</span>(inputs, outputs)</span>
 <span id="cb40-29"><a href="#cb40-29" tabindex="-1"></a></span>
 <span id="cb40-30"><a href="#cb40-30" tabindex="-1"></a><span class="fu">summary</span>(model, <span class="at">show_trainable =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
-<pre><code>## [1mModel: &quot;functional_10&quot;[0m
+<pre><code>## [1mModel: &quot;functional_8&quot;[0m
 ## ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━┓
 ## ┃[1m [0m[1mLayer (type)               [0m[1m [0m┃[1m [0m[1mOutput Shape         [0m[1m [0m┃[1m [0m[1m   Param #[0m[1m [0m┃[1m [0m[1mTrai…[0m[1m [0m┃
 ## ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━┩
@@ -847,7 +847,7 @@ fine-tuning.</li>
 <span id="cb42-6"><a href="#cb42-6" tabindex="-1"></a></span>
 <span id="cb42-7"><a href="#cb42-7" tabindex="-1"></a>epochs <span class="ot">&lt;-</span> <span class="dv">1</span></span>
 <span id="cb42-8"><a href="#cb42-8" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(train_ds, <span class="at">epochs =</span> epochs, <span class="at">validation_data =</span> validation_ds)</span></code></pre></div>
-<pre><code>## 146/146 - 45s - 306ms/step - binary_accuracy: 0.9183 - loss: 0.1887 - val_binary_accuracy: 0.9669 - val_loss: 0.0926</code></pre>
+<pre><code>## 146/146 - 39s - 265ms/step - binary_accuracy: 0.9183 - loss: 0.1887 - val_binary_accuracy: 0.9669 - val_loss: 0.0926</code></pre>
 </div>
 <div id="do-a-round-of-fine-tuning-of-the-entire-model" class="section level2">
 <h2>Do a round of fine-tuning of the entire model</h2>
@@ -866,7 +866,7 @@ so far.</p>
 <span id="cb44-5"><a href="#cb44-5" tabindex="-1"></a><span class="co"># we&#39;ve done so far.</span></span>
 <span id="cb44-6"><a href="#cb44-6" tabindex="-1"></a>base_model<span class="sc">$</span>trainable <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span>
 <span id="cb44-7"><a href="#cb44-7" tabindex="-1"></a><span class="fu">summary</span>(model, <span class="at">show_trainable =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
-<pre><code>## [1mModel: &quot;functional_10&quot;[0m
+<pre><code>## [1mModel: &quot;functional_8&quot;[0m
 ## ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━┓
 ## ┃[1m [0m[1mLayer (type)               [0m[1m [0m┃[1m [0m[1mOutput Shape         [0m[1m [0m┃[1m [0m[1m   Param #[0m[1m [0m┃[1m [0m[1mTrai…[0m[1m [0m┃
 ## ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━┩
@@ -895,16 +895,16 @@ so far.</p>
 <span id="cb46-6"><a href="#cb46-6" tabindex="-1"></a></span>
 <span id="cb46-7"><a href="#cb46-7" tabindex="-1"></a>epochs <span class="ot">&lt;-</span> <span class="dv">1</span></span>
 <span id="cb46-8"><a href="#cb46-8" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(train_ds, <span class="at">epochs =</span> epochs, <span class="at">validation_data =</span> validation_ds)</span></code></pre></div>
-<pre><code>## 146/146 - 82s - 564ms/step - binary_accuracy: 0.8660 - loss: 0.3213 - val_binary_accuracy: 0.9652 - val_loss: 0.1022</code></pre>
+<pre><code>## 146/146 - 84s - 577ms/step - binary_accuracy: 0.8660 - loss: 0.3213 - val_binary_accuracy: 0.9652 - val_loss: 0.1022</code></pre>
 <p>After 10 epochs, fine-tuning gains us a nice improvement here. Let’s
 evaluate the model on the test dataset:</p>
 <div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">evaluate</span>(test_ds)</span></code></pre></div>
-<pre><code>## 37/37 - 2s - 42ms/step - binary_accuracy: 0.9540 - loss: 0.1103</code></pre>
+<pre><code>## 37/37 - 2s - 44ms/step - binary_accuracy: 0.9540 - loss: 0.1103</code></pre>
 <pre><code>## $binary_accuracy
 ## [1] 0.9539983
 ##
 ## $loss
-## [1] 0.1102556</code></pre>
+## [1] 0.1102648</code></pre>
 </div>
 
 
