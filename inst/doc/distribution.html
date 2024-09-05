@@ -491,15 +491,15 @@ input data.</p>
 <span id="cb6-38"><a href="#cb6-38" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">compile</span>(<span class="at">loss =</span> <span class="st">&quot;mse&quot;</span>)</span>
 <span id="cb6-39"><a href="#cb6-39" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(dataset, <span class="at">epochs =</span> <span class="dv">3</span>)</span></code></pre></div>
 <pre><code>## Epoch 1/3
-## 8/8 - 0s - 37ms/step - loss: 1.0629
+## 8/8 - 0s - 38ms/step - loss: 1.0768
 ## Epoch 2/3
-## 8/8 - 0s - 4ms/step - loss: 0.9712
+## 8/8 - 0s - 6ms/step - loss: 0.9754
 ## Epoch 3/3
-## 8/8 - 0s - 5ms/step - loss: 0.9322</code></pre>
+## 8/8 - 0s - 5ms/step - loss: 0.9347</code></pre>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">evaluate</span>(dataset)</span></code></pre></div>
-<pre><code>## 8/8 - 0s - 7ms/step - loss: 0.8859</code></pre>
+<pre><code>## 8/8 - 0s - 7ms/step - loss: 0.8936</code></pre>
 <pre><code>## $loss
-## [1] 0.8858577</code></pre>
+## [1] 0.8935966</code></pre>
 </div>
 <div id="modelparallel-and-layoutmap" class="section level2">
 <h2><code>ModelParallel</code> and <code>LayoutMap</code></h2>
@@ -548,38 +548,37 @@ input key again. If there are multiple matches, a
 <span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a>layout_map[<span class="st">&quot;d2/output&quot;</span>] <span class="ot">&lt;-</span> <span class="fu">tuple</span>(<span class="st">&quot;data&quot;</span>, <span class="cn">NULL</span>)</span>
 <span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a></span>
 <span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a>model_parallel <span class="ot">&lt;-</span> keras<span class="sc">$</span>distribution<span class="sc">$</span><span class="fu">ModelParallel</span>(</span>
-<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a>  <span class="at">layout_map =</span> layout_map,</span>
-<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a>  <span class="at">batch_dim_name =</span> <span class="st">&quot;data&quot;</span></span>
-<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a>)</span>
-<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a></span>
-<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a>keras<span class="sc">$</span>distribution<span class="sc">$</span><span class="fu">set_distribution</span>(model_parallel)</span>
-<span id="cb11-23"><a href="#cb11-23" tabindex="-1"></a></span>
-<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a>inputs <span class="ot">&lt;-</span> <span class="fu">layer_input</span>(<span class="at">shape =</span> <span class="fu">c</span>(<span class="dv">28</span>, <span class="dv">28</span>, <span class="dv">1</span>))</span>
-<span id="cb11-25"><a href="#cb11-25" tabindex="-1"></a>outputs <span class="ot">&lt;-</span> inputs <span class="sc">|&gt;</span></span>
-<span id="cb11-26"><a href="#cb11-26" tabindex="-1"></a>  <span class="fu">layer_flatten</span>() <span class="sc">|&gt;</span></span>
-<span id="cb11-27"><a href="#cb11-27" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">200</span>, <span class="at">use_bias =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb11-28"><a href="#cb11-28" tabindex="-1"></a>              <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>, <span class="at">name =</span> <span class="st">&quot;d1&quot;</span>) <span class="sc">|&gt;</span></span>
-<span id="cb11-29"><a href="#cb11-29" tabindex="-1"></a>  <span class="fu">layer_dropout</span>(<span class="fl">0.4</span>) <span class="sc">|&gt;</span></span>
-<span id="cb11-30"><a href="#cb11-30" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">10</span>,</span>
-<span id="cb11-31"><a href="#cb11-31" tabindex="-1"></a>              <span class="at">activation =</span> <span class="st">&quot;softmax&quot;</span>,</span>
-<span id="cb11-32"><a href="#cb11-32" tabindex="-1"></a>              <span class="at">name =</span> <span class="st">&quot;d2&quot;</span>)</span>
-<span id="cb11-33"><a href="#cb11-33" tabindex="-1"></a></span>
-<span id="cb11-34"><a href="#cb11-34" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">keras_model</span>(<span class="at">inputs =</span> inputs, <span class="at">outputs =</span> outputs)</span>
-<span id="cb11-35"><a href="#cb11-35" tabindex="-1"></a></span>
-<span id="cb11-36"><a href="#cb11-36" tabindex="-1"></a><span class="co"># The data will be sharded across the &quot;data&quot; dimension of the method, which</span></span>
-<span id="cb11-37"><a href="#cb11-37" tabindex="-1"></a><span class="co"># has 2 devices.</span></span>
-<span id="cb11-38"><a href="#cb11-38" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">compile</span>(<span class="at">loss =</span> <span class="st">&quot;mse&quot;</span>)</span>
-<span id="cb11-39"><a href="#cb11-39" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(dataset, <span class="at">epochs =</span> <span class="dv">3</span>)</span></code></pre></div>
+<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a>  <span class="at">layout_map =</span> layout_map, <span class="at">batch_dim_name =</span> <span class="st">&quot;data&quot;</span></span>
+<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a>)</span>
+<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a></span>
+<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a>keras<span class="sc">$</span>distribution<span class="sc">$</span><span class="fu">set_distribution</span>(model_parallel)</span>
+<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a></span>
+<span id="cb11-23"><a href="#cb11-23" tabindex="-1"></a>inputs <span class="ot">&lt;-</span> <span class="fu">layer_input</span>(<span class="at">shape =</span> <span class="fu">c</span>(<span class="dv">28</span>, <span class="dv">28</span>, <span class="dv">1</span>))</span>
+<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a>outputs <span class="ot">&lt;-</span> inputs <span class="sc">|&gt;</span></span>
+<span id="cb11-25"><a href="#cb11-25" tabindex="-1"></a>  <span class="fu">layer_flatten</span>() <span class="sc">|&gt;</span></span>
+<span id="cb11-26"><a href="#cb11-26" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">200</span>, <span class="at">use_bias =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb11-27"><a href="#cb11-27" tabindex="-1"></a>              <span class="at">activation =</span> <span class="st">&quot;relu&quot;</span>, <span class="at">name =</span> <span class="st">&quot;d1&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb11-28"><a href="#cb11-28" tabindex="-1"></a>  <span class="fu">layer_dropout</span>(<span class="fl">0.4</span>) <span class="sc">|&gt;</span></span>
+<span id="cb11-29"><a href="#cb11-29" tabindex="-1"></a>  <span class="fu">layer_dense</span>(<span class="at">units =</span> <span class="dv">10</span>,</span>
+<span id="cb11-30"><a href="#cb11-30" tabindex="-1"></a>              <span class="at">activation =</span> <span class="st">&quot;softmax&quot;</span>,</span>
+<span id="cb11-31"><a href="#cb11-31" tabindex="-1"></a>              <span class="at">name =</span> <span class="st">&quot;d2&quot;</span>)</span>
+<span id="cb11-32"><a href="#cb11-32" tabindex="-1"></a></span>
+<span id="cb11-33"><a href="#cb11-33" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">keras_model</span>(<span class="at">inputs =</span> inputs, <span class="at">outputs =</span> outputs)</span>
+<span id="cb11-34"><a href="#cb11-34" tabindex="-1"></a></span>
+<span id="cb11-35"><a href="#cb11-35" tabindex="-1"></a><span class="co"># The data will be sharded across the &quot;data&quot; dimension of the method, which</span></span>
+<span id="cb11-36"><a href="#cb11-36" tabindex="-1"></a><span class="co"># has 2 devices.</span></span>
+<span id="cb11-37"><a href="#cb11-37" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">compile</span>(<span class="at">loss =</span> <span class="st">&quot;mse&quot;</span>)</span>
+<span id="cb11-38"><a href="#cb11-38" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(dataset, <span class="at">epochs =</span> <span class="dv">3</span>)</span></code></pre></div>
 <pre><code>## Epoch 1/3
-## 8/8 - 0s - 29ms/step - loss: 1.0714
+## 8/8 - 0s - 29ms/step - loss: 1.0836
 ## Epoch 2/3
-## 8/8 - 0s - 4ms/step - loss: 0.9744
+## 8/8 - 0s - 4ms/step - loss: 1.0192
 ## Epoch 3/3
-## 8/8 - 0s - 3ms/step - loss: 0.9280</code></pre>
+## 8/8 - 0s - 4ms/step - loss: 0.9821</code></pre>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">evaluate</span>(dataset)</span></code></pre></div>
-<pre><code>## 8/8 - 0s - 9ms/step - loss: 0.8802</code></pre>
+<pre><code>## 8/8 - 0s - 8ms/step - loss: 0.9576</code></pre>
 <pre><code>## $loss
-## [1] 0.8802156</code></pre>
+## [1] 0.9576273</code></pre>
 <p>It is also easy to change the mesh structure to tune the computation
 between more data parallel or model parallel. You can do this by
 adjusting the shape of the mesh. And no changes are needed for any other
