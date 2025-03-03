@@ -90,20 +90,20 @@ sample_weight <- c(0.1, 0.2, 0.3, 0.4)
 m <- metric_one_hot_iou(num_classes = 3, target_class_ids = c(0, 2))
 m$update_state(y_true = y_true,
                y_pred = y_pred,
-               sample_weight = sample_weight)
+               sample_weight = 10*sample_weight)
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(
-## [[0.  0.  0.6]
-##  [0.3 0.  0. ]
-##  [0.  0.  0.1]], shape=(3, 3), dtype=float32)
+## [[0 0 6]
+##  [3 0 0]
+##  [0 0 1]], shape=(3, 3), dtype=int64)
 
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{m$result()
 }\if{html}{\out{</div>}}
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(0.07142855, shape=(), dtype=float32)
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(0.071428575, shape=(), dtype=float32)
 
 }\if{html}{\out{</div>}}
 
@@ -139,6 +139,7 @@ Other metrics: \cr
 \code{\link{metric_categorical_crossentropy}()} \cr
 \code{\link{metric_categorical_focal_crossentropy}()} \cr
 \code{\link{metric_categorical_hinge}()} \cr
+\code{\link{metric_concordance_correlation}()} \cr
 \code{\link{metric_cosine_similarity}()} \cr
 \code{\link{metric_f1_score}()} \cr
 \code{\link{metric_false_negatives}()} \cr
@@ -158,6 +159,7 @@ Other metrics: \cr
 \code{\link{metric_mean_squared_logarithmic_error}()} \cr
 \code{\link{metric_mean_wrapper}()} \cr
 \code{\link{metric_one_hot_mean_iou}()} \cr
+\code{\link{metric_pearson_correlation}()} \cr
 \code{\link{metric_poisson}()} \cr
 \code{\link{metric_precision}()} \cr
 \code{\link{metric_precision_at_recall}()} \cr

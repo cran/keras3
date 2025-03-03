@@ -1,3 +1,168 @@
+# keras3 1.3.0
+
+- Keras now uses `reticulate::py_require()` to resolve Python dependencies.
+  Calling `install_keras()` is no longer required (but is still supported).
+
+- `use_backend()` gains a `gpu` argument, to specify if a GPU-capable set of
+  dependencies should be resolved by `py_require()`.
+
+- The progress bar in `fit()`, `evaluate()` and `predict()` now
+  defaults to not presenting during testthat tests.
+
+- `dotty::.` is now reexported.
+
+- `%*%` now dispatches to `op_matmul()` for tensorflow tensors, which
+  has relaxed shape constraints compared to `tf$matmul()`.
+  
+- Fixed an issue where calling a `Metric` and `Loss` object 
+  with unnamed arguments would error.
+
+## Added compatibility with Keras v3.8.0. User-facing changes:
+
+- New symbols:
+  - `activation_sparse_plus()`
+  - `activation_sparsemax()`
+  - `activation_threshold()`
+  - `layer_equalization()`
+  - `layer_mix_up()`
+  - `layer_rand_augment()`
+  - `layer_random_color_degeneration()`
+  - `layer_random_color_jitter()`
+  - `layer_random_grayscale()`
+  - `layer_random_hue()`
+  - `layer_random_posterization()`
+  - `layer_random_saturation()`
+  - `layer_random_sharpness()`
+  - `layer_random_shear()`
+  - `op_diagflat()`
+  - `op_sparse_plus()`
+  - `op_sparsemax()`
+  - `op_threshold()`
+  - `op_unravel_index()`
+
+- Add argument axis to tversky loss
+- New: ONNX model export with `export_savedmodel()`
+- Doc improvements and bug fixes.
+- JAX specific changes: Add support for JAX named scope
+- TensorFlow specific changes: Make `random_shuffle()` XLA compilable
+
+
+## Added compatibility with Keras v3.7.0. User-facing changes:
+
+### New functions
+
+#### Activations
+- `activation_celu()`
+- `activation_glu()`
+- `activation_hard_shrink()`
+- `activation_hard_tanh()`
+- `activation_log_sigmoid()`
+- `activation_soft_shrink()`
+- `activation_squareplus()`
+- `activation_tanh_shrink()`
+
+#### Configuration
+- `config_disable_flash_attention()`
+- `config_enable_flash_attention()`
+- `config_is_flash_attention_enabled()`
+
+#### Layers and Initializers
+- `initializer_stft()`
+- `layer_max_num_bounding_boxes()`
+- `layer_stft_spectrogram()`
+
+#### Losses and Metrics
+- `loss_circle()`
+- `metric_concordance_correlation()`
+- `metric_pearson_correlation()`
+
+#### Operations
+- `op_celu()`
+- `op_exp2()`
+- `op_glu()`
+- `op_hard_shrink()`
+- `op_hard_tanh()`
+- `op_ifft2()`
+- `op_inner()`
+- `op_soft_shrink()`
+- `op_squareplus()`
+- `op_tanh_shrink()`
+
+#### New arguments
+
+* `callback_backup_and_restore()`: Added `double_checkpoint` argument to save a fallback checkpoint
+* `callback_tensorboard()`: Added support for `profile_batch` argument
+* `layer_group_query_attention()`: Added `flash_attention` and `seed` arguments
+* `layer_multi_head_attention()`: Added `flash_attention` argument
+* `metric_sparse_top_k_categorical_accuracy()`: Added `from_sorted_ids` argument
+
+### Performance improvements
+
+* Added native Flash Attention support for GPU (via cuDNN) and TPU (via Pallas kernel) in JAX backend
+* Added opt-in native Flash Attention support for GPU in PyTorch backend
+* Enabled additional kernel fusion via bias_add in TensorFlow backend
+* Added support for Intel XPU devices in PyTorch backend
+
+
+- `install_keras()` changes: if a GPU is available, the default is now to
+  install a CPU build of TensorFlow and a GPU build of JAX. To use a GPU in the
+  current session, call `use_backend("jax")`.
+
+## Added compatibility with Keras v3.6.0. User-facing changes:
+
+#### Breaking changes:
+
+- When using `get_file()` with `extract = TRUE` or `untar = TRUE`, the return value
+  is now the path of the extracted directory, rather than the path of the archive.
+
+#### Other changes and additions:
+
+- Logging is now asynchronous in `fit()`, `evaluate()`, and `predict()`. This
+  enables 100% compact stacking of `train_step` calls on accelerators (e.g. when
+  running small models on TPU).
+  - If you are using custom callbacks that rely on `on_batch_end`, this will
+    disable async logging. You can re-enable it by adding
+    `self$async_safe <- TRUE` to your callbacks. Note that the TensorBoard
+    callback is not considered async-safe by default. Default callbacks like the
+    progress bar are async-safe.
+
+- New bitwise operations:
+  - `op_bitwise_and()`
+  - `op_bitwise_invert()`
+  - `op_bitwise_left_shift()`
+  - `op_bitwise_not()`
+  - `op_bitwise_or()`
+  - `op_bitwise_right_shift()`
+  - `op_bitwise_xor()`
+
+- New math operations:
+  - `op_logdet()`
+  - `op_trunc()`
+  - `op_histogram()`
+
+- New neural network operation: `op_dot_product_attention()`
+
+- New image preprocessing layers:
+  - `layer_auto_contrast()`
+  - `layer_solarization()`
+
+- New Model functions `get_state_tree()` and `set_state_tree()`, for retrieving
+  all model variables, including trainable, non-trainable, optimizer variables,
+  and metric variables.
+
+- New `layer_pipeline()` for composing a sequence of layers. This class is useful
+  for building a preprocessing pipeline. Compared to a `keras_model_sequential()`,
+  `layer_pipeline()` has a few key differences:
+  - It's not a Model, just a plain layer.
+  - When the layers in the pipeline are compatible with `tf.data`, the pipeline
+    will also remain `tf.data` compatible, regardless of the backend you use.
+
+- New argument: `export_savedmodel(verbose = )`
+- New argument: `op_normalize(epsilon = )`
+
+- Various documentation improvements and bug fixes.
+
+
 # keras3 1.2.0
 
 - Added compatibility with Keras v3.5.0. User facing changes:

@@ -81,11 +81,11 @@ output
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(
-## [[[39.605797 43.605797 47.605797]
-##   [41.605797 45.605797 49.605797]]
+## [[[39 43 47]
+##   [41 45 49]]
 ##
-##  [[40.605797 44.605797 48.605797]
-##   [42.605797 46.605797 50.605797]]], shape=(2, 2, 3), dtype=float32)
+##  [[40 44 48]
+##   [42 46 50]]], shape=(2, 2, 3), dtype=int32)
 
 }\if{html}{\out{</div>}}
 }
@@ -104,23 +104,38 @@ Other image augmentation layers: \cr
 \code{\link{layer_random_zoom}()} \cr
 
 Other preprocessing layers: \cr
+\code{\link{layer_auto_contrast}()} \cr
 \code{\link{layer_category_encoding}()} \cr
 \code{\link{layer_center_crop}()} \cr
 \code{\link{layer_discretization}()} \cr
+\code{\link{layer_equalization}()} \cr
 \code{\link{layer_feature_space}()} \cr
 \code{\link{layer_hashed_crossing}()} \cr
 \code{\link{layer_hashing}()} \cr
 \code{\link{layer_integer_lookup}()} \cr
+\code{\link{layer_max_num_bounding_boxes}()} \cr
 \code{\link{layer_mel_spectrogram}()} \cr
+\code{\link{layer_mix_up}()} \cr
 \code{\link{layer_normalization}()} \cr
+\code{\link{layer_rand_augment}()} \cr
+\code{\link{layer_random_color_degeneration}()} \cr
+\code{\link{layer_random_color_jitter}()} \cr
 \code{\link{layer_random_contrast}()} \cr
 \code{\link{layer_random_crop}()} \cr
 \code{\link{layer_random_flip}()} \cr
+\code{\link{layer_random_grayscale}()} \cr
+\code{\link{layer_random_hue}()} \cr
+\code{\link{layer_random_posterization}()} \cr
 \code{\link{layer_random_rotation}()} \cr
+\code{\link{layer_random_saturation}()} \cr
+\code{\link{layer_random_sharpness}()} \cr
+\code{\link{layer_random_shear}()} \cr
 \code{\link{layer_random_translation}()} \cr
 \code{\link{layer_random_zoom}()} \cr
 \code{\link{layer_rescaling}()} \cr
 \code{\link{layer_resizing}()} \cr
+\code{\link{layer_solarization}()} \cr
+\code{\link{layer_stft_spectrogram}()} \cr
 \code{\link{layer_string_lookup}()} \cr
 \code{\link{layer_text_vectorization}()} \cr
 
@@ -137,6 +152,7 @@ Other layers: \cr
 \code{\link{layer_additive_attention}()} \cr
 \code{\link{layer_alpha_dropout}()} \cr
 \code{\link{layer_attention}()} \cr
+\code{\link{layer_auto_contrast}()} \cr
 \code{\link{layer_average}()} \cr
 \code{\link{layer_average_pooling_1d}()} \cr
 \code{\link{layer_average_pooling_2d}()} \cr
@@ -166,6 +182,7 @@ Other layers: \cr
 \code{\link{layer_dropout}()} \cr
 \code{\link{layer_einsum_dense}()} \cr
 \code{\link{layer_embedding}()} \cr
+\code{\link{layer_equalization}()} \cr
 \code{\link{layer_feature_space}()} \cr
 \code{\link{layer_flatten}()} \cr
 \code{\link{layer_flax_module_wrapper}()} \cr
@@ -189,20 +206,31 @@ Other layers: \cr
 \code{\link{layer_layer_normalization}()} \cr
 \code{\link{layer_lstm}()} \cr
 \code{\link{layer_masking}()} \cr
+\code{\link{layer_max_num_bounding_boxes}()} \cr
 \code{\link{layer_max_pooling_1d}()} \cr
 \code{\link{layer_max_pooling_2d}()} \cr
 \code{\link{layer_max_pooling_3d}()} \cr
 \code{\link{layer_maximum}()} \cr
 \code{\link{layer_mel_spectrogram}()} \cr
 \code{\link{layer_minimum}()} \cr
+\code{\link{layer_mix_up}()} \cr
 \code{\link{layer_multi_head_attention}()} \cr
 \code{\link{layer_multiply}()} \cr
 \code{\link{layer_normalization}()} \cr
 \code{\link{layer_permute}()} \cr
+\code{\link{layer_rand_augment}()} \cr
+\code{\link{layer_random_color_degeneration}()} \cr
+\code{\link{layer_random_color_jitter}()} \cr
 \code{\link{layer_random_contrast}()} \cr
 \code{\link{layer_random_crop}()} \cr
 \code{\link{layer_random_flip}()} \cr
+\code{\link{layer_random_grayscale}()} \cr
+\code{\link{layer_random_hue}()} \cr
+\code{\link{layer_random_posterization}()} \cr
 \code{\link{layer_random_rotation}()} \cr
+\code{\link{layer_random_saturation}()} \cr
+\code{\link{layer_random_sharpness}()} \cr
+\code{\link{layer_random_shear}()} \cr
 \code{\link{layer_random_translation}()} \cr
 \code{\link{layer_random_zoom}()} \cr
 \code{\link{layer_repeat_vector}()} \cr
@@ -213,10 +241,12 @@ Other layers: \cr
 \code{\link{layer_separable_conv_1d}()} \cr
 \code{\link{layer_separable_conv_2d}()} \cr
 \code{\link{layer_simple_rnn}()} \cr
+\code{\link{layer_solarization}()} \cr
 \code{\link{layer_spatial_dropout_1d}()} \cr
 \code{\link{layer_spatial_dropout_2d}()} \cr
 \code{\link{layer_spatial_dropout_3d}()} \cr
 \code{\link{layer_spectral_normalization}()} \cr
+\code{\link{layer_stft_spectrogram}()} \cr
 \code{\link{layer_string_lookup}()} \cr
 \code{\link{layer_subtract}()} \cr
 \code{\link{layer_text_vectorization}()} \cr

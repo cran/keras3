@@ -454,21 +454,21 @@ iterating over the entire dataset for a given number of
 <pre><code>## Epoch 1/2
 ## 782/782 - 3s - 3ms/step - loss: 0.3410 - sparse_categorical_accuracy: 0.9034 - val_loss: 0.1855 - val_sparse_categorical_accuracy: 0.9460
 ## Epoch 2/2
-## 782/782 - 2s - 2ms/step - loss: 0.1589 - sparse_categorical_accuracy: 0.9538 - val_loss: 0.1323 - val_sparse_categorical_accuracy: 0.9619</code></pre>
+## 782/782 - 1s - 2ms/step - loss: 0.1590 - sparse_categorical_accuracy: 0.9538 - val_loss: 0.1323 - val_sparse_categorical_accuracy: 0.9621</code></pre>
 <p>The returned <code>history</code> object holds a record of the loss
 values and metric values during training:</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>history</span></code></pre></div>
 <pre><code>##
 ## Final epoch (plot to see history):
-##                            loss: 0.1589
+##                            loss: 0.159
 ##     sparse_categorical_accuracy: 0.9538
 ##                        val_loss: 0.1323
-## val_sparse_categorical_accuracy: 0.9619</code></pre>
+## val_sparse_categorical_accuracy: 0.9621</code></pre>
 <p>We evaluate the model on the test data via
 <code>evaluate()</code>:</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># Evaluate the model on the test data using `evaluate`</span></span>
 <span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>results <span class="ot">&lt;-</span> model <span class="sc">|&gt;</span> <span class="fu">evaluate</span>(x_test, y_test, <span class="at">batch_size=</span><span class="dv">128</span>)</span></code></pre></div>
-<pre><code>## 79/79 - 0s - 4ms/step - loss: 0.1267 - sparse_categorical_accuracy: 0.9620</code></pre>
+<pre><code>## 79/79 - 0s - 4ms/step - loss: 0.1273 - sparse_categorical_accuracy: 0.9621</code></pre>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">str</span>(results)</span></code></pre></div>
 <pre><code>## List of 2
 ##  $ loss                       : num 0.127
@@ -476,7 +476,7 @@ values and metric values during training:</p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="co"># Generate predictions (probabilities -- the output of the last layer)</span></span>
 <span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="co"># on new data using `predict`</span></span>
 <span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>predictions <span class="ot">&lt;-</span> model <span class="sc">|&gt;</span> <span class="fu">predict</span>(x_test[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>,])</span></code></pre></div>
-<pre><code>## 1/1 - 0s - 140ms/step</code></pre>
+<pre><code>## 1/1 - 0s - 164ms/step</code></pre>
 <div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="fu">dim</span>(predictions)</span></code></pre></div>
 <pre><code>## [1]  2 10</code></pre>
 <p>Now, let’s review each piece of this workflow in detail.</p>
@@ -578,7 +578,7 @@ data and the predictions:</p>
 <pre><code>## Epoch 1/2
 ## 782/782 - 2s - 2ms/step - loss: 0.0161
 ## Epoch 2/2
-## 782/782 - 1s - 681us/step - loss: 0.0078</code></pre>
+## 782/782 - 1s - 982us/step - loss: 0.0078</code></pre>
 <p>If you need a loss function that takes in parameters beside
 <code>y_true</code> and <code>y_pred</code>, you can subclass the Keras
 base <code>Loss</code> class using [<code>Loss()</code>] and implement
@@ -614,7 +614,7 @@ try!).</p>
 <span id="cb23-16"><a href="#cb23-16" tabindex="-1"></a></span>
 <span id="cb23-17"><a href="#cb23-17" tabindex="-1"></a>y_train_one_hot <span class="ot">&lt;-</span> <span class="fu">op_one_hot</span>(y_train, <span class="at">num_classes=</span><span class="dv">10</span>)</span>
 <span id="cb23-18"><a href="#cb23-18" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(x_train, y_train_one_hot, <span class="at">batch_size=</span><span class="dv">64</span>, <span class="at">epochs=</span><span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## 782/782 - 2s - 2ms/step - loss: 0.0390</code></pre>
+<pre><code>## 782/782 - 2s - 3ms/step - loss: 0.0390</code></pre>
 </div>
 <div id="custom-metrics" class="section level3">
 <h3>Custom metrics</h3>
@@ -678,11 +678,11 @@ samples were correctly classified as belonging to a given class:</p>
 <span id="cb25-36"><a href="#cb25-36" tabindex="-1"></a>)</span>
 <span id="cb25-37"><a href="#cb25-37" tabindex="-1"></a>history <span class="ot">&lt;-</span> model <span class="sc">|&gt;</span> <span class="fu">fit</span>(x_train, y_train, <span class="at">batch_size =</span> <span class="dv">64</span>, <span class="at">epochs =</span> <span class="dv">3</span>)</span></code></pre></div>
 <pre><code>## Epoch 1/3
-## 782/782 - 2s - 2ms/step - categorical_true_positives: 360446.0000 - loss: 0.3444
+## 782/782 - 2s - 2ms/step - categorical_true_positives: 360514.0000 - loss: 0.3444
 ## Epoch 2/3
-## 782/782 - 1s - 736us/step - categorical_true_positives: 362538.0000 - loss: 0.1658
+## 782/782 - 1s - 1ms/step - categorical_true_positives: 362540.0000 - loss: 0.1654
 ## Epoch 3/3
-## 782/782 - 0s - 620us/step - categorical_true_positives: 363223.0000 - loss: 0.1205</code></pre>
+## 782/782 - 1s - 1ms/step - categorical_true_positives: 363195.0000 - loss: 0.1199</code></pre>
 </div>
 <div id="handling-losses-and-metrics-that-dont-fit-the-standard-signature" class="section level3">
 <h3>Handling losses and metrics that don’t fit the standard
@@ -722,7 +722,7 @@ example):</p>
 <span id="cb27-20"><a href="#cb27-20" tabindex="-1"></a><span class="co"># The displayed loss will be much higher than before</span></span>
 <span id="cb27-21"><a href="#cb27-21" tabindex="-1"></a><span class="co"># due to the regularization component.</span></span>
 <span id="cb27-22"><a href="#cb27-22" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(x_train, y_train, <span class="at">batch_size =</span> <span class="dv">64</span>, <span class="at">epochs =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## 782/782 - 1s - 2ms/step - loss: 2.3721</code></pre>
+<pre><code>## 782/782 - 2s - 2ms/step - loss: 2.3721</code></pre>
 <p>Note that when you pass losses via <code>add_loss()</code>, it
 becomes possible to call <code>compile()</code> without a loss function,
 since the model already has a loss to minimize.</p>
@@ -762,7 +762,7 @@ compiled without a <code>loss</code> argument, like this:</p>
 <span id="cb30-13"><a href="#cb30-13" tabindex="-1"></a>  <span class="at">targets =</span> <span class="fu">random_normal</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">10</span>))</span>
 <span id="cb30-14"><a href="#cb30-14" tabindex="-1"></a>)</span>
 <span id="cb30-15"><a href="#cb30-15" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(data, <span class="at">epochs =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## 1/1 - 0s - 469ms/step - loss: 0.9638</code></pre>
+<pre><code>## 1/1 - 0s - 491ms/step - loss: 0.9638</code></pre>
 <p>For more information about training multi-input models, see the
 section <strong>Passing data to multi-input, multi-output
 models</strong>.</p>
@@ -790,7 +790,7 @@ training with NumPy data.</p>
 <span id="cb32-2"><a href="#cb32-2" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(x_train, y_train,</span>
 <span id="cb32-3"><a href="#cb32-3" tabindex="-1"></a>             <span class="at">batch_size =</span> <span class="dv">64</span>,</span>
 <span id="cb32-4"><a href="#cb32-4" tabindex="-1"></a>             <span class="at">validation_split =</span> <span class="fl">0.2</span>, <span class="at">epochs =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## 625/625 - 2s - 3ms/step - loss: 0.3817 - sparse_categorical_accuracy: 0.8919 - val_loss: 0.1953 - val_sparse_categorical_accuracy: 0.9431</code></pre>
+<pre><code>## 625/625 - 2s - 3ms/step - loss: 0.3817 - sparse_categorical_accuracy: 0.8919 - val_loss: 0.1957 - val_sparse_categorical_accuracy: 0.9430</code></pre>
 </div>
 </div>
 <div id="training-evaluation-using-tf-dataset-objects" class="section level2">
@@ -834,18 +834,18 @@ directly to the methods <code>fit()</code>, <code>evaluate()</code>, and
 <pre><code>## Epoch 1/3
 ## 782/782 - 2s - 2ms/step - loss: 0.3365 - sparse_categorical_accuracy: 0.9041
 ## Epoch 2/3
-## 782/782 - 1s - 682us/step - loss: 0.1605 - sparse_categorical_accuracy: 0.9524
+## 782/782 - 1s - 944us/step - loss: 0.1606 - sparse_categorical_accuracy: 0.9521
 ## Epoch 3/3
-## 782/782 - 1s - 655us/step - loss: 0.1185 - sparse_categorical_accuracy: 0.9647</code></pre>
+## 782/782 - 1s - 1000us/step - loss: 0.1178 - sparse_categorical_accuracy: 0.9646</code></pre>
 <div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" tabindex="-1"></a><span class="co"># You can also evaluate or predict on a dataset.</span></span>
 <span id="cb36-2"><a href="#cb36-2" tabindex="-1"></a>result <span class="ot">&lt;-</span> model <span class="sc">|&gt;</span> <span class="fu">evaluate</span>(test_dataset)</span></code></pre></div>
-<pre><code>## 157/157 - 1s - 4ms/step - loss: 0.1152 - sparse_categorical_accuracy: 0.9627</code></pre>
+<pre><code>## 157/157 - 1s - 3ms/step - loss: 0.1213 - sparse_categorical_accuracy: 0.9596</code></pre>
 <div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" tabindex="-1"></a>result</span></code></pre></div>
 <pre><code>## $loss
-## [1] 0.1151979
+## [1] 0.1213006
 ##
 ## $sparse_categorical_accuracy
-## [1] 0.9627</code></pre>
+## [1] 0.9596</code></pre>
 <p>Note that the <code>Dataset</code> is reset at the end of each epoch,
 so it can be reused of the next epoch.</p>
 <p>If you want to run training only on a specific number of batches from
@@ -865,9 +865,9 @@ Dataset before moving on to the next epoch.</p>
 <pre><code>## Epoch 1/3
 ## 100/100 - 1s - 8ms/step - loss: 0.8017 - sparse_categorical_accuracy: 0.7806
 ## Epoch 2/3
-## 100/100 - 0s - 667us/step - loss: 0.3661 - sparse_categorical_accuracy: 0.9006
+## 100/100 - 0s - 996us/step - loss: 0.3661 - sparse_categorical_accuracy: 0.9006
 ## Epoch 3/3
-## 100/100 - 0s - 641us/step - loss: 0.3009 - sparse_categorical_accuracy: 0.9106</code></pre>
+## 100/100 - 0s - 942us/step - loss: 0.3009 - sparse_categorical_accuracy: 0.9106</code></pre>
 <p>You can also pass a <code>Dataset</code> instance as the
 <code>validation_data</code> argument in <code>fit()</code>:</p>
 <div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">get_compiled_model</span>()</span>
@@ -883,7 +883,7 @@ Dataset before moving on to the next epoch.</p>
 <span id="cb42-11"><a href="#cb42-11" tabindex="-1"></a>val_dataset <span class="ot">&lt;-</span> val_dataset <span class="sc">|&gt;</span> <span class="fu">dataset_batch</span>(<span class="dv">64</span>)</span>
 <span id="cb42-12"><a href="#cb42-12" tabindex="-1"></a></span>
 <span id="cb42-13"><a href="#cb42-13" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(train_dataset, <span class="at">epochs =</span> <span class="dv">1</span>, <span class="at">validation_data =</span> val_dataset)</span></code></pre></div>
-<pre><code>## 782/782 - 2s - 2ms/step - loss: 0.3428 - sparse_categorical_accuracy: 0.9022 - val_loss: 0.2337 - val_sparse_categorical_accuracy: 0.9291</code></pre>
+<pre><code>## 782/782 - 2s - 3ms/step - loss: 0.3428 - sparse_categorical_accuracy: 0.9022 - val_loss: 0.2337 - val_sparse_categorical_accuracy: 0.9291</code></pre>
 <p>At the end of each epoch, the model will iterate over the validation
 dataset and compute the validation loss and validation metrics.</p>
 <p>If you want to run validation only on a specific number of batches
@@ -911,7 +911,7 @@ to the next epoch:</p>
 <span id="cb44-18"><a href="#cb44-18" tabindex="-1"></a>  <span class="at">validation_data =</span> val_dataset,</span>
 <span id="cb44-19"><a href="#cb44-19" tabindex="-1"></a>  <span class="at">validation_steps =</span> <span class="dv">10</span>,</span>
 <span id="cb44-20"><a href="#cb44-20" tabindex="-1"></a>)</span></code></pre></div>
-<pre><code>## 782/782 - 2s - 3ms/step - loss: 0.3391 - sparse_categorical_accuracy: 0.9035 - val_loss: 0.1997 - val_sparse_categorical_accuracy: 0.9391</code></pre>
+<pre><code>## 782/782 - 3s - 3ms/step - loss: 0.3391 - sparse_categorical_accuracy: 0.9035 - val_loss: 0.1997 - val_sparse_categorical_accuracy: 0.9391</code></pre>
 <p>Note that the validation dataset will be reset after each use (so
 that you will always be evaluating on the same samples from epoch to
 epoch).</p>
@@ -1069,7 +1069,7 @@ the digit “5” in the MNIST dataset).</p>
 <span id="cb46-17"><a href="#cb46-17" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(x_train, y_train,</span>
 <span id="cb46-18"><a href="#cb46-18" tabindex="-1"></a>             <span class="at">class_weight =</span> class_weight,</span>
 <span id="cb46-19"><a href="#cb46-19" tabindex="-1"></a>             <span class="at">batch_size =</span> <span class="dv">64</span>, <span class="at">epochs =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## 782/782 - 1s - 2ms/step - loss: 0.3713 - sparse_categorical_accuracy: 0.9018</code></pre>
+<pre><code>## 782/782 - 2s - 2ms/step - loss: 0.3713 - sparse_categorical_accuracy: 0.9018</code></pre>
 </div>
 <div id="sample-weights" class="section level3">
 <h3>Sample weights</h3>
@@ -1099,7 +1099,7 @@ contribution of certain samples to the total loss).</p>
 <span id="cb48-7"><a href="#cb48-7" tabindex="-1"></a>  <span class="at">sample_weight =</span> sample_weight,</span>
 <span id="cb48-8"><a href="#cb48-8" tabindex="-1"></a>  <span class="at">batch_size =</span> <span class="dv">64</span>, <span class="at">epochs =</span> <span class="dv">1</span></span>
 <span id="cb48-9"><a href="#cb48-9" tabindex="-1"></a>)</span></code></pre></div>
-<pre><code>## 782/782 - 1s - 2ms/step - loss: 0.3740 - sparse_categorical_accuracy: 0.9015</code></pre>
+<pre><code>## 782/782 - 1s - 2ms/step - loss: 0.3735 - sparse_categorical_accuracy: 0.9018</code></pre>
 <p>Here’s a matching <code>Dataset</code> example:</p>
 <div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" tabindex="-1"></a>sample_weight <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fl">1.0</span>, <span class="fu">length</span>(y_train))</span>
 <span id="cb50-2"><a href="#cb50-2" tabindex="-1"></a>sample_weight[y_train <span class="sc">==</span> <span class="dv">5</span>] <span class="ot">&lt;-</span> <span class="fl">2.0</span></span>
@@ -1117,7 +1117,7 @@ contribution of certain samples to the total loss).</p>
 <span id="cb50-14"><a href="#cb50-14" tabindex="-1"></a></span>
 <span id="cb50-15"><a href="#cb50-15" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">get_compiled_model</span>()</span>
 <span id="cb50-16"><a href="#cb50-16" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(train_dataset, <span class="at">epochs =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## 782/782 - 1s - 2ms/step - loss: 0.3654 - sparse_categorical_accuracy: 0.9057</code></pre>
+<pre><code>## 782/782 - 2s - 2ms/step - loss: 0.3654 - sparse_categorical_accuracy: 0.9057</code></pre>
 </div>
 </div>
 <div id="passing-data-to-multi-input-multi-output-models" class="section level2">
@@ -1265,7 +1265,7 @@ mapping output names to arrays</strong>.</p>
 <span id="cb59-19"><a href="#cb59-19" tabindex="-1"></a>    <span class="at">batch_size=</span><span class="dv">32</span>,</span>
 <span id="cb59-20"><a href="#cb59-20" tabindex="-1"></a>    <span class="at">epochs=</span><span class="dv">1</span></span>
 <span id="cb59-21"><a href="#cb59-21" tabindex="-1"></a>)</span></code></pre></div>
-<pre><code>## 4/4 - 2s - 489ms/step - class_output_loss: 1.8162 - loss: 3.8764 - score_output_loss: 1.6820</code></pre>
+<pre><code>## 4/4 - 2s - 509ms/step - class_output_categorical_accuracy: 0.2300 - class_output_loss: 1.8162 - loss: 3.8764 - score_output_loss: 1.6820 - score_output_mean_absolute_error: 0.8826 - score_output_mean_absolute_percentage_error: 1826.5676</code></pre>
 <div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" tabindex="-1"></a><span class="co"># Alternatively, fit on named lists (names matching)</span></span>
 <span id="cb61-2"><a href="#cb61-2" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">keras_model</span>(</span>
 <span id="cb61-3"><a href="#cb61-3" tabindex="-1"></a>  <span class="at">inputs =</span> <span class="fu">list</span>(image_input, timeseries_input),</span>
@@ -1285,7 +1285,7 @@ mapping output names to arrays</strong>.</p>
 <span id="cb61-17"><a href="#cb61-17" tabindex="-1"></a>  <span class="at">batch_size =</span> <span class="dv">32</span>,</span>
 <span id="cb61-18"><a href="#cb61-18" tabindex="-1"></a>  <span class="at">epochs =</span> <span class="dv">1</span></span>
 <span id="cb61-19"><a href="#cb61-19" tabindex="-1"></a>)</span></code></pre></div>
-<pre><code>## 4/4 - 2s - 571ms/step - class_output_loss: 4.1489 - loss: 4.5443 - score_output_loss: -4.1125e-01</code></pre>
+<pre><code>## 4/4 - 2s - 415ms/step - class_output_loss: 4.1489 - loss: 4.5443 - score_output_loss: -4.1125e-01</code></pre>
 <p>Here’s the <code>Dataset</code> use case: similarly as what we did
 for R arrays, the <code>Dataset</code> should return a tuple of named
 lists (dicts).</p>
@@ -1298,7 +1298,7 @@ lists (dicts).</p>
 <span id="cb63-7"><a href="#cb63-7" tabindex="-1"></a>  <span class="fu">dataset_batch</span>(<span class="dv">64</span>)</span>
 <span id="cb63-8"><a href="#cb63-8" tabindex="-1"></a></span>
 <span id="cb63-9"><a href="#cb63-9" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(train_dataset, <span class="at">epochs =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## 2/2 - 2s - 763ms/step - class_output_loss: 3.8547 - loss: 3.5725 - score_output_loss: -1.5209e-01</code></pre>
+<pre><code>## 2/2 - 1s - 712ms/step - class_output_loss: 3.8547 - loss: 3.5725 - score_output_loss: -1.5209e-01</code></pre>
 </div>
 <div id="using-callbacks" class="section level2">
 <h2>Using callbacks</h2>
@@ -1343,21 +1343,21 @@ where a certain performance threshold is exceeded</li>
 <span id="cb65-20"><a href="#cb65-20" tabindex="-1"></a>  <span class="at">validation_split =</span> <span class="fl">0.2</span>,</span>
 <span id="cb65-21"><a href="#cb65-21" tabindex="-1"></a>)</span></code></pre></div>
 <pre><code>## Epoch 1/20
-## 625/625 - 3s - 4ms/step - loss: 0.3695 - sparse_categorical_accuracy: 0.8961 - val_loss: 0.1877 - val_sparse_categorical_accuracy: 0.9472
+## 625/625 - 2s - 3ms/step - loss: 0.3695 - sparse_categorical_accuracy: 0.8961 - val_loss: 0.1877 - val_sparse_categorical_accuracy: 0.9472
 ## Epoch 2/20
-## 625/625 - 1s - 1ms/step - loss: 0.1752 - sparse_categorical_accuracy: 0.9486 - val_loss: 0.1414 - val_sparse_categorical_accuracy: 0.9570
+## 625/625 - 1s - 2ms/step - loss: 0.1752 - sparse_categorical_accuracy: 0.9486 - val_loss: 0.1414 - val_sparse_categorical_accuracy: 0.9570
 ## Epoch 3/20
-## 625/625 - 1s - 822us/step - loss: 0.1280 - sparse_categorical_accuracy: 0.9623 - val_loss: 0.1215 - val_sparse_categorical_accuracy: 0.9644
+## 625/625 - 1s - 1ms/step - loss: 0.1280 - sparse_categorical_accuracy: 0.9623 - val_loss: 0.1215 - val_sparse_categorical_accuracy: 0.9644
 ## Epoch 4/20
-## 625/625 - 1s - 825us/step - loss: 0.1009 - sparse_categorical_accuracy: 0.9700 - val_loss: 0.1126 - val_sparse_categorical_accuracy: 0.9667
+## 625/625 - 1s - 1ms/step - loss: 0.1009 - sparse_categorical_accuracy: 0.9700 - val_loss: 0.1126 - val_sparse_categorical_accuracy: 0.9667
 ## Epoch 5/20
-## 625/625 - 1s - 816us/step - loss: 0.0817 - sparse_categorical_accuracy: 0.9758 - val_loss: 0.1079 - val_sparse_categorical_accuracy: 0.9683
+## 625/625 - 1s - 1ms/step - loss: 0.0817 - sparse_categorical_accuracy: 0.9757 - val_loss: 0.1084 - val_sparse_categorical_accuracy: 0.9682
 ## Epoch 6/20
-## 625/625 - 1s - 1ms/step - loss: 0.0679 - sparse_categorical_accuracy: 0.9801 - val_loss: 0.1075 - val_sparse_categorical_accuracy: 0.9691
+## 625/625 - 1s - 1ms/step - loss: 0.0680 - sparse_categorical_accuracy: 0.9802 - val_loss: 0.1074 - val_sparse_categorical_accuracy: 0.9700
 ## Epoch 7/20
-## 625/625 - 1s - 849us/step - loss: 0.0569 - sparse_categorical_accuracy: 0.9839 - val_loss: 0.1119 - val_sparse_categorical_accuracy: 0.9694
+## 625/625 - 1s - 1ms/step - loss: 0.0569 - sparse_categorical_accuracy: 0.9837 - val_loss: 0.1114 - val_sparse_categorical_accuracy: 0.9693
 ## Epoch 8/20
-## 625/625 - 1s - 996us/step - loss: 0.0477 - sparse_categorical_accuracy: 0.9865 - val_loss: 0.1141 - val_sparse_categorical_accuracy: 0.9701
+## 625/625 - 1s - 1ms/step - loss: 0.0480 - sparse_categorical_accuracy: 0.9863 - val_loss: 0.1124 - val_sparse_categorical_accuracy: 0.9700
 ## Epoch 8: early stopping</code></pre>
 <div id="many-built-in-callbacks-are-available" class="section level3">
 <h3>Many built-in callbacks are available</h3>
@@ -1437,11 +1437,11 @@ to save checkpoints of your model at frequent intervals.</p>
 <pre><code>## Epoch 1/2
 ##
 ## Epoch 1: val_loss improved from inf to 0.19344, saving model to mymodel_1.keras
-## 625/625 - 1s - 2ms/step - loss: 0.3787 - sparse_categorical_accuracy: 0.8940 - val_loss: 0.1934 - val_sparse_categorical_accuracy: 0.9441
+## 625/625 - 2s - 3ms/step - loss: 0.3787 - sparse_categorical_accuracy: 0.8940 - val_loss: 0.1934 - val_sparse_categorical_accuracy: 0.9441
 ## Epoch 2/2
 ##
 ## Epoch 2: val_loss improved from 0.19344 to 0.14244, saving model to mymodel_2.keras
-## 625/625 - 1s - 882us/step - loss: 0.1768 - sparse_categorical_accuracy: 0.9479 - val_loss: 0.1424 - val_sparse_categorical_accuracy: 0.9597</code></pre>
+## 625/625 - 1s - 1ms/step - loss: 0.1768 - sparse_categorical_accuracy: 0.9479 - val_loss: 0.1424 - val_sparse_categorical_accuracy: 0.9597</code></pre>
 <p>The <code>ModelCheckpoint</code> callback can be used to implement
 fault-tolerance: the ability to restart training from the last saved
 state of the model in case training gets randomly interrupted. Here’s a
@@ -1475,7 +1475,7 @@ basic example:</p>
 <span id="cb70-27"><a href="#cb70-27" tabindex="-1"></a>  )</span>
 <span id="cb70-28"><a href="#cb70-28" tabindex="-1"></a>)</span>
 <span id="cb70-29"><a href="#cb70-29" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(x_train, y_train, <span class="at">epochs =</span> <span class="dv">1</span>, <span class="at">callbacks =</span> callbacks)</span></code></pre></div>
-<pre><code>## 1563/1563 - 2s - 1ms/step - loss: 0.2932 - sparse_categorical_accuracy: 0.9145</code></pre>
+<pre><code>## 1563/1563 - 3s - 2ms/step - loss: 0.2932 - sparse_categorical_accuracy: 0.9145</code></pre>
 <p>You call also write your own callback for saving and restoring
 models.</p>
 <p>For a complete guide on serialization and saving, see the <a href="serialization_and_saving.html">guide to saving and serializing

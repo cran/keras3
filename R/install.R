@@ -27,17 +27,19 @@ install_keras <- function(
   if (is.na(gpu)) {
 
     has_nvidia_gpu <- function() {
-      lspci_listed <- tryCatch(
-        as.logical(length(system("lspci | grep -i nvidia", intern = TRUE))),
-        warning = function(w) FALSE, # warning emitted by system for non-0 exit status
-        error = function(e) FALSE
-      )
+      lspci_listed <- tryCatch({
+        lspci <- system("lspci", intern = TRUE, ignore.stderr = TRUE)
+        any(grepl("nvidia", lspci, ignore.case = TRUE))
+      },
+      warning = function(w) FALSE,
+      error = function(e) FALSE)
+
       if (lspci_listed)
         return(TRUE)
 
       # lspci doens't list GPUs on WSL Linux, but nvidia-smi does.
       nvidia_smi_listed <- tryCatch(
-        system("nvidia-smi -L", intern = TRUE),
+        system("nvidia-smi -L", intern = TRUE, ignore.stderr = TRUE),
         warning = function(w) character(),
         error = function(e) character()
       )
@@ -63,9 +65,8 @@ install_keras <- function(
       ## is compatible with TF v2.16 is released.
       # tensorflow <- c("tensorflow", "tensorflow-metal")
     } else if (is_linux()) {
-      jax <- c("jax[cuda12_pip]", "-f",
-         "https://storage.googleapis.com/jax-releases/jax_cuda_releases.html")
-      tensorflow <- "tensorflow[and-cuda]"
+      jax <- c("jax[cuda12]")
+      tensorflow <- "tensorflow-cpu"
     }
   } else { # no GPU
     jax <- "jax[cpu]"
@@ -107,7 +108,7 @@ install_keras <- function(
 
   reticulate::py_install("keras==3.*", envname = envname)
 
-  if(gpu && is_linux()) {
+  if (gpu && is_linux() && !any(startsWith(tensorflow, "tensorflow-cpu"))) {
     configure_nvidia_symlinks(envname = envname)
     configure_ptxas_symlink(envname = envname)
   }
@@ -127,36 +128,181 @@ is_linux <- function() {
 
 #' Configure a Keras backend
 #'
-#' @param backend string, can be `"tensorflow"`, `"jax"`, `"numpy"`, or `"torch"`.
+#' @param backend string, can be `"tensorflow"`, `"jax"`, `"numpy"`, or
+#'   `"torch"`.
+#' @param gpu bool, whether to use the GPU. If `NA` (default), it will attempt
+#'   to detect GPU availability on Linux. On M-series Macs, it defaults to
+#'   `FALSE` for TensorFlow and `TRUE` for JAX. On Windows, it defaults to
+#'   `FALSE`.
 #'
 #' @details
-#' These functions allow configuring which backend keras will use.
-#' Note that only one backend can be configured at a time.
+#'
+#' These functions allow configuring which backend keras will use. Note that
+#' only one backend can be configured at a time.
 #'
 #' The function should be called after `library(keras3)` and before calling
 #' other functions within the package (see below for an example).
 #'
-#' There is experimental support for changing the backend after keras has initialized.
-#' using `config_set_backend()`.
+#' There is experimental support for changing the backend after keras has
+#' initialized. using `config_set_backend()`.
 #' ```r
 #' library(keras3)
 #' use_backend("tensorflow")
 #' ```
-#' @returns Called primarily for side effects. Returns the provided `backend`, invisibly.
+#' @returns Called primarily for side effects. Returns the provided `backend`,
+#'   invisibly.
 #' @export
-use_backend <- function(backend) {
+use_backend <- function(backend, gpu = NA) {
 
   if (is_keras_loaded()) {
     if (config_backend() != backend)
       stop("The keras backend must be set before keras has inititialized. Please restart the R session.")
   }
+
   Sys.setenv(KERAS_BACKEND = backend)
 
-  if (reticulate::py_available())
+  if (reticulate::py_available()) {
     reticulate::import("os")$environ$update(list(KERAS_BACKEND = backend))
+  }
+
+
+  switch(
+    paste0(get_os(), "_", backend),
+
+    macOS_tensorflow = {
+
+      if (is.na(gpu))
+        gpu <- FALSE
+
+      if (gpu) {
+        # py_require("tensorflow", action = "remove")
+        py_require(c("tensorflow", "tensorflow-metal"))
+      } else {
+        py_require(action = "remove", c("tensorflow-macos", "tensorflow-metal"))
+        py_require("tensorflow")
+      }
+
+    },
+
+    macOS_jax = {
+
+      py_require(c("tensorflow-metal", "tensorflow-macos"),
+                 action = "remove")
+
+      if (is.na(gpu))
+        gpu <- TRUE
+
+      if (gpu) {
+        py_require(c("tensorflow", "jax", "jax-metal"))
+      } else {
+        py_require("tensorflow", "jax[cpu]")
+      }
+    },
+
+    macOS_torch = {
+      if(isTRUE(gpu))
+        warning("GPU usage not supported on macOS. Please use a different backend to use the GPU (jax)")
+
+      py_require(c("tensorflow-metal", "tensorflow-macos"),
+                 action = "remove")
+
+      py_require(c("tensorflow", "torch", "torchvision", "torchaudio"))
+    },
+
+    macOS_numpy = {
+      py_require(c("tensorflow-metal", "tensorflow-macos"), action = "remove")
+      py_require(c("tensorflow", "numpy"))
+    },
+
+    Linux_tensorflow = {
+
+      if (is.na(gpu))
+        gpu <- has_gpu()
+
+      if (gpu) {
+        py_require(action = "remove", c("tensorflow", "tensorflow-cpu"))
+        py_require("tensorflow[and-cuda]")
+      } else {
+        py_require(action = "remove", c("tensorflow", "tensorflow[and-cuda]"))
+        py_require("tensorflow-cpu")
+      }
+    },
+
+    Linux_jax = {
+      py_require(c("tensorflow", "tensorflow[and-cuda]"),
+                 action = "remove")
+
+      if (is.na(gpu))
+        gpu <- has_gpu()
+
+      if (gpu) {
+        py_require(c("tensorflow-cpu", "jax[cuda12]"))
+      } else {
+        py_require(c("tensorflow-cpu", "jax[cpu]"))
+      }
+    },
+
+    Linux_torch = {
+      py_require(c("tensorflow", "tensorflow[and-cuda]"), action = "remove")
+
+      if (is.na(gpu))
+        gpu <- has_gpu()
+
+      if (gpu) {
+        py_require(c("tensorflow-cpu", "torch", "torchvision", "torchaudio"))
+      } else {
+        Sys.setenv("UV_INDEX" = trimws(paste(sep = " ",
+          "https://download.pytorch.org/whl/cpu",
+          Sys.getenv("UV_INDEX")
+        )))
+        py_require(c("tensorflow-cpu", "torch", "torchvision", "torchaudio"))
+      }
+    },
+
+    Linux_numpy = {
+      py_require(c("tensorflow", "tensorflow[and-cuda]"), action = "remove")
+      py_require(c("tensorflow-cpu", "numpy"))
+    },
+
+    Windows_tensorflow = {
+      if(isTRUE(gpu)) warning("GPU usage not supported on Windows. Please use WSL.")
+      py_require(c("tensorflow", "numpy<2"))
+    },
+
+    Windows_jax = {
+      if(isTRUE(gpu)) warning("GPU usage not supported on Windows. Please use WSL.")
+      py_require("jax")
+    },
+
+    Windows_torch = {
+      if (is.na(gpu))
+        gpu <- FALSE
+
+      if (gpu) {
+        Sys.setenv("UV_INDEX" = trimws(paste(sep = " ",
+            "https://download.pytorch.org/whl/cu126",
+            Sys.getenv("UV_INDEX")
+        )))
+        py_require(c("torch", "torchvision", "torchaudio"))
+      } else {
+        py_require(c("torch", "torchvision", "torchaudio"))
+      }
+    },
+
+    Windows_numpy = {
+      py_require("numpy")
+    }
+  )
+
   invisible(backend)
 }
 
+
+
+
+get_os <- function() {
+  if (is_windows()) "Windows" else if (is_mac_arm64()) "macOS" else "Linux"
+}
 
 is_keras_loaded <- function() {
   # package .onLoad() has run (can be FALSE if in devtools::load_all())
@@ -171,6 +317,62 @@ is_keras_loaded <- function() {
   !exists("module", envir = keras)
 }
 
+
+has_gpu <- function() {
+
+  has_nvidia_gpu <- function() {
+    lspci_listed <- tryCatch({
+      lspci <- system("lspci", intern = TRUE, ignore.stderr = TRUE)
+      any(grepl("nvidia", lspci, ignore.case = TRUE))
+    },
+    warning = function(w) FALSE,
+    error = function(e) FALSE)
+
+    if (lspci_listed)
+      return(TRUE)
+
+    # lspci doens't list GPUs on WSL Linux, but nvidia-smi does.
+    nvidia_smi_listed <- tryCatch(
+      system("nvidia-smi -L", intern = TRUE, ignore.stderr = TRUE),
+      warning = function(w) character(),
+      error = function(e) character()
+    )
+    if (isTRUE(any(grepl("^GPU [0-9]: ", nvidia_smi_listed))))
+      return(TRUE)
+    FALSE
+  }
+
+  is_linux() && has_nvidia_gpu()
+
+}
+
+
+get_py_requirements <- function() {
+  python_version <- ">=3.10"
+  packages <- "tensorflow"
+
+  if(is_linux()) {
+
+    if(has_gpu()) {
+      packages <- "tensorflow[and-cuda]"
+    } else {
+      packages <- "tensorflow-cpu"
+    }
+
+  } else if (is_mac_arm64()) {
+
+    use_gpu <- FALSE
+    if (use_gpu) {
+      packages <- c("tensorflow-macos", "tensorflow-metal")
+      python_version <- ">=3.9,<=3.11"
+    }
+
+  } else if (is_windows()) {
+
+  }
+
+  list(packages = packages, python_version = python_version)
+}
 
 
 python_module_dir <- function(python, module, stderr = TRUE) {

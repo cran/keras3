@@ -79,8 +79,8 @@ m$update_state(c(0, 0, 1, 1), c(0, 1, 0, 1))
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(
-## [[1. 1.]
-##  [1. 1.]], shape=(2, 2), dtype=float32)
+## [[1 1]
+##  [1 1]], shape=(2, 2), dtype=int64)
 
 }\if{html}{\out{</div>}}
 
@@ -93,19 +93,19 @@ m$update_state(c(0, 0, 1, 1), c(0, 1, 0, 1))
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{m$reset_state()
 m$update_state(c(0, 0, 1, 1), c(0, 1, 0, 1),
-               sample_weight = c(0.3, 0.3, 0.3, 0.1))
+               sample_weight = 10 * c(0.3, 0.3, 0.3, 0.1))
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(
-## [[0.3 0.3]
-##  [0.3 0.1]], shape=(2, 2), dtype=float32)
+## [[3 3]
+##  [3 1]], shape=(2, 2), dtype=int64)
 
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{m$result()
 }\if{html}{\out{</div>}}
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(0.33333325, shape=(), dtype=float32)
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(0.3333333, shape=(), dtype=float32)
 
 }\if{html}{\out{</div>}}
 
@@ -137,6 +137,7 @@ Other metrics: \cr
 \code{\link{metric_categorical_crossentropy}()} \cr
 \code{\link{metric_categorical_focal_crossentropy}()} \cr
 \code{\link{metric_categorical_hinge}()} \cr
+\code{\link{metric_concordance_correlation}()} \cr
 \code{\link{metric_cosine_similarity}()} \cr
 \code{\link{metric_f1_score}()} \cr
 \code{\link{metric_false_negatives}()} \cr
@@ -156,6 +157,7 @@ Other metrics: \cr
 \code{\link{metric_mean_wrapper}()} \cr
 \code{\link{metric_one_hot_iou}()} \cr
 \code{\link{metric_one_hot_mean_iou}()} \cr
+\code{\link{metric_pearson_correlation}()} \cr
 \code{\link{metric_poisson}()} \cr
 \code{\link{metric_precision}()} \cr
 \code{\link{metric_precision_at_recall}()} \cr

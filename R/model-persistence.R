@@ -310,7 +310,7 @@ load_model_config <- function(filepath, custom_objects = NULL)
 }
 
 
-#' Create a TF SavedModel artifact for inference (e.g. via TF-Serving).
+#' Export the model as an artifact for inference.
 #'
 #' @description
 #' (e.g. via TF-Serving).
@@ -326,6 +326,9 @@ load_model_config <- function(filepath, custom_objects = NULL)
 #' The original code of the model (including any custom layers you may
 #' have used) is *no longer* necessary to reload the artifact -- it is
 #' entirely standalone.
+#'
+#' **Note:** This feature is currently supported only with TensorFlow, JAX
+#' and Torch backends.
 #'
 #' # Examples
 #' ```r
@@ -343,14 +346,52 @@ load_model_config <- function(filepath, custom_objects = NULL)
 # If you would like to customize your serving endpoints, you can
 # use the lower-level `import("keras").export.ExportArchive` class. The
 # `export()` method relies on `ExportArchive` internally.
+#
+#' Here's how to export an ONNX for inference.
+#'
+#' ```r
+#' # Export the model as a ONNX artifact
+#' model |> export_savedmodel("path/to/location", format = "onnx")
+#'
+#' # Load the artifact in a different process/environment
+#' onnxruntime <- reticulate::import("onnxruntime")
+#' ort_session <- onnxruntime$InferenceSession("path/to/location")
+#' input_data <- list(....)
+#' names(input_data) <- sapply(ort_session$get_inputs(), `[[`, "name")
+#' predictions <- ort_session$run(NULL, input_data)
+#' ```
+#'
 #'
 #' @param export_dir_base
 #' string, file path where to save
 #' the artifact.
 #'
-#' @param ... For forward/backward compatability.
+#' @param ... Additional keyword arguments:
+#' - Specific to the JAX backend and `format="tf_saved_model"`:
+#'   - `is_static`: Optional `bool`. Indicates whether `fn` is
+#'     static. Set to `FALSE` if `fn` involves state updates
+#'     (e.g., RNG seeds and counters).
+#'   - `jax2tf_kwargs`: Optional `dict`. Arguments for
+#'     `jax2tf.convert`. See the documentation for
+#'     [`jax2tf.convert`](
+#'       https://github.com/jax-ml/jax/blob/main/jax/experimental/jax2tf/README.md).
+#'     If `native_serialization` and `polymorphic_shapes` are
+#'     not provided, they will be automatically computed.
 #'
 #' @param object A keras model.
+#'
+#' @param format string. The export format. Supported values:
+#' `"tf_saved_model"` and `"onnx"`.  Defaults to
+#' `"tf_saved_model"`.
+#'
+#' @param input_signature Optional. Specifies the shape and dtype of the
+#' model inputs. Can be a structure of `keras.InputSpec`,
+#' `tf.TensorSpec`, `backend.KerasTensor`, or backend tensor. If
+#' not provided, it will be automatically computed. Defaults to
+#' `NULL`.
+#'
+#' @param verbose
+#' whether to print all the variables of the exported model.
 #'
 #' @returns This is called primarily for the side effect of exporting `object`.
 #'   The first argument, `object` is also returned, invisibly, to enable usage
@@ -361,11 +402,14 @@ load_model_config <- function(filepath, custom_objects = NULL)
 #' @family saving and loading functions
 # @seealso
 #  + <https://www.tensorflow.org/api_docs/python/tf/keras/Model/export>
-export_savedmodel.keras.src.models.model.Model <- function(object, export_dir_base, ...) {
-  object$export(export_dir_base, ...)
+export_savedmodel.keras.src.models.model.Model <-
+function(object, export_dir_base, ..., format = 'tf_saved_model', verbose = TRUE, input_signature = NULL) {
+  args <- capture_args(ignore = c("object", "export_dir_base"))
+  # export_dir_base is called 'filename' in method. Pass it as a positional arg
+  args <- c(list(export_dir_base), args)
+  do.call(object$export, args)
   invisible(object)
 }
-
 
 
 
@@ -883,6 +927,163 @@ function (config, custom_objects = NULL, safe_mode = TRUE, ...)
 with_custom_object_scope <- function(objects, expr) {
   objects <- normalize_custom_objects(objects)
   with(keras$saving$CustomObjectScope(objects), expr)
+}
+
+
+
+#'
+#'
+#' Utility to inspect, edit, and resave Keras weights files.
+#'
+#' @description
+#' You will find this class useful when adapting
+#' an old saved weights file after having made
+#' architecture changes to a model.
+#'
+#' # Examples
+#' ```r
+#' model <- keras_model_sequential(name = "my_sequential",
+#'                                 input_shape = c(1),
+#'                                 input_name = "my_input") |>
+#'   layer_dense(2, activation = "sigmoid", name = "my_dense") |>
+#'   layer_dense(2, activation = "sigmoid", name = "my_dense2")
+#'
+#' model |> compile(optimizer="adam", loss="mse", metrics=c("mae"))
+#' model |> fit(matrix(1), matrix(1), verbose = 0)
+#'
+#' path.keras <- tempfile("model-", fileext = ".keras")
+#' path.weights.h5 <-  tempfile("model-", fileext = ".weights.h5")
+#' model |> save_model(path.keras)
+#' model |> save_model_weights(path.weights.h5)
+#'
+#' editor = saved_keras_file_editor(path.keras)
+#' editor = saved_keras_file_editor(path.weights.h5)
+#'
+#' # Displays current contents
+#' editor$summary()
+#'
+#' # Remove the weights of an existing layer
+#' editor$delete_object("layers/dense_2")
+#'
+#' # Add the weights of a new layer
+#' editor$add_object("layers/einsum_dense", weights=list("0"= ..., "1"= ...))
+#'
+#' # Save the weights of the edited model
+#' editor$resave_weights("edited_model.weights.h5")
+#' ```
+#'
+#' Methods defined:
+#'
+#' * ```r
+#'   add_object(object_path, weights)
+#'   ```
+#'   Add a new object to the file (e.g. a layer).
+#'
+#'   Args:
+#'   * `object_path`: String, full path of the
+#'       object to add (e.g. `"layers/dense_2"`).
+#'   * `weights`: Named list or dictionary mapping weight names to weight
+#'       values (arrays),
+#'       e.g. `list("0" = kernel_value, "1" = bias_value)`.
+#'
+#' * ```r
+#'   add_weights(object_name, weights)
+#'   ```
+#'   Add one or more new weights to an existing object.
+#'
+#'   Args:
+#'   * `object_name`: String, name or path of the
+#'      object to add the weights to
+#'      (e.g. `"dense_2"` or `"layers/dense_2"`).
+#'   * `weights`: Named list or dict mapping weight names to weight
+#'      values (arrays),
+#'      e.g. `list("0" = kernel_value, "1" = bias_value)`.
+#'
+#' * ```r
+#'   compare(reference_model)
+#'   ```
+#'   Compares the opened file to a reference model.
+#'
+#'   This method will list all mismatches between the
+#'   currently opened file and the provided reference model.
+#'
+#'   Args:
+#'   * `reference_model`: Model instance to compare to.
+#'
+#'   Returns:
+#'
+#'   Named list with the following names:
+#'   `'status'`, `'error_count'`, `'match_count'`.
+#'   Status can be `'success'` or `'error'`.
+#'   `'error_count'` is the number of mismatches found.
+#'   `'match_count'` is the number of matching weights found.
+#'
+#' * ```r
+#'   delete_object(object_name)
+#'   ```
+#'   Removes an object from the file (e.g. a layer).
+#'
+#'   Args:
+#'   * `object_name`: String, name or path of the
+#'       object to delete (e.g. `"dense_2"` or
+#'       `"layers/dense_2"`).
+#'
+#' * ```r
+#'   delete_weight(object_name, weight_name)
+#'   ```
+#'   Removes a weight from an existing object.
+#'
+#'   Args:
+#'   * `object_name`: String, name or path of the
+#'      object from which to remove the weight
+#'      (e.g. `"dense_2"` or `"layers/dense_2"`).
+#'   * `weight_name`: String, name of the weight to
+#'       delete (e.g. `"0"`).
+#'
+#' * ```r
+#'   rename_object(object_name, new_name)
+#'   ```
+#'   Rename an object in the file (e.g. a layer).
+#'
+#'   Args:
+#'   * `object_name`: String, name or path of the
+#'       object to rename (e.g. `"dense_2"` or
+#'       `"layers/dense_2"`).
+#'   * `new_name`: String, new name of the object.
+#'
+#' * ```r
+#'   resave_weights(filepath)
+#'   ```
+#'
+#' * ```r
+#'   save(filepath)
+#'   ```
+#'   Save the edited weights file.
+#'
+#'   Args:
+#'   * `filepath`: Path to save the file to.
+#'       Must be a `.weights.h5` file.
+#'
+#' * ```r
+#'   summary()
+#'   ```
+#'   Prints the weight structure of the opened file.
+#'
+#'
+#'
+#' @param filepath
+#' The path to a local file to inspect and edit.
+#'
+# @export
+#' @tether keras.saving.KerasFileEditor
+## attempting to use keras.saving.KerasFileEditor with the most basic example raised an error -
+## it seem not ready for primetime. Revisit in next release.
+## Also, when exporting, add a `print()` method that calls summary.
+#' @noRd
+saved_keras_file_editor <-
+function (filepath)
+{
+    keras$saving$KerasFileEditor(filepath)
 }
 
 

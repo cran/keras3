@@ -13,7 +13,7 @@ op_average(x, axis = NULL, weights = NULL)
 will average over all of the elements of the input tensor. If axis
 is negative it counts from the last to the first axis.}
 
-\item{weights}{Tensor of wieghts associated with the values in \code{x}. Each
+\item{weights}{Tensor of weights associated with the values in \code{x}. Each
 value in \code{x} contributes to the average according to its
 associated weight. The weights array can either be 1-D (in which
 case its length must be the size of a along the given axis) or of
@@ -115,6 +115,13 @@ Other numpy ops: \cr
 \code{\link{op_argsort}()} \cr
 \code{\link{op_array}()} \cr
 \code{\link{op_bincount}()} \cr
+\code{\link{op_bitwise_and}()} \cr
+\code{\link{op_bitwise_invert}()} \cr
+\code{\link{op_bitwise_left_shift}()} \cr
+\code{\link{op_bitwise_not}()} \cr
+\code{\link{op_bitwise_or}()} \cr
+\code{\link{op_bitwise_right_shift}()} \cr
+\code{\link{op_bitwise_xor}()} \cr
 \code{\link{op_broadcast_to}()} \cr
 \code{\link{op_ceil}()} \cr
 \code{\link{op_clip}()} \cr
@@ -130,6 +137,7 @@ Other numpy ops: \cr
 \code{\link{op_cumprod}()} \cr
 \code{\link{op_cumsum}()} \cr
 \code{\link{op_diag}()} \cr
+\code{\link{op_diagflat}()} \cr
 \code{\link{op_diagonal}()} \cr
 \code{\link{op_diff}()} \cr
 \code{\link{op_digitize}()} \cr
@@ -140,6 +148,7 @@ Other numpy ops: \cr
 \code{\link{op_empty}()} \cr
 \code{\link{op_equal}()} \cr
 \code{\link{op_exp}()} \cr
+\code{\link{op_exp2}()} \cr
 \code{\link{op_expand_dims}()} \cr
 \code{\link{op_expm1}()} \cr
 \code{\link{op_eye}()} \cr
@@ -151,13 +160,16 @@ Other numpy ops: \cr
 \code{\link{op_get_item}()} \cr
 \code{\link{op_greater}()} \cr
 \code{\link{op_greater_equal}()} \cr
+\code{\link{op_histogram}()} \cr
 \code{\link{op_hstack}()} \cr
 \code{\link{op_identity}()} \cr
 \code{\link{op_imag}()} \cr
+\code{\link{op_inner}()} \cr
 \code{\link{op_isclose}()} \cr
 \code{\link{op_isfinite}()} \cr
 \code{\link{op_isinf}()} \cr
 \code{\link{op_isnan}()} \cr
+\code{\link{op_left_shift}()} \cr
 \code{\link{op_less}()} \cr
 \code{\link{op_less_equal}()} \cr
 \code{\link{op_linspace}()} \cr
@@ -166,6 +178,7 @@ Other numpy ops: \cr
 \code{\link{op_log1p}()} \cr
 \code{\link{op_log2}()} \cr
 \code{\link{op_logaddexp}()} \cr
+\code{\link{op_logdet}()} \cr
 \code{\link{op_logical_and}()} \cr
 \code{\link{op_logical_not}()} \cr
 \code{\link{op_logical_or}()} \cr
@@ -200,8 +213,10 @@ Other numpy ops: \cr
 \code{\link{op_reciprocal}()} \cr
 \code{\link{op_repeat}()} \cr
 \code{\link{op_reshape}()} \cr
+\code{\link{op_right_shift}()} \cr
 \code{\link{op_roll}()} \cr
 \code{\link{op_round}()} \cr
+\code{\link{op_saturate_cast}()} \cr
 \code{\link{op_select}()} \cr
 \code{\link{op_sign}()} \cr
 \code{\link{op_sin}()} \cr
@@ -228,6 +243,7 @@ Other numpy ops: \cr
 \code{\link{op_tri}()} \cr
 \code{\link{op_tril}()} \cr
 \code{\link{op_triu}()} \cr
+\code{\link{op_trunc}()} \cr
 \code{\link{op_var}()} \cr
 \code{\link{op_vdot}()} \cr
 \code{\link{op_vectorize}()} \cr
@@ -260,10 +276,18 @@ Other ops: \cr
 \code{\link{op_batch_normalization}()} \cr
 \code{\link{op_binary_crossentropy}()} \cr
 \code{\link{op_bincount}()} \cr
+\code{\link{op_bitwise_and}()} \cr
+\code{\link{op_bitwise_invert}()} \cr
+\code{\link{op_bitwise_left_shift}()} \cr
+\code{\link{op_bitwise_not}()} \cr
+\code{\link{op_bitwise_or}()} \cr
+\code{\link{op_bitwise_right_shift}()} \cr
+\code{\link{op_bitwise_xor}()} \cr
 \code{\link{op_broadcast_to}()} \cr
 \code{\link{op_cast}()} \cr
 \code{\link{op_categorical_crossentropy}()} \cr
 \code{\link{op_ceil}()} \cr
+\code{\link{op_celu}()} \cr
 \code{\link{op_cholesky}()} \cr
 \code{\link{op_clip}()} \cr
 \code{\link{op_concatenate}()} \cr
@@ -287,12 +311,14 @@ Other ops: \cr
 \code{\link{op_depthwise_conv}()} \cr
 \code{\link{op_det}()} \cr
 \code{\link{op_diag}()} \cr
+\code{\link{op_diagflat}()} \cr
 \code{\link{op_diagonal}()} \cr
 \code{\link{op_diff}()} \cr
 \code{\link{op_digitize}()} \cr
 \code{\link{op_divide}()} \cr
 \code{\link{op_divide_no_nan}()} \cr
 \code{\link{op_dot}()} \cr
+\code{\link{op_dot_product_attention}()} \cr
 \code{\link{op_dtype}()} \cr
 \code{\link{op_eig}()} \cr
 \code{\link{op_eigh}()} \cr
@@ -303,6 +329,7 @@ Other ops: \cr
 \code{\link{op_erf}()} \cr
 \code{\link{op_erfinv}()} \cr
 \code{\link{op_exp}()} \cr
+\code{\link{op_exp2}()} \cr
 \code{\link{op_expand_dims}()} \cr
 \code{\link{op_expm1}()} \cr
 \code{\link{op_extract_sequences}()} \cr
@@ -317,12 +344,17 @@ Other ops: \cr
 \code{\link{op_full_like}()} \cr
 \code{\link{op_gelu}()} \cr
 \code{\link{op_get_item}()} \cr
+\code{\link{op_glu}()} \cr
 \code{\link{op_greater}()} \cr
 \code{\link{op_greater_equal}()} \cr
+\code{\link{op_hard_shrink}()} \cr
 \code{\link{op_hard_sigmoid}()} \cr
 \code{\link{op_hard_silu}()} \cr
+\code{\link{op_hard_tanh}()} \cr
+\code{\link{op_histogram}()} \cr
 \code{\link{op_hstack}()} \cr
 \code{\link{op_identity}()} \cr
+\code{\link{op_ifft2}()} \cr
 \code{\link{op_imag}()} \cr
 \code{\link{op_image_affine_transform}()} \cr
 \code{\link{op_image_crop}()} \cr
@@ -334,6 +366,7 @@ Other ops: \cr
 \code{\link{op_image_rgb_to_grayscale}()} \cr
 \code{\link{op_image_rgb_to_hsv}()} \cr
 \code{\link{op_in_top_k}()} \cr
+\code{\link{op_inner}()} \cr
 \code{\link{op_inv}()} \cr
 \code{\link{op_irfft}()} \cr
 \code{\link{op_is_tensor}()} \cr
@@ -343,6 +376,7 @@ Other ops: \cr
 \code{\link{op_isnan}()} \cr
 \code{\link{op_istft}()} \cr
 \code{\link{op_leaky_relu}()} \cr
+\code{\link{op_left_shift}()} \cr
 \code{\link{op_less}()} \cr
 \code{\link{op_less_equal}()} \cr
 \code{\link{op_linspace}()} \cr
@@ -353,6 +387,7 @@ Other ops: \cr
 \code{\link{op_log_sigmoid}()} \cr
 \code{\link{op_log_softmax}()} \cr
 \code{\link{op_logaddexp}()} \cr
+\code{\link{op_logdet}()} \cr
 \code{\link{op_logical_and}()} \cr
 \code{\link{op_logical_not}()} \cr
 \code{\link{op_logical_or}()} \cr
@@ -401,9 +436,11 @@ Other ops: \cr
 \code{\link{op_repeat}()} \cr
 \code{\link{op_reshape}()} \cr
 \code{\link{op_rfft}()} \cr
+\code{\link{op_right_shift}()} \cr
 \code{\link{op_roll}()} \cr
 \code{\link{op_round}()} \cr
 \code{\link{op_rsqrt}()} \cr
+\code{\link{op_saturate_cast}()} \cr
 \code{\link{op_scan}()} \cr
 \code{\link{op_scatter}()} \cr
 \code{\link{op_scatter_update}()} \cr
@@ -423,6 +460,7 @@ Other ops: \cr
 \code{\link{op_slice}()} \cr
 \code{\link{op_slice_update}()} \cr
 \code{\link{op_slogdet}()} \cr
+\code{\link{op_soft_shrink}()} \cr
 \code{\link{op_softmax}()} \cr
 \code{\link{op_softplus}()} \cr
 \code{\link{op_softsign}()} \cr
@@ -430,9 +468,12 @@ Other ops: \cr
 \code{\link{op_solve_triangular}()} \cr
 \code{\link{op_sort}()} \cr
 \code{\link{op_sparse_categorical_crossentropy}()} \cr
+\code{\link{op_sparse_plus}()} \cr
+\code{\link{op_sparsemax}()} \cr
 \code{\link{op_split}()} \cr
 \code{\link{op_sqrt}()} \cr
 \code{\link{op_square}()} \cr
+\code{\link{op_squareplus}()} \cr
 \code{\link{op_squeeze}()} \cr
 \code{\link{op_stack}()} \cr
 \code{\link{op_std}()} \cr
@@ -447,7 +488,9 @@ Other ops: \cr
 \code{\link{op_take_along_axis}()} \cr
 \code{\link{op_tan}()} \cr
 \code{\link{op_tanh}()} \cr
+\code{\link{op_tanh_shrink}()} \cr
 \code{\link{op_tensordot}()} \cr
+\code{\link{op_threshold}()} \cr
 \code{\link{op_tile}()} \cr
 \code{\link{op_top_k}()} \cr
 \code{\link{op_trace}()} \cr
@@ -455,6 +498,8 @@ Other ops: \cr
 \code{\link{op_tri}()} \cr
 \code{\link{op_tril}()} \cr
 \code{\link{op_triu}()} \cr
+\code{\link{op_trunc}()} \cr
+\code{\link{op_unravel_index}()} \cr
 \code{\link{op_unstack}()} \cr
 \code{\link{op_var}()} \cr
 \code{\link{op_vdot}()} \cr

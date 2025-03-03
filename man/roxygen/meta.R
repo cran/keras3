@@ -72,9 +72,15 @@ local({
     if (reticulate::py_available()) on_py_init()
     else setHook("reticulate.onPyInit", on_py_init)
   }
-
   if (isNamespaceLoaded('reticulate')) on_reticulate_load()
   else setHook(packageEvent("reticulate", "onLoad"), on_reticulate_load)
+
+  on_keras3_load <- function(...) {
+    keras3::use_backend("tensorflow", gpu = FALSE)
+  }
+  if (isNamespaceLoaded('keras3')) on_keras3_load()
+  else setHook(packageEvent("keras3", "onLoad"), on_keras3_load)
+
 })
 
 # setup knitr hooks for roxygen rendering block example chunks
@@ -88,7 +94,7 @@ local({
     x <- x |> strsplit("\n") |> unlist() |> trimws("right")
 
     # strip object addresses; no noisy diff
-    x <- sub(" at 0[xX][0-9A-Fa-f]{9,16}>$", ">", x, perl = TRUE)
+    x <- sub(" at 0[xX][0-9A-Fa-f]{9,16}>", " at 0x0>", x, perl = TRUE)
 
     # remove reticulate hint from exceptions
     x <- x[!grepl(r"{## .*rstudio:run:reticulate::py_last_error\(\).*}", x)]

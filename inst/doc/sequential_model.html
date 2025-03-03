@@ -438,10 +438,13 @@ the shape of the weights depends on the shape of the inputs:</p>
 <span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">layer</span>(x)</span>
 <span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>layer<span class="sc">$</span>weights  <span class="co"># Now it has weights, of shape (4, 3) and (3,)</span></span></code></pre></div>
 <pre><code>## [[1]]
-## &lt;KerasVariable shape=(4, 3), dtype=float32, path=dense_9/kernel&gt;
+## &lt;Variable path=dense_9/kernel, shape=(4, 3), dtype=float32, value=[[ 0.48581433  0.78749573  0.61015   ]
+##  [ 0.7962619   0.7261175  -0.8046875 ]
+##  [-0.6189915   0.37973273  0.50559556]
+##  [-0.5455791  -0.60714126  0.19791973]]&gt;
 ##
 ## [[2]]
-## &lt;KerasVariable shape=(3), dtype=float32, path=dense_9/bias&gt;</code></pre>
+## &lt;Variable path=dense_9/bias, shape=(3), dtype=float32, value=[0. 0. 0.]&gt;</code></pre>
 <p>Naturally, this also applies to Sequential models. When you
 instantiate a Sequential model without an input shape, it isn’t “built”:
 it has no weights (and calling <code>model$weights</code> results in an

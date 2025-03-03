@@ -11,6 +11,7 @@ layer_group_query_attention(
   num_key_value_heads,
   dropout = 0,
   use_bias = TRUE,
+  flash_attention = NULL,
   kernel_initializer = "glorot_uniform",
   bias_initializer = "zeros",
   kernel_regularizer = NULL,
@@ -18,6 +19,7 @@ layer_group_query_attention(
   activity_regularizer = NULL,
   kernel_constraint = NULL,
   bias_constraint = NULL,
+  seed = NULL,
   ...
 )
 }
@@ -34,6 +36,12 @@ layer_group_query_attention(
 
 \item{use_bias}{Boolean, whether the dense layers use bias vectors/matrices.}
 
+\item{flash_attention}{If \code{NULL}, the layer attempts to use flash
+attention for faster and more memory-efficient attention
+computations when possible. This behavior can be configured using
+\code{config_enable_flash_attention()} or
+\code{config_disable_flash_attention()}.}
+
 \item{kernel_initializer}{Initializer for dense layer kernels.}
 
 \item{bias_initializer}{Initializer for dense layer biases.}
@@ -47,6 +55,8 @@ layer_group_query_attention(
 \item{kernel_constraint}{Constraint for dense layer kernels.}
 
 \item{bias_constraint}{Constraint for dense layer kernels.}
+
+\item{seed}{Optional integer to seed the dropout layer.}
 
 \item{...}{For forward/backward compatability.}
 }
@@ -123,6 +133,7 @@ Other layers: \cr
 \code{\link{layer_additive_attention}()} \cr
 \code{\link{layer_alpha_dropout}()} \cr
 \code{\link{layer_attention}()} \cr
+\code{\link{layer_auto_contrast}()} \cr
 \code{\link{layer_average}()} \cr
 \code{\link{layer_average_pooling_1d}()} \cr
 \code{\link{layer_average_pooling_2d}()} \cr
@@ -152,6 +163,7 @@ Other layers: \cr
 \code{\link{layer_dropout}()} \cr
 \code{\link{layer_einsum_dense}()} \cr
 \code{\link{layer_embedding}()} \cr
+\code{\link{layer_equalization}()} \cr
 \code{\link{layer_feature_space}()} \cr
 \code{\link{layer_flatten}()} \cr
 \code{\link{layer_flax_module_wrapper}()} \cr
@@ -174,21 +186,32 @@ Other layers: \cr
 \code{\link{layer_layer_normalization}()} \cr
 \code{\link{layer_lstm}()} \cr
 \code{\link{layer_masking}()} \cr
+\code{\link{layer_max_num_bounding_boxes}()} \cr
 \code{\link{layer_max_pooling_1d}()} \cr
 \code{\link{layer_max_pooling_2d}()} \cr
 \code{\link{layer_max_pooling_3d}()} \cr
 \code{\link{layer_maximum}()} \cr
 \code{\link{layer_mel_spectrogram}()} \cr
 \code{\link{layer_minimum}()} \cr
+\code{\link{layer_mix_up}()} \cr
 \code{\link{layer_multi_head_attention}()} \cr
 \code{\link{layer_multiply}()} \cr
 \code{\link{layer_normalization}()} \cr
 \code{\link{layer_permute}()} \cr
+\code{\link{layer_rand_augment}()} \cr
 \code{\link{layer_random_brightness}()} \cr
+\code{\link{layer_random_color_degeneration}()} \cr
+\code{\link{layer_random_color_jitter}()} \cr
 \code{\link{layer_random_contrast}()} \cr
 \code{\link{layer_random_crop}()} \cr
 \code{\link{layer_random_flip}()} \cr
+\code{\link{layer_random_grayscale}()} \cr
+\code{\link{layer_random_hue}()} \cr
+\code{\link{layer_random_posterization}()} \cr
 \code{\link{layer_random_rotation}()} \cr
+\code{\link{layer_random_saturation}()} \cr
+\code{\link{layer_random_sharpness}()} \cr
+\code{\link{layer_random_shear}()} \cr
 \code{\link{layer_random_translation}()} \cr
 \code{\link{layer_random_zoom}()} \cr
 \code{\link{layer_repeat_vector}()} \cr
@@ -199,10 +222,12 @@ Other layers: \cr
 \code{\link{layer_separable_conv_1d}()} \cr
 \code{\link{layer_separable_conv_2d}()} \cr
 \code{\link{layer_simple_rnn}()} \cr
+\code{\link{layer_solarization}()} \cr
 \code{\link{layer_spatial_dropout_1d}()} \cr
 \code{\link{layer_spatial_dropout_2d}()} \cr
 \code{\link{layer_spatial_dropout_3d}()} \cr
 \code{\link{layer_spectral_normalization}()} \cr
+\code{\link{layer_stft_spectrogram}()} \cr
 \code{\link{layer_string_lookup}()} \cr
 \code{\link{layer_subtract}()} \cr
 \code{\link{layer_text_vectorization}()} \cr
