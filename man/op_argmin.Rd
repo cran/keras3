@@ -4,7 +4,7 @@
 \alias{op_argmin}
 \title{Returns the indices of the minimum values along an axis.}
 \usage{
-op_argmin(x, axis = NULL, keepdims = FALSE)
+op_argmin(x, axis = NULL, keepdims = FALSE, zero_indexed = FALSE)
 }
 \arguments{
 \item{x}{Input tensor.}
@@ -14,6 +14,10 @@ along the specified axis.}
 
 \item{keepdims}{If this is set to \code{TRUE}, the axes which are reduced are left
 in the result as dimensions with size one. Defaults to \code{FALSE}.}
+
+\item{zero_indexed}{If \code{TRUE}, the returned indices are zero-based (\code{0} encodes to first
+position); if \code{FALSE} (default), the returned indices are one-based (\code{1}
+encodes to first position).}
 }
 \value{
 Tensor of indices. It has the same shape as \code{x}, with the dimension
@@ -23,7 +27,7 @@ along \code{axis} removed.
 Returns the indices of the minimum values along an axis.
 }
 \note{
-This is similar to an R expression \code{apply(x, axis, which.min) - 1}, where \code{x}
+This is similar to an R expression \code{apply(x, axis, which.min)}, where \code{x}
 is a R array.
 }
 \section{Examples}{
@@ -32,29 +36,29 @@ x
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(
-## [[10. 11. 12.]
-##  [13. 14. 15.]], shape=(2, 3), dtype=float32)
+## [[11. 12. 13.]
+##  [14. 15. 16.]], shape=(2, 3), dtype=float32)
 
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{op_argmin(x)
 }\if{html}{\out{</div>}}
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(0, shape=(), dtype=int32)
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(1, shape=(), dtype=int32)
 
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{op_argmin(x, axis = 1)
 }\if{html}{\out{</div>}}
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([0 0 0], shape=(3), dtype=int32)
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([1 1 1], shape=(3), dtype=int32)
 
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{op_argmin(x, axis = 2)
 }\if{html}{\out{</div>}}
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([0 0], shape=(2), dtype=int32)
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([1 1], shape=(2), dtype=int32)
 
 }\if{html}{\out{</div>}}
 }
@@ -184,10 +188,12 @@ Other numpy ops: \cr
 \code{\link{op_reshape}()} \cr
 \code{\link{op_right_shift}()} \cr
 \code{\link{op_roll}()} \cr
+\code{\link{op_rot90}()} \cr
 \code{\link{op_round}()} \cr
 \code{\link{op_saturate_cast}()} \cr
 \code{\link{op_select}()} \cr
 \code{\link{op_sign}()} \cr
+\code{\link{op_signbit}()} \cr
 \code{\link{op_sin}()} \cr
 \code{\link{op_sinh}()} \cr
 \code{\link{op_size}()} \cr
@@ -328,9 +334,11 @@ Other ops: \cr
 \code{\link{op_image_affine_transform}()} \cr
 \code{\link{op_image_crop}()} \cr
 \code{\link{op_image_extract_patches}()} \cr
+\code{\link{op_image_gaussian_blur}()} \cr
 \code{\link{op_image_hsv_to_rgb}()} \cr
 \code{\link{op_image_map_coordinates}()} \cr
 \code{\link{op_image_pad}()} \cr
+\code{\link{op_image_perspective_transform}()} \cr
 \code{\link{op_image_resize}()} \cr
 \code{\link{op_image_rgb_to_grayscale}()} \cr
 \code{\link{op_image_rgb_to_hsv}()} \cr
@@ -392,6 +400,7 @@ Other ops: \cr
 \code{\link{op_ones_like}()} \cr
 \code{\link{op_outer}()} \cr
 \code{\link{op_pad}()} \cr
+\code{\link{op_polar}()} \cr
 \code{\link{op_power}()} \cr
 \code{\link{op_prod}()} \cr
 \code{\link{op_psnr}()} \cr
@@ -399,6 +408,7 @@ Other ops: \cr
 \code{\link{op_quantile}()} \cr
 \code{\link{op_ravel}()} \cr
 \code{\link{op_real}()} \cr
+\code{\link{op_rearrange}()} \cr
 \code{\link{op_reciprocal}()} \cr
 \code{\link{op_relu}()} \cr
 \code{\link{op_relu6}()} \cr
@@ -406,7 +416,9 @@ Other ops: \cr
 \code{\link{op_reshape}()} \cr
 \code{\link{op_rfft}()} \cr
 \code{\link{op_right_shift}()} \cr
+\code{\link{op_rms_normalization}()} \cr
 \code{\link{op_roll}()} \cr
+\code{\link{op_rot90}()} \cr
 \code{\link{op_round}()} \cr
 \code{\link{op_rsqrt}()} \cr
 \code{\link{op_saturate_cast}()} \cr
@@ -422,6 +434,7 @@ Other ops: \cr
 \code{\link{op_shape}()} \cr
 \code{\link{op_sigmoid}()} \cr
 \code{\link{op_sign}()} \cr
+\code{\link{op_signbit}()} \cr
 \code{\link{op_silu}()} \cr
 \code{\link{op_sin}()} \cr
 \code{\link{op_sinh}()} \cr
@@ -448,6 +461,7 @@ Other ops: \cr
 \code{\link{op_std}()} \cr
 \code{\link{op_stft}()} \cr
 \code{\link{op_stop_gradient}()} \cr
+\code{\link{op_subset}()} \cr
 \code{\link{op_subtract}()} \cr
 \code{\link{op_sum}()} \cr
 \code{\link{op_svd}()} \cr

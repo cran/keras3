@@ -153,7 +153,9 @@ define_and_compile_model <- function() {
 expect_tensor <- function(x, shape=NULL, shaped_as=NULL) {
   x_lbl <- quasi_label(rlang::enquo(x), arg = 'x')$lab
 
-  expect(keras$backend$is_keras_tensor(x) || inherits(x, "tensorflow.tensor"),
+  expect(op_is_tensor(x) ||
+           keras$backend$is_keras_tensor(x) ||
+           inherits(x, "tensorflow.tensor"),
          paste(x_lbl, "was wrong S3 class, expected a tensor, actual", class(x)))
 
   x_shape <- x$shape
@@ -215,4 +217,21 @@ k_constant <- function(value, dtype = NULL, shape = NULL, name = NULL) {
     x <- x$reshape(as.integer(shape))
   x
   keras$ops$convert_to_tensor(x)
+}
+
+
+ct <- function(...) {
+  x <- if(...length() == 1L) ..1 else c(...)
+  if (is.double(x))
+    storage.mode(x) <- "integer"
+  op_convert_to_tensor(as.array(x))
+}
+
+as.tensor <- function(x) op_convert_to_tensor(x)
+
+env <- rlang::env
+
+
+expect_equal_array <- function(x, y) {
+  expect_equal(as.array(x), as.array(y))
 }

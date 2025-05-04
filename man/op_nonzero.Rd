@@ -15,6 +15,77 @@ Indices of elements that are non-zero.
 \description{
 Return the indices of the elements that are non-zero.
 }
+\details{
+\subsection{Example}{
+
+\code{op_nonzero()} indices can be used with \verb{<tensor>@r[}
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{(x <- op_scatter(indices = rbind(1, 5, 10), values = c(1, 2, 3), shape = c(10)))
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([1. 0. 0. 0. 2. 0. 0. 0. 0. 3.], shape=(10), dtype=float64)
+
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{(nz <- op_nonzero(x))
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(
+## [[ 1]
+##  [ 5]
+##  [10]], shape=(3, 1), dtype=int32)
+
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{x@r[nz]
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([1. 2. 3.], shape=(3), dtype=float64)
+
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{# same as `x@r[nz]`
+x@r[x != 0]
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([1. 2. 3.], shape=(3), dtype=float64)
+
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{x@r[op_cast(x, "bool")]
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([1. 2. 3.], shape=(3), dtype=float64)
+
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{# 2d example
+(x2 <- op_stack(c(x, op_roll(x, 1), op_roll(x, 2))))
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(
+## [[1. 0. 0. 0. 2. 0. 0. 0. 0. 3.]
+##  [3. 1. 0. 0. 0. 2. 0. 0. 0. 0.]
+##  [0. 3. 1. 0. 0. 0. 2. 0. 0. 0.]], shape=(3, 10), dtype=float64)
+
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{x2@r[op_nonzero(x2)]
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([1. 2. 3. 3. 1. 2. 3. 1. 2.], shape=(9), dtype=float64)
+
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{x3 <- op_stack(c(x2, x2*1.1))
+x3@r[op_nonzero(x3)]
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([1.  2.  3.  3.  1.  2.  3.  1.  2.  1.1 2.2 3.3 3.3 1.1 2.2 3.3 1.1 2.2], shape=(18), dtype=float64)
+
+}\if{html}{\out{</div>}}
+}
+}
 \seealso{
 \itemize{
 \item \url{https://keras.io/api/ops/numpy#nonzero-function}
@@ -140,10 +211,12 @@ Other numpy ops: \cr
 \code{\link{op_reshape}()} \cr
 \code{\link{op_right_shift}()} \cr
 \code{\link{op_roll}()} \cr
+\code{\link{op_rot90}()} \cr
 \code{\link{op_round}()} \cr
 \code{\link{op_saturate_cast}()} \cr
 \code{\link{op_select}()} \cr
 \code{\link{op_sign}()} \cr
+\code{\link{op_signbit}()} \cr
 \code{\link{op_sin}()} \cr
 \code{\link{op_sinh}()} \cr
 \code{\link{op_size}()} \cr
@@ -285,9 +358,11 @@ Other ops: \cr
 \code{\link{op_image_affine_transform}()} \cr
 \code{\link{op_image_crop}()} \cr
 \code{\link{op_image_extract_patches}()} \cr
+\code{\link{op_image_gaussian_blur}()} \cr
 \code{\link{op_image_hsv_to_rgb}()} \cr
 \code{\link{op_image_map_coordinates}()} \cr
 \code{\link{op_image_pad}()} \cr
+\code{\link{op_image_perspective_transform}()} \cr
 \code{\link{op_image_resize}()} \cr
 \code{\link{op_image_rgb_to_grayscale}()} \cr
 \code{\link{op_image_rgb_to_hsv}()} \cr
@@ -348,6 +423,7 @@ Other ops: \cr
 \code{\link{op_ones_like}()} \cr
 \code{\link{op_outer}()} \cr
 \code{\link{op_pad}()} \cr
+\code{\link{op_polar}()} \cr
 \code{\link{op_power}()} \cr
 \code{\link{op_prod}()} \cr
 \code{\link{op_psnr}()} \cr
@@ -355,6 +431,7 @@ Other ops: \cr
 \code{\link{op_quantile}()} \cr
 \code{\link{op_ravel}()} \cr
 \code{\link{op_real}()} \cr
+\code{\link{op_rearrange}()} \cr
 \code{\link{op_reciprocal}()} \cr
 \code{\link{op_relu}()} \cr
 \code{\link{op_relu6}()} \cr
@@ -362,7 +439,9 @@ Other ops: \cr
 \code{\link{op_reshape}()} \cr
 \code{\link{op_rfft}()} \cr
 \code{\link{op_right_shift}()} \cr
+\code{\link{op_rms_normalization}()} \cr
 \code{\link{op_roll}()} \cr
+\code{\link{op_rot90}()} \cr
 \code{\link{op_round}()} \cr
 \code{\link{op_rsqrt}()} \cr
 \code{\link{op_saturate_cast}()} \cr
@@ -378,6 +457,7 @@ Other ops: \cr
 \code{\link{op_shape}()} \cr
 \code{\link{op_sigmoid}()} \cr
 \code{\link{op_sign}()} \cr
+\code{\link{op_signbit}()} \cr
 \code{\link{op_silu}()} \cr
 \code{\link{op_sin}()} \cr
 \code{\link{op_sinh}()} \cr
@@ -404,6 +484,7 @@ Other ops: \cr
 \code{\link{op_std}()} \cr
 \code{\link{op_stft}()} \cr
 \code{\link{op_stop_gradient}()} \cr
+\code{\link{op_subset}()} \cr
 \code{\link{op_subtract}()} \cr
 \code{\link{op_sum}()} \cr
 \code{\link{op_svd}()} \cr

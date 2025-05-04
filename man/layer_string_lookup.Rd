@@ -142,7 +142,7 @@ as out-of-vocabulary (OOV).
 
 There are two possible output modes for the layer.
 When \code{output_mode} is \code{"int"},
-input strings are converted to their index in the vocabulary (an integer).
+input strings are converted to their (0-based) index in the vocabulary (an integer).
 When \code{output_mode} is \code{"multi_hot"}, \code{"count"}, or \code{"tf_idf"}, input strings
 are encoded into an array where each dimension corresponds to an element in
 the vocabulary.
@@ -166,6 +166,12 @@ to use this layer.
 
 \strong{Note:} This layer is safe to use inside a \code{tf.data} pipeline
 (independently of which backend you're using).
+
+\strong{Note:} If working with layer outputs directly (e.g., not passing outputs
+to another layer, but using them in lower-level operations like \code{[} and
+\verb{op_*}): the returned indices are 0-based. However, with default settings,
+the first (\code{0}) index is the OOV token, so the returned indices are offset by
+\code{1} and may appear to be 1-based.
 }
 \section{Examples}{
 \strong{Creating a lookup layer with a known vocabulary}
@@ -397,9 +403,11 @@ Other categorical features preprocessing layers: \cr
 \code{\link{layer_integer_lookup}()} \cr
 
 Other preprocessing layers: \cr
+\code{\link{layer_aug_mix}()} \cr
 \code{\link{layer_auto_contrast}()} \cr
 \code{\link{layer_category_encoding}()} \cr
 \code{\link{layer_center_crop}()} \cr
+\code{\link{layer_cut_mix}()} \cr
 \code{\link{layer_discretization}()} \cr
 \code{\link{layer_equalization}()} \cr
 \code{\link{layer_feature_space}()} \cr
@@ -416,9 +424,13 @@ Other preprocessing layers: \cr
 \code{\link{layer_random_color_jitter}()} \cr
 \code{\link{layer_random_contrast}()} \cr
 \code{\link{layer_random_crop}()} \cr
+\code{\link{layer_random_erasing}()} \cr
 \code{\link{layer_random_flip}()} \cr
+\code{\link{layer_random_gaussian_blur}()} \cr
 \code{\link{layer_random_grayscale}()} \cr
 \code{\link{layer_random_hue}()} \cr
+\code{\link{layer_random_invert}()} \cr
+\code{\link{layer_random_perspective}()} \cr
 \code{\link{layer_random_posterization}()} \cr
 \code{\link{layer_random_rotation}()} \cr
 \code{\link{layer_random_saturation}()} \cr
@@ -445,6 +457,7 @@ Other layers: \cr
 \code{\link{layer_additive_attention}()} \cr
 \code{\link{layer_alpha_dropout}()} \cr
 \code{\link{layer_attention}()} \cr
+\code{\link{layer_aug_mix}()} \cr
 \code{\link{layer_auto_contrast}()} \cr
 \code{\link{layer_average}()} \cr
 \code{\link{layer_average_pooling_1d}()} \cr
@@ -467,6 +480,7 @@ Other layers: \cr
 \code{\link{layer_cropping_1d}()} \cr
 \code{\link{layer_cropping_2d}()} \cr
 \code{\link{layer_cropping_3d}()} \cr
+\code{\link{layer_cut_mix}()} \cr
 \code{\link{layer_dense}()} \cr
 \code{\link{layer_depthwise_conv_1d}()} \cr
 \code{\link{layer_depthwise_conv_2d}()} \cr
@@ -517,9 +531,13 @@ Other layers: \cr
 \code{\link{layer_random_color_jitter}()} \cr
 \code{\link{layer_random_contrast}()} \cr
 \code{\link{layer_random_crop}()} \cr
+\code{\link{layer_random_erasing}()} \cr
 \code{\link{layer_random_flip}()} \cr
+\code{\link{layer_random_gaussian_blur}()} \cr
 \code{\link{layer_random_grayscale}()} \cr
 \code{\link{layer_random_hue}()} \cr
+\code{\link{layer_random_invert}()} \cr
+\code{\link{layer_random_perspective}()} \cr
 \code{\link{layer_random_posterization}()} \cr
 \code{\link{layer_random_rotation}()} \cr
 \code{\link{layer_random_saturation}()} \cr
@@ -531,6 +549,7 @@ Other layers: \cr
 \code{\link{layer_rescaling}()} \cr
 \code{\link{layer_reshape}()} \cr
 \code{\link{layer_resizing}()} \cr
+\code{\link{layer_rms_normalization}()} \cr
 \code{\link{layer_rnn}()} \cr
 \code{\link{layer_separable_conv_1d}()} \cr
 \code{\link{layer_separable_conv_2d}()} \cr

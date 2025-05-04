@@ -36,6 +36,9 @@
 # package level global state
 .globals <- new.env(parent = emptyenv())
 
+tf <- NULL
+ops <- NULL
+np <- NULL
 
 
 #' Main Keras module
@@ -50,6 +53,9 @@
 keras <- NULL
 
 .onLoad <- function(libname, pkgname) {
+
+  if (is.na(Sys.getenv("TF_CPP_MIN_LOG_LEVEL", NA)))
+    Sys.setenv("TF_CPP_MIN_LOG_LEVEL" = "2")
 
   # tensorflow:::.onLoad() registers some reticulate class filter hooks
   # we need to identify tensorflow tensors reliably.
@@ -68,10 +74,21 @@ keras <- NULL
     "ipython" #, "tensorflow_datasets"
   ))
 
+  if (is.na(Sys.getenv("KERAS_HOME", NA))) {
+    if (!dir.exists("~/.keras/")) {
+      Sys.setenv("KERAS_HOME" = normalizePath(
+        tools::R_user_dir("keras3", "cache"),
+        mustWork = FALSE
+      ))
+    }
+  }
+
   # default backend is tensorflow for now
   # the tensorflow R package calls `py_require()` to ensure GPU is usable on Linux
   # use_backend() includes py_require(action = "remove") calls to undo
   # what tensorflow:::.onLoad() did. Keep them in sync!
+  # backend <- Sys.getenv("KERAS_BACKEND", "jax")
+  # ~/.keras.keras.json also has an (undocumented) 'backend' field
   backend <- Sys.getenv("KERAS_BACKEND", "tensorflow")
   gpu <- NA
   if (endsWith(backend, "-cpu")) {
@@ -83,7 +100,15 @@ keras <- NULL
     backend <- sub("-gpu$", "", backend)
     Sys.setenv("KERAS_BACKEND" = backend)
   }
-  use_backend(backend, gpu)
+
+  if(Sys.getenv("DEVTOOLS_LOAD") == "keras3") {
+    if (Sys.getenv("KERAS_BACKEND_CONFIGURED") != "yes") {
+      use_backend(backend, gpu)
+      Sys.setenv("KERAS_BACKEND_CONFIGURED" = "yes")
+    }
+  } else {
+    use_backend(backend, gpu)
+  }
 
   # delay load keras
   try(keras <<- import("keras", delay_load = list(
@@ -100,11 +125,12 @@ keras <- NULL
       # check version
       # check_implementation_version()
 
-      tryCatch(
-        import("tensorflow")$experimental$numpy$experimental_enable_numpy_behavior(),
-        error = function(e) {
-          warning("failed setting experimental_enable_numpy_behavior")
-        })
+      # disabled because of errors with keras-hub
+      # tryCatch(
+      #   import("tensorflow")$experimental$numpy$experimental_enable_numpy_behavior(),
+      #   error = function(e) {
+      #     warning("failed setting experimental_enable_numpy_behavior")
+      #   })
 
     },
 
@@ -148,10 +174,123 @@ keras <- NULL
   setHook("tensorflow.on_before_use_session", tensorflow_on_before_use_session)
   setHook("tensorflow.on_use_session", tensorflow_on_use_session)
 
-  # on_load_make_as_activation()
+  ## numpy is loaded in a non-standard code path by reticulate
+  ## (it's loaded early in c++ and bypasses the importer that calls hooks)
+  ## So we indiscriminately register the s3 methods for numpy arrays
+  ## instead of using py_register_load_hook("numpy")
+  registerS3method("@", "numpy.ndarray", at.keras_backend_tensor, baseenv())
+  registerS3method("@<-", "numpy.ndarray", at_set.keras_backend_tensor, baseenv())
 
+  reticulate::py_register_load_hook("keras", function() {
+
+    keras <- import("keras")
+    convert_to_tensor <- import("keras.ops", convert = FALSE)$convert_to_tensor
+    with(keras$device("cpu:0"), {
+      backend_tensor_class <- class(convert_to_tensor(array(1L)))[1L]
+    })
+    symbolic_tensor_class <- nameOfClass__python.builtin.type(keras$KerasTensor)
+
+    registerS3method("@", symbolic_tensor_class, at.keras_backend_tensor, baseenv())
+    registerS3method("@", backend_tensor_class, at.keras_backend_tensor, baseenv())
+
+    py_subset <- utils::getS3method("[", "python.builtin.object", envir = asNamespace("reticulate"))
+    registerS3method("[", "keras_r_backend_tensor", op_subset, baseenv())
+    registerS3method("[", "keras_py_backend_tensor", py_subset, baseenv())
+
+    registerS3method("@<-", symbolic_tensor_class, at_set.keras_backend_tensor, baseenv())
+    registerS3method("@<-", backend_tensor_class, at_set.keras_backend_tensor, baseenv())
+
+    `py_subset<-` <- utils::getS3method("[<-", "python.builtin.object", envir = asNamespace("reticulate"))
+    registerS3method("[<-", "keras_r_backend_tensor", `op_subset<-`, baseenv())
+    registerS3method("[<-", "keras_py_backend_tensor", `py_subset<-`, baseenv())
+
+    registerS3method("as.array", backend_tensor_class, op_convert_to_array, baseenv())
+    registerS3method("^", backend_tensor_class, `^__keras.backend.tensor`, baseenv())
+    registerS3method("%*%", backend_tensor_class, op_matmul, baseenv())
+
+    if(keras$config$backend() == "jax") {
+      for(py_type in import("jax")$Array$`__subclasses__`()) {
+        s3_classname <- nameOfClass__python.builtin.type(py_type)
+        registerS3method("@"       , s3_classname, at.keras_backend_tensor, baseenv())
+        registerS3method("@<-"     , s3_classname, at_set.keras_backend_tensor, baseenv())
+        registerS3method("as.array", s3_classname, op_convert_to_array, baseenv())
+        registerS3method("^"       , s3_classname, `^__keras.backend.tensor`, baseenv())
+        registerS3method("%*%"     , s3_classname, op_matmul, baseenv())
+      }
+    }
+  })
+
+
+
+  reticulate::py_register_load_hook("torch", function() {
+    # force keras load hooks to run
+    keras$ops
+  })
+
+  reticulate::py_register_load_hook("jax", function() {
+    # force keras load hooks to run
+    keras$ops
+  })
+
+
+  reticulate::py_register_load_hook("tensorflow", function() {
+
+    # Globally enabling this is too disruptive - causes
+    # errors in tf internal calls like `tf.strings.split("foo\nbar", "\n")`
+    # also, internal keras calls in `fit()` that check for overflow.
+    # we only use numpy style slicing via an internal method in op_subset()
+
+    # tf <- import("tensorflow")
+    # if(Sys.getenv("TENSORFLOW_ENABLE_NUMPY_BEHAVIOR") != "false")
+    # py_capture_output({
+    #   tf$experimental$numpy$experimental_enable_numpy_behavior(
+    #     prefer_float32 = TRUE,
+    #     dtype_conversion_mode = "legacy"
+    #     # "all" or "safe" leads to error in keras
+    #     # can optionally also do "off", but that's even more strict
+    #     # dtype_conversion_mode = "off"
+    #   )
+    # }, "stderr")
+
+    # we still need to register tensorflow `@` and `@<-` methods even if the
+    # backend is not tensorflow, because tf.data can be used with other backends
+    # and tensorflow.tensor might still be encountered.
+    registerS3method("@", "tensorflow.tensor", at.keras_backend_tensor, baseenv())
+    registerS3method("@<-", "tensorflow.tensor", at_set.keras_backend_tensor, baseenv())
+  })
+
+  # on_load_make_as_activation()
+  np <<- try(import("numpy", convert = FALSE, delay_load = TRUE))
+  tf <<- try(import("tensorflow", delay_load = TRUE))
+  ops <<- try(import("keras.ops", delay_load = list(
+    before_load = function() {
+      # force the load hooks on 'keras' to run
+      keras$ops
+    }
+  )))
 
 }
+
+
+at.keras_backend_tensor <-  function(object, name) {
+  out <- rlang::env_clone(object)
+  attrs <- attributes(object)
+  cls <- switch(
+    name,
+    "1" = , one = , R = , r = "keras_r_backend_tensor",
+    "0" = , zero =, Py =, py = "keras_py_backend_tensor",
+    stop("<subset-style> must be 'r' or 'py' in expression <tensor>@<subset-style>")
+  )
+  attrs$class <- unique(c(cls, attrs$class))
+  attributes(out) <- attrs
+  out
+}
+
+
+at_set.keras_backend_tensor <- function(object, name, value) {
+  value
+}
+
 
 keras_not_found_message <- function(error_message) {
   message(error_message)
@@ -177,6 +316,16 @@ maybe_register_S3_methods <- function() {
   .register_no_overwrite("keras.src.utils.tracking.TrackedDict")
   .register_no_overwrite("keras.src.utils.tracking.TrackedList")
   .register_no_overwrite("keras.src.utils.tracking.TrackedSet")
+}
+
+# not exported regular function since nameOfClass() requires R>4.3
+# __ instead of . to avoid roxygen warning
+nameOfClass__python.builtin.type <- function(x) {
+  paste(
+    as_r_value(py_get_attr(x, "__module__")),
+    as_r_value(py_get_attr(x, "__name__")),
+    sep = "."
+  )
 }
 
 resolve_implementation_module <- function() {
@@ -316,3 +465,25 @@ is_keras_available <- function(version = NULL) {
 # TODO: add option in `is_keras_available()` to avoid initializing Python
 #       (maybe in a callr call?), reexport.
 # TODO: add func `is_backend_available()`, usage `is_backend_available("tensorflow")`
+
+
+#' New axis
+#'
+#' This is an alias for `NULL`. It is meant to be used in `[` on tensors,
+#' to expand dimensions of a tensor
+#'
+#' ```r
+#' x <- op_convert_to_tensor(1:10)
+#'
+#' op_shape(x)
+#' op_shape(x[])
+#' op_shape(x[newaxis])
+#' op_shape(x@py[newaxis])
+#' op_shape(x@r[newaxis])
+#'
+#' op_shape(x[newaxis, .., newaxis])
+#' op_shape(x@py[newaxis, .., newaxis])
+#' op_shape(x@r[newaxis, .., newaxis])
+#' ````
+#' @export
+newaxis <- NULL

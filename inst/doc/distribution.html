@@ -379,7 +379,7 @@ semantics.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">library</span>(keras3)</span>
 <span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co"># The distribution API is only implemented for the JAX backend for now.</span></span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="fu">use_backend</span>(<span class="st">&quot;jax&quot;</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="fu">use_backend</span>(<span class="st">&quot;jax&quot;</span>, <span class="cn">FALSE</span>)</span>
 <span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>jax <span class="ot">&lt;-</span> reticulate<span class="sc">::</span><span class="fu">import</span>(<span class="st">&quot;jax&quot;</span>)</span>
 <span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a></span>
 <span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="fu">library</span>(tfdatasets, <span class="at">exclude =</span> <span class="st">&quot;shape&quot;</span>) <span class="co"># For dataset input.</span></span></code></pre></div>
@@ -491,15 +491,15 @@ input data.</p>
 <span id="cb6-38"><a href="#cb6-38" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">compile</span>(<span class="at">loss =</span> <span class="st">&quot;mse&quot;</span>)</span>
 <span id="cb6-39"><a href="#cb6-39" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(dataset, <span class="at">epochs =</span> <span class="dv">3</span>)</span></code></pre></div>
 <pre><code>## Epoch 1/3
-## 8/8 - 0s - 38ms/step - loss: 1.1533
+## 8/8 - 0s - 40ms/step - loss: 1.1536
 ## Epoch 2/3
-## 8/8 - 0s - 5ms/step - loss: 1.0621
+## 8/8 - 0s - 5ms/step - loss: 1.0540
 ## Epoch 3/3
-## 8/8 - 0s - 7ms/step - loss: 1.0163</code></pre>
+## 8/8 - 0s - 6ms/step - loss: 1.0072</code></pre>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">evaluate</span>(dataset)</span></code></pre></div>
-<pre><code>## 8/8 - 0s - 7ms/step - loss: 0.9673</code></pre>
+<pre><code>## 8/8 - 0s - 9ms/step - loss: 0.9620</code></pre>
 <pre><code>## $loss
-## [1] 0.9673058</code></pre>
+## [1] 0.9620273</code></pre>
 </div>
 <div id="modelparallel-and-layoutmap" class="section level2">
 <h2><code>ModelParallel</code> and <code>LayoutMap</code></h2>
@@ -563,46 +563,93 @@ input key again. If there are multiple matches, a
 <span id="cb11-30"><a href="#cb11-30" tabindex="-1"></a>              <span class="at">activation =</span> <span class="st">&quot;softmax&quot;</span>,</span>
 <span id="cb11-31"><a href="#cb11-31" tabindex="-1"></a>              <span class="at">name =</span> <span class="st">&quot;d2&quot;</span>)</span>
 <span id="cb11-32"><a href="#cb11-32" tabindex="-1"></a></span>
-<span id="cb11-33"><a href="#cb11-33" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">keras_model</span>(<span class="at">inputs =</span> inputs, <span class="at">outputs =</span> outputs)</span>
-<span id="cb11-34"><a href="#cb11-34" tabindex="-1"></a></span>
-<span id="cb11-35"><a href="#cb11-35" tabindex="-1"></a><span class="co"># The data will be sharded across the &quot;data&quot; dimension of the method, which</span></span>
-<span id="cb11-36"><a href="#cb11-36" tabindex="-1"></a><span class="co"># has 2 devices.</span></span>
-<span id="cb11-37"><a href="#cb11-37" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">compile</span>(<span class="at">loss =</span> <span class="st">&quot;mse&quot;</span>)</span>
-<span id="cb11-38"><a href="#cb11-38" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(dataset, <span class="at">epochs =</span> <span class="dv">3</span>)</span></code></pre></div>
+<span id="cb11-33"><a href="#cb11-33" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">keras_model</span>(<span class="at">inputs =</span> inputs, <span class="at">outputs =</span> outputs)</span></code></pre></div>
+<p>We can visualize how individual weights will be sharded</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>d1 <span class="ot">&lt;-</span> <span class="fu">get_layer</span>(model, <span class="st">&quot;d1&quot;</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>d1<span class="sc">$</span>kernel<span class="sc">$</span>value <span class="sc">|&gt;</span> jax<span class="sc">$</span>debug<span class="sc">$</span><span class="fu">visualize_array_sharding</span>()</span></code></pre></div>
+<pre><code>## ┌───────┬───────┬───────┬───────┐
+## │       │       │       │       │
+## │       │       │       │       │
+## │       │       │       │       │
+## │       │       │       │       │
+## │CPU 0,4│CPU 1,5│CPU 2,6│CPU 3,7│
+## │       │       │       │       │
+## │       │       │       │       │
+## │       │       │       │       │
+## │       │       │       │       │
+## └───────┴───────┴───────┴───────┘</code></pre>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>d2 <span class="ot">&lt;-</span> <span class="fu">get_layer</span>(model, <span class="st">&quot;d2&quot;</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>d2<span class="sc">$</span>kernel<span class="sc">$</span>value <span class="sc">|&gt;</span> jax<span class="sc">$</span>debug<span class="sc">$</span><span class="fu">visualize_array_sharding</span>()</span></code></pre></div>
+<pre><code>## ┌───────────────────┐
+## │                   │
+## │                   │
+## │                   │
+## │                   │
+## │CPU 0,1,2,3,4,5,6,7│
+## │                   │
+## │                   │
+## │                   │
+## │                   │
+## └───────────────────┘</code></pre>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>d2<span class="sc">$</span>bias<span class="sc">$</span>value <span class="sc">|&gt;</span> jax<span class="sc">$</span>debug<span class="sc">$</span><span class="fu">visualize_array_sharding</span>()</span></code></pre></div>
+<pre><code>## ┌───────────────────┐
+## │CPU 0,1,2,3,4,5,6,7│
+## └───────────────────┘</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a>x_batch <span class="ot">&lt;-</span> dataset <span class="sc">|&gt;</span></span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>  <span class="fu">as_iterator</span>() <span class="sc">|&gt;</span> <span class="fu">iter_next</span>() <span class="sc">|&gt;</span></span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a>  _[[<span class="dv">1</span>]] <span class="sc">|&gt;</span> <span class="fu">op_convert_to_tensor</span>()</span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a></span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a>output_array <span class="ot">&lt;-</span> <span class="fu">model</span>(x_batch)</span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a>output_array <span class="sc">|&gt;</span> jax<span class="sc">$</span>debug<span class="sc">$</span><span class="fu">visualize_array_sharding</span>()</span></code></pre></div>
+<pre><code>## ┌─────────────┐
+## │             │
+## │ CPU 0,1,2,3 │
+## │             │
+## │             │
+## ├─────────────┤
+## │             │
+## │ CPU 4,5,6,7 │
+## │             │
+## │             │
+## └─────────────┘</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="co"># The data will be sharded across the &quot;data&quot; dimension of the method, which</span></span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a><span class="co"># has 2 devices.</span></span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">compile</span>(<span class="at">loss =</span> <span class="st">&quot;mse&quot;</span>)</span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(dataset, <span class="at">epochs =</span> <span class="dv">3</span>)</span></code></pre></div>
 <pre><code>## Epoch 1/3
-## 8/8 - 0s - 42ms/step - loss: 1.1424
+## 8/8 - 0s - 46ms/step - loss: 1.1676
 ## Epoch 2/3
-## 8/8 - 0s - 7ms/step - loss: 1.0528
+## 8/8 - 0s - 4ms/step - loss: 1.1134
 ## Epoch 3/3
-## 8/8 - 0s - 7ms/step - loss: 1.0393</code></pre>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">evaluate</span>(dataset)</span></code></pre></div>
-<pre><code>## 8/8 - 0s - 9ms/step - loss: 1.0088</code></pre>
+## 8/8 - 0s - 5ms/step - loss: 1.1034</code></pre>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">evaluate</span>(dataset)</span></code></pre></div>
+<pre><code>## 8/8 - 0s - 8ms/step - loss: 1.0676</code></pre>
 <pre><code>## $loss
-## [1] 1.008847</code></pre>
+## [1] 1.067567</code></pre>
 <p>It is also easy to change the mesh structure to tune the computation
 between more data parallel or model parallel. You can do this by
 adjusting the shape of the mesh. And no changes are needed for any other
 code.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>full_data_parallel_mesh <span class="ot">&lt;-</span> keras<span class="sc">$</span>distribution<span class="sc">$</span><span class="fu">DeviceMesh</span>(</span>
-<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>  <span class="at">shape =</span> <span class="fu">shape</span>(<span class="dv">8</span>, <span class="dv">1</span>),</span>
-<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>  <span class="at">axis_names =</span> <span class="fu">list</span>(<span class="st">&quot;data&quot;</span>, <span class="st">&quot;model&quot;</span>),</span>
-<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>  <span class="at">devices =</span> devices</span>
-<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a>)</span>
-<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a>more_data_parallel_mesh <span class="ot">&lt;-</span> keras<span class="sc">$</span>distribution<span class="sc">$</span><span class="fu">DeviceMesh</span>(</span>
-<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a>  <span class="at">shape =</span> <span class="fu">shape</span>(<span class="dv">4</span>, <span class="dv">2</span>),</span>
-<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a>  <span class="at">axis_names =</span> <span class="fu">list</span>(<span class="st">&quot;data&quot;</span>, <span class="st">&quot;model&quot;</span>),</span>
-<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a>  <span class="at">devices =</span> devices</span>
-<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a>)</span>
-<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a>more_model_parallel_mesh <span class="ot">&lt;-</span> keras<span class="sc">$</span>distribution<span class="sc">$</span><span class="fu">DeviceMesh</span>(</span>
-<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a>  <span class="at">shape =</span> <span class="fu">shape</span>(<span class="dv">2</span>, <span class="dv">4</span>),</span>
-<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a>  <span class="at">axis_names =</span> <span class="fu">list</span>(<span class="st">&quot;data&quot;</span>, <span class="st">&quot;model&quot;</span>),</span>
-<span id="cb16-14"><a href="#cb16-14" tabindex="-1"></a>  <span class="at">devices =</span> devices</span>
-<span id="cb16-15"><a href="#cb16-15" tabindex="-1"></a>)</span>
-<span id="cb16-16"><a href="#cb16-16" tabindex="-1"></a>full_model_parallel_mesh <span class="ot">&lt;-</span> keras<span class="sc">$</span>distribution<span class="sc">$</span><span class="fu">DeviceMesh</span>(</span>
-<span id="cb16-17"><a href="#cb16-17" tabindex="-1"></a>  <span class="at">shape =</span> <span class="fu">shape</span>(<span class="dv">1</span>, <span class="dv">8</span>),</span>
-<span id="cb16-18"><a href="#cb16-18" tabindex="-1"></a>  <span class="at">axis_names =</span> <span class="fu">list</span>(<span class="st">&quot;data&quot;</span>, <span class="st">&quot;model&quot;</span>),</span>
-<span id="cb16-19"><a href="#cb16-19" tabindex="-1"></a>  <span class="at">devices =</span> devices</span>
-<span id="cb16-20"><a href="#cb16-20" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a>full_data_parallel_mesh <span class="ot">&lt;-</span> keras<span class="sc">$</span>distribution<span class="sc">$</span><span class="fu">DeviceMesh</span>(</span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a>  <span class="at">shape =</span> <span class="fu">shape</span>(<span class="dv">8</span>, <span class="dv">1</span>),</span>
+<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a>  <span class="at">axis_names =</span> <span class="fu">list</span>(<span class="st">&quot;data&quot;</span>, <span class="st">&quot;model&quot;</span>),</span>
+<span id="cb25-4"><a href="#cb25-4" tabindex="-1"></a>  <span class="at">devices =</span> devices</span>
+<span id="cb25-5"><a href="#cb25-5" tabindex="-1"></a>)</span>
+<span id="cb25-6"><a href="#cb25-6" tabindex="-1"></a>more_data_parallel_mesh <span class="ot">&lt;-</span> keras<span class="sc">$</span>distribution<span class="sc">$</span><span class="fu">DeviceMesh</span>(</span>
+<span id="cb25-7"><a href="#cb25-7" tabindex="-1"></a>  <span class="at">shape =</span> <span class="fu">shape</span>(<span class="dv">4</span>, <span class="dv">2</span>),</span>
+<span id="cb25-8"><a href="#cb25-8" tabindex="-1"></a>  <span class="at">axis_names =</span> <span class="fu">list</span>(<span class="st">&quot;data&quot;</span>, <span class="st">&quot;model&quot;</span>),</span>
+<span id="cb25-9"><a href="#cb25-9" tabindex="-1"></a>  <span class="at">devices =</span> devices</span>
+<span id="cb25-10"><a href="#cb25-10" tabindex="-1"></a>)</span>
+<span id="cb25-11"><a href="#cb25-11" tabindex="-1"></a>more_model_parallel_mesh <span class="ot">&lt;-</span> keras<span class="sc">$</span>distribution<span class="sc">$</span><span class="fu">DeviceMesh</span>(</span>
+<span id="cb25-12"><a href="#cb25-12" tabindex="-1"></a>  <span class="at">shape =</span> <span class="fu">shape</span>(<span class="dv">2</span>, <span class="dv">4</span>),</span>
+<span id="cb25-13"><a href="#cb25-13" tabindex="-1"></a>  <span class="at">axis_names =</span> <span class="fu">list</span>(<span class="st">&quot;data&quot;</span>, <span class="st">&quot;model&quot;</span>),</span>
+<span id="cb25-14"><a href="#cb25-14" tabindex="-1"></a>  <span class="at">devices =</span> devices</span>
+<span id="cb25-15"><a href="#cb25-15" tabindex="-1"></a>)</span>
+<span id="cb25-16"><a href="#cb25-16" tabindex="-1"></a>full_model_parallel_mesh <span class="ot">&lt;-</span> keras<span class="sc">$</span>distribution<span class="sc">$</span><span class="fu">DeviceMesh</span>(</span>
+<span id="cb25-17"><a href="#cb25-17" tabindex="-1"></a>  <span class="at">shape =</span> <span class="fu">shape</span>(<span class="dv">1</span>, <span class="dv">8</span>),</span>
+<span id="cb25-18"><a href="#cb25-18" tabindex="-1"></a>  <span class="at">axis_names =</span> <span class="fu">list</span>(<span class="st">&quot;data&quot;</span>, <span class="st">&quot;model&quot;</span>),</span>
+<span id="cb25-19"><a href="#cb25-19" tabindex="-1"></a>  <span class="at">devices =</span> devices</span>
+<span id="cb25-20"><a href="#cb25-20" tabindex="-1"></a>)</span></code></pre></div>
 <div id="further-reading" class="section level3">
 <h3>Further reading</h3>
 <ol style="list-style-type: decimal">

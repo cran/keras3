@@ -563,7 +563,7 @@ function(object,
       args$callbacks
     )
 
-    # nameOfClass(tensorflow::tf$data$Dataset)
+    # nameOfClass__python.builtin.type(tensorflow::tf$data$Dataset)
     if(inherits(args$x, "tensorflow.python.data.ops.dataset_ops.DatasetV2") &&
        !is.null(args$batch_size))
       stop("batch_size can not be specified with a TF Dataset")
@@ -930,7 +930,7 @@ summary.keras.src.models.model.Model <- function(object, ...) {
 #' @export
 format.keras.src.models.model.Model <-
 function(x,
-         line_length = getOption("width"), # width - (12L * show_trainable),
+         line_length = min(getOption("width"), 180), # width - (12L * show_trainable),
          positions = NULL,
          expand_nested = FALSE,
          show_trainable = NA,

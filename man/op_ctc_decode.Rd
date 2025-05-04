@@ -11,7 +11,7 @@ op_ctc_decode(
   beam_width = 100L,
   top_paths = 1L,
   merge_repeated = TRUE,
-  mask_index = 0L
+  mask_index = 1L
 )
 }
 \arguments{
@@ -34,8 +34,8 @@ Defaults to \code{1}.}
 \item{merge_repeated}{A boolean scalar, whether to merge repeated
 labels in the output. Defaults to \code{TRUE}.}
 
-\item{mask_index}{An integer scalar, the (0-based) index of the mask character in
-the vocabulary. Defaults to \code{0}.}
+\item{mask_index}{An integer scalar, the (1-based) index of the mask character in
+the vocabulary. Defaults to \code{1}.}
 }
 \value{
 A list containing:
@@ -176,10 +176,12 @@ Other numpy ops: \cr
 \code{\link{op_reshape}()} \cr
 \code{\link{op_right_shift}()} \cr
 \code{\link{op_roll}()} \cr
+\code{\link{op_rot90}()} \cr
 \code{\link{op_round}()} \cr
 \code{\link{op_saturate_cast}()} \cr
 \code{\link{op_select}()} \cr
 \code{\link{op_sign}()} \cr
+\code{\link{op_signbit}()} \cr
 \code{\link{op_sin}()} \cr
 \code{\link{op_sinh}()} \cr
 \code{\link{op_size}()} \cr
@@ -320,9 +322,11 @@ Other ops: \cr
 \code{\link{op_image_affine_transform}()} \cr
 \code{\link{op_image_crop}()} \cr
 \code{\link{op_image_extract_patches}()} \cr
+\code{\link{op_image_gaussian_blur}()} \cr
 \code{\link{op_image_hsv_to_rgb}()} \cr
 \code{\link{op_image_map_coordinates}()} \cr
 \code{\link{op_image_pad}()} \cr
+\code{\link{op_image_perspective_transform}()} \cr
 \code{\link{op_image_resize}()} \cr
 \code{\link{op_image_rgb_to_grayscale}()} \cr
 \code{\link{op_image_rgb_to_hsv}()} \cr
@@ -384,6 +388,7 @@ Other ops: \cr
 \code{\link{op_ones_like}()} \cr
 \code{\link{op_outer}()} \cr
 \code{\link{op_pad}()} \cr
+\code{\link{op_polar}()} \cr
 \code{\link{op_power}()} \cr
 \code{\link{op_prod}()} \cr
 \code{\link{op_psnr}()} \cr
@@ -391,6 +396,7 @@ Other ops: \cr
 \code{\link{op_quantile}()} \cr
 \code{\link{op_ravel}()} \cr
 \code{\link{op_real}()} \cr
+\code{\link{op_rearrange}()} \cr
 \code{\link{op_reciprocal}()} \cr
 \code{\link{op_relu}()} \cr
 \code{\link{op_relu6}()} \cr
@@ -398,7 +404,9 @@ Other ops: \cr
 \code{\link{op_reshape}()} \cr
 \code{\link{op_rfft}()} \cr
 \code{\link{op_right_shift}()} \cr
+\code{\link{op_rms_normalization}()} \cr
 \code{\link{op_roll}()} \cr
+\code{\link{op_rot90}()} \cr
 \code{\link{op_round}()} \cr
 \code{\link{op_rsqrt}()} \cr
 \code{\link{op_saturate_cast}()} \cr
@@ -414,6 +422,7 @@ Other ops: \cr
 \code{\link{op_shape}()} \cr
 \code{\link{op_sigmoid}()} \cr
 \code{\link{op_sign}()} \cr
+\code{\link{op_signbit}()} \cr
 \code{\link{op_silu}()} \cr
 \code{\link{op_sin}()} \cr
 \code{\link{op_sinh}()} \cr
@@ -440,6 +449,7 @@ Other ops: \cr
 \code{\link{op_std}()} \cr
 \code{\link{op_stft}()} \cr
 \code{\link{op_stop_gradient}()} \cr
+\code{\link{op_subset}()} \cr
 \code{\link{op_subtract}()} \cr
 \code{\link{op_sum}()} \cr
 \code{\link{op_svd}()} \cr

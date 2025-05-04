@@ -4,13 +4,13 @@
 \alias{op_arange}
 \title{Return evenly spaced values within a given interval.}
 \usage{
-op_arange(start, stop = NULL, step = 1L, dtype = NULL)
+op_arange(start, end, step = 1L, dtype = NULL, include_end = TRUE)
 }
 \arguments{
 \item{start}{Integer or real, representing the start of the interval. The
 interval includes this value.}
 
-\item{stop}{Integer or real, representing the end of the interval. The
+\item{end}{Integer or real, representing the end of the interval. If \code{include_end} is \code{FALSE}, the
 interval does not include this value, except in some cases where
 \code{step} is not an integer and floating point round-off affects the
 length of \code{out}. Defaults to \code{NULL}.}
@@ -22,58 +22,60 @@ specified as a position argument, \code{start} must also be given.}
 
 \item{dtype}{The type of the output array. If \code{dtype} is not given, infer the
 data type from the other input arguments.}
+
+\item{include_end}{\code{TRUE} or \code{FALSE}. If \code{FALSE}, then \code{end} is not included
+in the output sequence.}
 }
 \value{
 Tensor of evenly spaced values.
 For floating point arguments, the length of the result is
-\code{ceiling((stop - start)/step)}. Because of floating point overflow, this
-rule may result in the last element of out being greater than stop.
+\code{ceiling((end - start)/step)}. Because of floating point overflow, this
+rule may result in the last element of out being greater than \code{end}.
 }
 \description{
 \code{arange} can be called with a varying number of positional arguments:
 \itemize{
-\item \code{arange(stop)}: Values are generated within the half-open interval
-\verb{[0, stop)} (in other words, the interval including \code{start} but excluding
-\code{stop}).
-\item \code{arange(start, stop)}: Values are generated within the half-open interval
-\verb{[start, stop)}.
-\item \code{arange(start, stop, step)}: Values are generated within the half-open
-interval \verb{[start, stop)}, with spacing between values given by step.
+\item \code{arange(end)}: Values are generated within the half-open interval
+\verb{[1, end]} (in other words, the interval including \code{start} and \code{end}).
+\item \code{arange(start, end)}: Values are generated within the interval
+\verb{[start, end]}.
+\item \code{arange(start, end, step)}: Values are generated within the
+interval \verb{[start, end]}, with spacing between values given by \code{step}.
 }
 }
 \section{Examples}{
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{op_arange(3L)
 }\if{html}{\out{</div>}}
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([0 1 2], shape=(3), dtype=int32)
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([1 2 3], shape=(3), dtype=int32)
 
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{op_arange(3) # float
 }\if{html}{\out{</div>}}
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([0. 1. 2.], shape=(3), dtype=float32)
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([1. 2. 3.], shape=(3), dtype=float32)
 
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{op_arange(3, dtype = 'int32') #int
 }\if{html}{\out{</div>}}
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([0 1 2], shape=(3), dtype=int32)
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([1 2 3], shape=(3), dtype=int32)
 
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{op_arange(3L, 7L)
 }\if{html}{\out{</div>}}
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([3 4 5 6], shape=(4), dtype=int32)
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([3 4 5 6 7], shape=(5), dtype=int32)
 
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{op_arange(3L, 7L, 2L)
 }\if{html}{\out{</div>}}
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([3 5], shape=(2), dtype=int32)
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([3 5 7], shape=(3), dtype=int32)
 
 }\if{html}{\out{</div>}}
 }
@@ -203,10 +205,12 @@ Other numpy ops: \cr
 \code{\link{op_reshape}()} \cr
 \code{\link{op_right_shift}()} \cr
 \code{\link{op_roll}()} \cr
+\code{\link{op_rot90}()} \cr
 \code{\link{op_round}()} \cr
 \code{\link{op_saturate_cast}()} \cr
 \code{\link{op_select}()} \cr
 \code{\link{op_sign}()} \cr
+\code{\link{op_signbit}()} \cr
 \code{\link{op_sin}()} \cr
 \code{\link{op_sinh}()} \cr
 \code{\link{op_size}()} \cr
@@ -347,9 +351,11 @@ Other ops: \cr
 \code{\link{op_image_affine_transform}()} \cr
 \code{\link{op_image_crop}()} \cr
 \code{\link{op_image_extract_patches}()} \cr
+\code{\link{op_image_gaussian_blur}()} \cr
 \code{\link{op_image_hsv_to_rgb}()} \cr
 \code{\link{op_image_map_coordinates}()} \cr
 \code{\link{op_image_pad}()} \cr
+\code{\link{op_image_perspective_transform}()} \cr
 \code{\link{op_image_resize}()} \cr
 \code{\link{op_image_rgb_to_grayscale}()} \cr
 \code{\link{op_image_rgb_to_hsv}()} \cr
@@ -411,6 +417,7 @@ Other ops: \cr
 \code{\link{op_ones_like}()} \cr
 \code{\link{op_outer}()} \cr
 \code{\link{op_pad}()} \cr
+\code{\link{op_polar}()} \cr
 \code{\link{op_power}()} \cr
 \code{\link{op_prod}()} \cr
 \code{\link{op_psnr}()} \cr
@@ -418,6 +425,7 @@ Other ops: \cr
 \code{\link{op_quantile}()} \cr
 \code{\link{op_ravel}()} \cr
 \code{\link{op_real}()} \cr
+\code{\link{op_rearrange}()} \cr
 \code{\link{op_reciprocal}()} \cr
 \code{\link{op_relu}()} \cr
 \code{\link{op_relu6}()} \cr
@@ -425,7 +433,9 @@ Other ops: \cr
 \code{\link{op_reshape}()} \cr
 \code{\link{op_rfft}()} \cr
 \code{\link{op_right_shift}()} \cr
+\code{\link{op_rms_normalization}()} \cr
 \code{\link{op_roll}()} \cr
+\code{\link{op_rot90}()} \cr
 \code{\link{op_round}()} \cr
 \code{\link{op_rsqrt}()} \cr
 \code{\link{op_saturate_cast}()} \cr
@@ -441,6 +451,7 @@ Other ops: \cr
 \code{\link{op_shape}()} \cr
 \code{\link{op_sigmoid}()} \cr
 \code{\link{op_sign}()} \cr
+\code{\link{op_signbit}()} \cr
 \code{\link{op_silu}()} \cr
 \code{\link{op_sin}()} \cr
 \code{\link{op_sinh}()} \cr
@@ -467,6 +478,7 @@ Other ops: \cr
 \code{\link{op_std}()} \cr
 \code{\link{op_stft}()} \cr
 \code{\link{op_stop_gradient}()} \cr
+\code{\link{op_subset}()} \cr
 \code{\link{op_subtract}()} \cr
 \code{\link{op_sum}()} \cr
 \code{\link{op_svd}()} \cr

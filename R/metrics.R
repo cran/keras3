@@ -444,9 +444,9 @@ function (y_true, y_pred, ..., name = "categorical_accuracy",
 #' Usage with `compile()` API:
 #'
 #' ```{r, eval = FALSE}
-#' model %>% compile(optimizer = 'sgd',
-#'                   loss = 'sparse_categorical_crossentropy',
-#'                   metrics = list(metric_sparse_categorical_accuracy()))
+#' model |> compile(optimizer = 'sgd',
+#'                  loss = 'sparse_categorical_crossentropy',
+#'                  metrics = list(metric_sparse_categorical_accuracy()))
 #' ```
 #'
 #' @param name
@@ -623,9 +623,9 @@ function (y_true, y_pred, k = 5L, ..., name = "sparse_top_k_categorical_accuracy
 #' Usage with `compile()` API:
 #'
 #' ```{r, eval = FALSE}
-#' model.compile(optimizer = 'sgd',
-#'               loss = 'categorical_crossentropy',
-#'               metrics = list(metric_top_k_categorical_accuracy()))
+#' model |> compile(optimizer = 'sgd',
+#'                  loss = 'categorical_crossentropy',
+#'                  metrics = list(metric_top_k_categorical_accuracy()))
 #' ```
 #'
 #' @param k
@@ -2209,7 +2209,12 @@ function (..., num_classes, target_class_ids, name = NULL, dtype = NULL,
     ignore_class = NULL, sparse_y_true = TRUE, sparse_y_pred = TRUE,
     axis = -1L)
 {
-    args <- capture_args(list(ignore_class = as_integer, axis = as_axis))
+    args <- capture_args(list(num_classes = as_integer,
+                              target_class_ids = function(x) {
+                                as.list(as_integer(x))
+                              },
+                              ignore_class = as_integer,
+                              axis = as_axis))
     do.call(keras$metrics$IoU, args)
 }
 

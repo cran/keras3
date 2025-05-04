@@ -66,9 +66,9 @@ m$result()
 
 Usage with \code{compile()} API:
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{model.compile(optimizer = 'sgd',
-              loss = 'categorical_crossentropy',
-              metrics = list(metric_top_k_categorical_accuracy()))
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{model |> compile(optimizer = 'sgd',
+                 loss = 'categorical_crossentropy',
+                 metrics = list(metric_top_k_categorical_accuracy()))
 }\if{html}{\out{</div>}}
 }
 

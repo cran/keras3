@@ -14,9 +14,9 @@ image_to_array(img, data_format = NULL, dtype = NULL)
 setting \code{config_image_data_format()} is used (unless you
 changed it, it defaults to \code{"channels_last"}).}
 
-\item{dtype}{Dtype to use. \code{NULL} means the global setting
-\code{config_floatx()} is used (unless you changed it, it
-defaults to \code{"float32"}).}
+\item{dtype}{Dtype to use. \code{NULL} and \code{"double"} return an R double array.
+\code{"integer"} returns an R integer array.
+All other values (e.g., \code{"float32"}) return a NumPy array.}
 }
 \value{
 A 3D array.
@@ -55,9 +55,11 @@ Other image utils: \cr
 \code{\link{op_image_affine_transform}()} \cr
 \code{\link{op_image_crop}()} \cr
 \code{\link{op_image_extract_patches}()} \cr
+\code{\link{op_image_gaussian_blur}()} \cr
 \code{\link{op_image_hsv_to_rgb}()} \cr
 \code{\link{op_image_map_coordinates}()} \cr
 \code{\link{op_image_pad}()} \cr
+\code{\link{op_image_perspective_transform}()} \cr
 \code{\link{op_image_resize}()} \cr
 \code{\link{op_image_rgb_to_grayscale}()} \cr
 \code{\link{op_image_rgb_to_hsv}()} \cr

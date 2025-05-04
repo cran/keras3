@@ -24,9 +24,9 @@ have the same size first dimension, and they are iterated over together.
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(
-## [[ 0  1  2  3]
-##  [ 4  5  6  7]
-##  [ 8  9 10 11]], shape=(3, 4), dtype=int32)
+## [[ 1  2  3  4]
+##  [ 5  6  7  8]
+##  [ 9 10 11 12]], shape=(3, 4), dtype=int32)
 
 }\if{html}{\out{</div>}}
 
@@ -34,9 +34,9 @@ have the same size first dimension, and they are iterated over together.
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(
-## [[10 11 12 13]
-##  [14 15 16 17]
-##  [18 19 20 21]], shape=(3, 4), dtype=int32)
+## [[11 12 13 14]
+##  [15 16 17 18]
+##  [19 20 21 22]], shape=(3, 4), dtype=int32)
 
 }\if{html}{\out{</div>}}
 
@@ -44,9 +44,9 @@ have the same size first dimension, and they are iterated over together.
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(
-## [[ 0  3  6  9]
-##  [12 15 18 21]
-##  [24 27 30 33]], shape=(3, 4), dtype=int32)
+## [[ 3  6  9 12]
+##  [15 18 21 24]
+##  [27 30 33 36]], shape=(3, 4), dtype=int32)
 
 }\if{html}{\out{</div>}}
 
@@ -71,9 +71,9 @@ output <- op_vectorized_map(input, function(.x) \{
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(
-## [[10 11 12 13]
-##  [14 15 16 17]
-##  [18 19 20 21]], shape=(3, 4), dtype=int32)
+## [[11 12 13 14]
+##  [15 16 17 18]
+##  [19 20 21 22]], shape=(3, 4), dtype=int32)
 
 }\if{html}{\out{</div>}}
 
@@ -97,9 +97,9 @@ output <- op_vectorized_map(input, function(.x) \{
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(
-## [[10 11 12 13]
-##  [14 15 16 17]
-##  [18 19 20 21]], shape=(3, 4), dtype=int32)
+## [[11 12 13 14]
+##  [15 16 17 18]
+##  [19 20 21 22]], shape=(3, 4), dtype=int32)
 
 }\if{html}{\out{</div>}}
 
@@ -122,15 +122,15 @@ output <- op_vectorized_map(input, function(.x) \{
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{## [[1]]
 ## tf.Tensor(
-## [[10 11 12 13]
-##  [14 15 16 17]
-##  [18 19 20 21]], shape=(3, 4), dtype=int32)
+## [[11 12 13 14]
+##  [15 16 17 18]
+##  [19 20 21 22]], shape=(3, 4), dtype=int32)
 ##
 ## [[2]]
 ## tf.Tensor(
-## [[20 21 22 23]
-##  [24 25 26 27]
-##  [28 29 30 31]], shape=(3, 4), dtype=int32)
+## [[21 22 23 24]
+##  [25 26 27 28]
+##  [29 30 31 32]], shape=(3, 4), dtype=int32)
 
 }\if{html}{\out{</div>}}
 
@@ -156,15 +156,15 @@ output <- op_vectorized_map(input, function(.x) \{
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{## $outname1
 ## tf.Tensor(
-## [[10 11 12 13]
-##  [14 15 16 17]
-##  [18 19 20 21]], shape=(3, 4), dtype=int32)
+## [[11 12 13 14]
+##  [15 16 17 18]
+##  [19 20 21 22]], shape=(3, 4), dtype=int32)
 ##
 ## $outname2
 ## tf.Tensor(
-## [[20 21 22 23]
-##  [24 25 26 27]
-##  [28 29 30 31]], shape=(3, 4), dtype=int32)
+## [[21 22 23 24]
+##  [25 26 27 28]
+##  [29 30 31 32]], shape=(3, 4), dtype=int32)
 
 }\if{html}{\out{</div>}}
 
@@ -187,9 +187,9 @@ output <- op_vectorized_map(input, function(.x) \{
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{## [[1]]
 ## tf.Tensor(
-## [[10 11 12 13]
-##  [14 15 16 17]
-##  [18 19 20 21]], shape=(3, 4), dtype=int32)
+## [[11 12 13 14]
+##  [15 16 17 18]
+##  [19 20 21 22]], shape=(3, 4), dtype=int32)
 
 }\if{html}{\out{</div>}}
 }
@@ -238,6 +238,7 @@ Other core ops: \cr
 \code{\link{op_fori_loop}()} \cr
 \code{\link{op_is_tensor}()} \cr
 \code{\link{op_map}()} \cr
+\code{\link{op_rearrange}()} \cr
 \code{\link{op_scan}()} \cr
 \code{\link{op_scatter}()} \cr
 \code{\link{op_scatter_update}()} \cr
@@ -246,6 +247,7 @@ Other core ops: \cr
 \code{\link{op_slice}()} \cr
 \code{\link{op_slice_update}()} \cr
 \code{\link{op_stop_gradient}()} \cr
+\code{\link{op_subset}()} \cr
 \code{\link{op_switch}()} \cr
 \code{\link{op_unstack}()} \cr
 \code{\link{op_while_loop}()} \cr
@@ -358,9 +360,11 @@ Other ops: \cr
 \code{\link{op_image_affine_transform}()} \cr
 \code{\link{op_image_crop}()} \cr
 \code{\link{op_image_extract_patches}()} \cr
+\code{\link{op_image_gaussian_blur}()} \cr
 \code{\link{op_image_hsv_to_rgb}()} \cr
 \code{\link{op_image_map_coordinates}()} \cr
 \code{\link{op_image_pad}()} \cr
+\code{\link{op_image_perspective_transform}()} \cr
 \code{\link{op_image_resize}()} \cr
 \code{\link{op_image_rgb_to_grayscale}()} \cr
 \code{\link{op_image_rgb_to_hsv}()} \cr
@@ -422,6 +426,7 @@ Other ops: \cr
 \code{\link{op_ones_like}()} \cr
 \code{\link{op_outer}()} \cr
 \code{\link{op_pad}()} \cr
+\code{\link{op_polar}()} \cr
 \code{\link{op_power}()} \cr
 \code{\link{op_prod}()} \cr
 \code{\link{op_psnr}()} \cr
@@ -429,6 +434,7 @@ Other ops: \cr
 \code{\link{op_quantile}()} \cr
 \code{\link{op_ravel}()} \cr
 \code{\link{op_real}()} \cr
+\code{\link{op_rearrange}()} \cr
 \code{\link{op_reciprocal}()} \cr
 \code{\link{op_relu}()} \cr
 \code{\link{op_relu6}()} \cr
@@ -436,7 +442,9 @@ Other ops: \cr
 \code{\link{op_reshape}()} \cr
 \code{\link{op_rfft}()} \cr
 \code{\link{op_right_shift}()} \cr
+\code{\link{op_rms_normalization}()} \cr
 \code{\link{op_roll}()} \cr
+\code{\link{op_rot90}()} \cr
 \code{\link{op_round}()} \cr
 \code{\link{op_rsqrt}()} \cr
 \code{\link{op_saturate_cast}()} \cr
@@ -452,6 +460,7 @@ Other ops: \cr
 \code{\link{op_shape}()} \cr
 \code{\link{op_sigmoid}()} \cr
 \code{\link{op_sign}()} \cr
+\code{\link{op_signbit}()} \cr
 \code{\link{op_silu}()} \cr
 \code{\link{op_sin}()} \cr
 \code{\link{op_sinh}()} \cr
@@ -478,6 +487,7 @@ Other ops: \cr
 \code{\link{op_std}()} \cr
 \code{\link{op_stft}()} \cr
 \code{\link{op_stop_gradient}()} \cr
+\code{\link{op_subset}()} \cr
 \code{\link{op_subtract}()} \cr
 \code{\link{op_sum}()} \cr
 \code{\link{op_svd}()} \cr

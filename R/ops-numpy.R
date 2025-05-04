@@ -17,7 +17,7 @@
 # + <https://www.tensorflow.org/api_docs/python/tf/keras/ops/divide_no_nan>
 op_divide_no_nan <-
 function (x1, x2)
-keras$ops$divide_no_nan(x1, x2)
+ops$divide_no_nan(x1, x2)
 
 
 #' Performs an indirect partition along the given axis.
@@ -26,6 +26,13 @@ keras$ops$divide_no_nan(x1, x2)
 #' It returns an array
 #' of indices of the same shape as `x` that index data along the given axis
 #' in partitioned order.
+#'
+#' ```{r}
+#' x <- op_convert_to_tensor(c(9, 3, 6, 2, 8, 5, 7, 1, 10, 4))
+#' x@r[op_argpartition(x, 3)]
+#' x@r[op_argpartition(x, 5)]
+#' x@r[op_argpartition(x, 7)]
+#' ```
 #'
 #' @returns
 #' Array of indices that partition `x` along the specified `axis`.
@@ -45,15 +52,22 @@ keras$ops$divide_no_nan(x1, x2)
 #' Axis along which to sort. The default is `-1` (the last axis).
 #' If `NULL`, the flattened array is used.
 #'
+#' @param zero_indexed
+#' If `TRUE`, the returned indices are zero-based (`0` encodes to first
+#' position); if `FALSE` (default), the returned indices are one-based (`1`
+#' encodes to first position).
+#'
 #' @export
 #' @family numpy ops
 #' @family ops
 #' @tether keras.ops.argpartition
 op_argpartition <-
-function (x, kth, axis = -1L)
+function (x, kth, axis = -1L, zero_indexed = FALSE)
 {
-    args <- capture_args(list(axis = as_axis))
-    do.call(keras$ops$argpartition, args)
+    args <- capture_args(list(x = as_array, axis = as_axis, kth = as_py_index),
+                         ignore = "zero_indexed")
+    result <- do.call(ops$argpartition, args)
+    if (zero_indexed) result else result + 1L
 }
 
 
@@ -81,7 +95,7 @@ op_bitwise_and <-
 function (x, y)
 {
     args <- capture_args(list(x = as_integer, y = as_integer))
-    do.call(keras$ops$bitwise_and, args)
+    do.call(ops$bitwise_and, args)
 }
 
 
@@ -105,7 +119,7 @@ function (x, y)
 op_bitwise_invert <-
 function (x)
 {
-    keras$ops$bitwise_invert(as_integer(x))
+    ops$bitwise_invert(as_integer(x))
 }
 
 
@@ -133,7 +147,7 @@ op_bitwise_left_shift <-
 function (x, y)
 {
     args <- capture_args(list(x = as_integer, y = as_integer))
-    do.call(keras$ops$bitwise_left_shift, args)
+    do.call(ops$bitwise_left_shift, args)
 }
 
 
@@ -157,7 +171,7 @@ function (x, y)
 op_bitwise_not <-
 function (x)
 {
-    keras$ops$bitwise_not(as_integer(x))
+    ops$bitwise_not(as_integer(x))
 }
 
 
@@ -185,7 +199,7 @@ op_bitwise_or <-
 function (x, y)
 {
     args <- capture_args(list(x = as_integer, y = as_integer))
-    do.call(keras$ops$bitwise_or, args)
+    do.call(ops$bitwise_or, args)
 }
 
 
@@ -213,7 +227,7 @@ op_bitwise_right_shift <-
 function (x, y)
 {
     args <- capture_args(list(x = as_integer, y = as_integer))
-    do.call(keras$ops$bitwise_right_shift, args)
+    do.call(ops$bitwise_right_shift, args)
 }
 
 
@@ -241,7 +255,7 @@ op_bitwise_xor <-
 function (x, y)
 {
     args <- capture_args(list(x = as_integer, y = as_integer))
-    do.call(keras$ops$bitwise_xor, args)
+    do.call(ops$bitwise_xor, args)
 }
 
 
@@ -282,7 +296,7 @@ op_histogram <-
 function (x, bins = 10L, range = NULL)
 {
     args <- capture_args(list(bins = as_integer, range = as_tuple))
-    do.call(keras$ops$histogram, args)
+    do.call(ops$histogram, args)
 }
 
 
@@ -310,7 +324,7 @@ op_left_shift <-
 function (x, y)
 {
     args <- capture_args(list(x = as_integer, y = as_integer))
-    do.call(keras$ops$left_shift, args)
+    do.call(ops$left_shift, args)
 }
 
 
@@ -338,7 +352,7 @@ op_right_shift <-
 function (x, y)
 {
     args <- capture_args(list(x = as_integer, y = as_integer))
-    do.call(keras$ops$right_shift, args)
+    do.call(ops$right_shift, args)
 }
 
 
@@ -356,7 +370,7 @@ function (x, y)
 #' @family ops
 op_logdet <-
 function (x)
-keras$ops$logdet(x)
+ops$logdet(x)
 
 
 #' Performs a safe saturating cast to the desired dtype.
@@ -407,7 +421,7 @@ keras$ops$logdet(x)
 #' @family ops
 op_saturate_cast <-
 function (x, dtype)
-keras$ops$saturate_cast(x, dtype)
+ops$saturate_cast(x, dtype)
 
 
 #' Return the truncated value of the input, element-wise.
@@ -435,7 +449,7 @@ keras$ops$saturate_cast(x, dtype)
 #' @tether keras.ops.trunc
 op_trunc <-
 function (x)
-keras$ops$trunc(x)
+ops$trunc(x)
 
 
 #' Calculate the base-2 exponential of all elements in the input tensor.
@@ -452,7 +466,7 @@ keras$ops$trunc(x)
 #' @tether keras.ops.exp2
 op_exp2 <-
 function (x)
-keras$ops$exp2(x)
+ops$exp2(x)
 
 
 #' Return the inner product of two tensors.
@@ -484,7 +498,7 @@ keras$ops$exp2(x)
 #' @tether keras.ops.inner
 op_inner <-
 function (x1, x2)
-keras$ops$inner(x1, x2)
+ops$inner(x1, x2)
 
 
 #' Create a two-dimensional array with the flattened input diagonal.
@@ -511,5 +525,71 @@ op_diagflat <-
 function (x, k = 0L)
 {
     args <- capture_args(list(k = as_integer))
-    do.call(keras$ops$diagflat, args)
+    do.call(ops$diagflat, args)
 }
+
+
+#' Rotate an array by 90 degrees in the plane specified by axes.
+#'
+#' @description
+#' This function rotates an array counterclockwise
+#' by 90 degrees `k` times in the plane specified by `axes`.
+#' Supports arrays of two or more dimensions.
+#'
+#' # Examples
+#'
+#' ```{r}
+#' m <- 1:4 |> op_reshape(c(2, 2))
+#' m
+#' op_rot90(m)
+#' ```
+#'
+#' ```{r}
+#' m <- 1:8 |> op_reshape(c(2, 2, 2))
+#' m
+#' op_rot90(m, k = 1, axes = c(2, 3))
+#' ```
+#'
+#' @returns
+#' Rotated array.
+#'
+#' @param array
+#' Input array to rotate.
+#'
+#' @param k
+#' Number of times the array is rotated by 90 degrees.
+#'
+#' @param axes
+#' A tuple of two integers specifying the
+#' plane of rotation (defaults to `(1, 2)`).
+#'
+#' @export
+#' @tether keras.ops.rot90
+#' @family numpy ops
+#' @family ops
+op_rot90 <-
+function (array, k = 1L, axes = list(1L, 2L))
+{
+    args <- capture_args(list(k = as_integer, axes = as_axis))
+    do.call(keras$ops$rot90, args)
+}
+
+#' Return the sign bit of the elements of `x`.
+#'
+#' @description
+#' The output boolean tensor contains `TRUE` where the sign of `x` is negative,
+#' and `FALSE` otherwise.
+#'
+#' @returns
+#' Output boolean tensor of same shape as `x`.
+#'
+#' @param x
+#' Input tensor.
+#'
+#' @export
+#' @tether keras.ops.signbit
+#' @family numpy ops
+#' @family ops
+op_signbit <-
+function (x)
+keras$ops$signbit(x)

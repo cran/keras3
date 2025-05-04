@@ -183,13 +183,16 @@ check_bool <- function(x) {
 
 # ---- arg transformers ----
 
+atomic_to_array <- function(x) if(is.atomic(x)) as.array(x) else x
+
 as_array <- function(x)
   if(is.null(x) || is_py_object(x) || is.array(x))
     x else as.array(x)
 
-as_py_array <- function(x)
+as_py_array <- function(x) {
   if(is.null(x) || is_py_object(x))
-    x else np_array(x)
+    x else np_array(x, dtype = if(is.double(x)) config_floatx())
+}
 
 as_r_value <- function (x)
   if (is_py_object(x))
@@ -263,10 +266,10 @@ as_integer <- function(x) {
 }
 
 as_integer_array <- function(x) {
-  if(is.atomic(x))
-    x <- as.array(x)
-  if(is.array(x) && storage.mode(x) != "integer")
+  if (is.double(x)) {
     storage.mode(x) <- "integer"
+    x <- as.array(x)
+  }
   x
 }
 
@@ -331,14 +334,42 @@ normalize_path <- function(path) {
 }
 
 
+
 # unused
-as_index <- function(x) {
-  if(storage.mode(x) == "double")
-    storage.mode(x) <- "integer"
-  # k_array() pass through here...
-  # TODO: implement an efficient way to check for negative slices
-  x - 1L
+as_py_index <- function(x) {
+  if (is.list(x))
+    return(lapply(x, as_py_index))
+
+  if (is.atomic(x)) {
+    if (is.double(x))
+      storage.mode(x) <- "integer"
+    if (length(x) > 1L)
+      x <- as.array(x)
+    pos <- x > 0L
+    x[pos] <- x[pos] - 1L
+    return(x)
+  }
+
+  if (inherits(x, "numpy.ndarray")) {
+    offset <- .globals$as_py_index.numpy.ndarray
+    if (is.null(offset)) {
+      .globals$as_py_index.numpy.ndarray <- offset <-
+         py_run_string("
+from numpy import where
+
+def r_index_to_py_index(x):
+  return where(x > 0, x - 1, x)
+
+", local = TRUE, convert = FALSE)$r_index_to_py_index
+    }
+    return(offset(x))
+  }
+
+  # else is tensor
+  ops$where(x > 0L, x - 1L, x)
 }
+
+as_index <- as_py_index
 
 
 # Sketch for an alternative approach to offsetting indexes,
@@ -409,7 +440,7 @@ resolve_wrapper_py_obj_expr <- function(x, prefer_class = TRUE) {
     return(last_cl2[[c(3L, 2L)]])
 
   # bare builtin op_wrapper, like
-  # op_add <- function(x1, x2) keras$ops$add(x1, x2)
+  # op_add <- function(x1, x2) ops$add(x1, x2)
   if (is.call(cl <- body(x)) &&
       (is.call(cl0 <- cl1 <- cl[[1L]]) ||
        (
@@ -422,7 +453,7 @@ resolve_wrapper_py_obj_expr <- function(x, prefer_class = TRUE) {
     while (is.call(cl0) && identical(cl0[[1L]], quote(`$`)))
       cl0 <- cl0[[2L]]
 
-    if (identical(cl0, quote(keras)))
+    if (identical(cl0, quote(keras)) || identical(cl0, quote(ops)))
       return(cl1)
   }
 
@@ -871,7 +902,7 @@ relative_to <- function(dir, file) {
 if (FALSE) {
   # roxygen2 now wants this exported.
   `[.tensorflow.tensor` <-
-    getS3method("[", "tensorflow.tensor", envir = asNamespace("tensorflow"))
+    utils::getS3method("[", "tensorflow.tensor", envir = asNamespace("tensorflow"))
   formals(`[.tensorflow.tensor`)$style <- "R"
   formals(`[.tensorflow.tensor`)$options <-
     tensorflow::tf_extract_opts(

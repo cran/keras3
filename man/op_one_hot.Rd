@@ -4,15 +4,22 @@
 \alias{op_one_hot}
 \title{Converts integer tensor \code{x} into a one-hot tensor.}
 \usage{
-op_one_hot(x, num_classes, axis = -1L, dtype = NULL, sparse = FALSE)
+op_one_hot(
+  x,
+  num_classes,
+  axis = -1L,
+  dtype = NULL,
+  sparse = FALSE,
+  zero_indexed = FALSE
+)
 }
 \arguments{
 \item{x}{Integer tensor to be encoded. The shape can be
 arbitrary, but the dtype should be integer.
-R factors are coerced to integer and offset to be 0-based, i.e.,
-\code{as.integer(x) - 1L}.}
+R factors are coerced to integer.}
 
-\item{num_classes}{Number of classes for the one-hot encoding.}
+\item{num_classes}{Number of classes for the one-hot encoding. If \code{x} is a factor and
+\code{num_classes} is \code{NULL} or missing, then \code{levels(x)} is used.}
 
 \item{axis}{Axis along which the encoding is performed.
 \code{-1} represents the last axis. Defaults to \code{-1}.}
@@ -22,6 +29,10 @@ provided, it defaults to the default data type of the backend.}
 
 \item{sparse}{Whether to return a sparse tensor; for backends that support
 sparse tensors.}
+
+\item{zero_indexed}{If \code{TRUE}, treats indices as zero-based (\code{0} encodes to first position); if
+\code{FALSE} (default), treats indices as one-based (\code{1} encodes to first
+position).}
 }
 \value{
 Integer tensor: One-hot encoded tensor with the same shape as \code{x}
@@ -36,7 +47,7 @@ and the index corresponding to the integer value is marked as 1, while
 all other indices are marked as 0.
 }
 \section{Examples}{
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{x <- op_array(c(1, 3, 2, 0), "int32")
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{x <- op_array(c(2, 4, 3, 1), "int32")
 op_one_hot(x, num_classes = 4)
 }\if{html}{\out{</div>}}
 
@@ -48,10 +59,15 @@ op_one_hot(x, num_classes = 4)
 
 }\if{html}{\out{</div>}}
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{# array([[0. 1. 0. 0.]
-#        [0. 0. 0. 1.]
-#        [0. 0. 1. 0.]
-#        [1. 0. 0. 0.]], shape=(4, 4), dtype=float32)
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{op_one_hot(x - 1, num_classes = 4, zero_indexed = TRUE)
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(
+## [[0. 1. 0. 0.]
+##  [0. 0. 0. 1.]
+##  [0. 0. 1. 0.]
+##  [1. 0. 0. 0.]], shape=(4, 4), dtype=float32)
+
 }\if{html}{\out{</div>}}
 }
 
@@ -85,9 +101,11 @@ Other nn ops: \cr
 \code{\link{op_moments}()} \cr
 \code{\link{op_multi_hot}()} \cr
 \code{\link{op_normalize}()} \cr
+\code{\link{op_polar}()} \cr
 \code{\link{op_psnr}()} \cr
 \code{\link{op_relu}()} \cr
 \code{\link{op_relu6}()} \cr
+\code{\link{op_rms_normalization}()} \cr
 \code{\link{op_selu}()} \cr
 \code{\link{op_separable_conv}()} \cr
 \code{\link{op_sigmoid}()} \cr
@@ -212,9 +230,11 @@ Other ops: \cr
 \code{\link{op_image_affine_transform}()} \cr
 \code{\link{op_image_crop}()} \cr
 \code{\link{op_image_extract_patches}()} \cr
+\code{\link{op_image_gaussian_blur}()} \cr
 \code{\link{op_image_hsv_to_rgb}()} \cr
 \code{\link{op_image_map_coordinates}()} \cr
 \code{\link{op_image_pad}()} \cr
+\code{\link{op_image_perspective_transform}()} \cr
 \code{\link{op_image_resize}()} \cr
 \code{\link{op_image_rgb_to_grayscale}()} \cr
 \code{\link{op_image_rgb_to_hsv}()} \cr
@@ -275,6 +295,7 @@ Other ops: \cr
 \code{\link{op_ones_like}()} \cr
 \code{\link{op_outer}()} \cr
 \code{\link{op_pad}()} \cr
+\code{\link{op_polar}()} \cr
 \code{\link{op_power}()} \cr
 \code{\link{op_prod}()} \cr
 \code{\link{op_psnr}()} \cr
@@ -282,6 +303,7 @@ Other ops: \cr
 \code{\link{op_quantile}()} \cr
 \code{\link{op_ravel}()} \cr
 \code{\link{op_real}()} \cr
+\code{\link{op_rearrange}()} \cr
 \code{\link{op_reciprocal}()} \cr
 \code{\link{op_relu}()} \cr
 \code{\link{op_relu6}()} \cr
@@ -289,7 +311,9 @@ Other ops: \cr
 \code{\link{op_reshape}()} \cr
 \code{\link{op_rfft}()} \cr
 \code{\link{op_right_shift}()} \cr
+\code{\link{op_rms_normalization}()} \cr
 \code{\link{op_roll}()} \cr
+\code{\link{op_rot90}()} \cr
 \code{\link{op_round}()} \cr
 \code{\link{op_rsqrt}()} \cr
 \code{\link{op_saturate_cast}()} \cr
@@ -305,6 +329,7 @@ Other ops: \cr
 \code{\link{op_shape}()} \cr
 \code{\link{op_sigmoid}()} \cr
 \code{\link{op_sign}()} \cr
+\code{\link{op_signbit}()} \cr
 \code{\link{op_silu}()} \cr
 \code{\link{op_sin}()} \cr
 \code{\link{op_sinh}()} \cr
@@ -331,6 +356,7 @@ Other ops: \cr
 \code{\link{op_std}()} \cr
 \code{\link{op_stft}()} \cr
 \code{\link{op_stop_gradient}()} \cr
+\code{\link{op_subset}()} \cr
 \code{\link{op_subtract}()} \cr
 \code{\link{op_sum}()} \cr
 \code{\link{op_svd}()} \cr

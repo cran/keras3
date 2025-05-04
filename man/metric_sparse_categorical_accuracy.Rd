@@ -69,9 +69,9 @@ m$result()
 
 Usage with \code{compile()} API:
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{model \%>\% compile(optimizer = 'sgd',
-                  loss = 'sparse_categorical_crossentropy',
-                  metrics = list(metric_sparse_categorical_accuracy()))
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{model |> compile(optimizer = 'sgd',
+                 loss = 'sparse_categorical_crossentropy',
+                 metrics = list(metric_sparse_categorical_accuracy()))
 }\if{html}{\out{</div>}}
 }
 

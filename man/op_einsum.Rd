@@ -33,8 +33,8 @@ Trace of a matrix:
 op_trace(a)
 }\if{html}{\out{</div>}}
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(60.0, shape=(), dtype=float32)
-## tf.Tensor(60.0, shape=(), dtype=float32)
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(65.0, shape=(), dtype=float32)
+## tf.Tensor(65.0, shape=(), dtype=float32)
 
 }\if{html}{\out{</div>}}
 
@@ -44,8 +44,8 @@ Extract the diagonal:
 op_diag(a)
 }\if{html}{\out{</div>}}
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([ 0.  6. 12. 18. 24.], shape=(5), dtype=float32)
-## tf.Tensor([ 0.  6. 12. 18. 24.], shape=(5), dtype=float32)
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([ 1.  7. 13. 19. 25.], shape=(5), dtype=float32)
+## tf.Tensor([ 1.  7. 13. 19. 25.], shape=(5), dtype=float32)
 
 }\if{html}{\out{</div>}}
 
@@ -55,8 +55,8 @@ Sum over an axis:
 op_sum(a, axis = 2)
 }\if{html}{\out{</div>}}
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([ 10.  35.  60.  85. 110.], shape=(5), dtype=float32)
-## tf.Tensor([ 10.  35.  60.  85. 110.], shape=(5), dtype=float32)
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([ 15.  40.  65.  90. 115.], shape=(5), dtype=float32)
+## tf.Tensor([ 15.  40.  65.  90. 115.], shape=(5), dtype=float32)
 
 }\if{html}{\out{</div>}}
 
@@ -67,8 +67,8 @@ with ellipsis:
 op_sum(a, axis = -1)
 }\if{html}{\out{</div>}}
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([ 10.  35.  60.  85. 110.], shape=(5), dtype=float32)
-## tf.Tensor([ 10.  35.  60.  85. 110.], shape=(5), dtype=float32)
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([ 15.  40.  65.  90. 115.], shape=(5), dtype=float32)
+## tf.Tensor([ 15.  40.  65.  90. 115.], shape=(5), dtype=float32)
 
 }\if{html}{\out{</div>}}
 
@@ -78,8 +78,8 @@ Compute a matrix transpose or reorder any number of axes:
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(
-## [[0. 1. 2.]
-##  [3. 4. 5.]], shape=(2, 3), dtype=float32)
+## [[1. 2. 3.]
+##  [4. 5. 6.]], shape=(2, 3), dtype=float32)
 
 }\if{html}{\out{</div>}}
 
@@ -88,13 +88,13 @@ op_transpose(c)          # same as above
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(
-## [[0. 3.]
-##  [1. 4.]
-##  [2. 5.]], shape=(3, 2), dtype=float32)
+## [[1. 4.]
+##  [2. 5.]
+##  [3. 6.]], shape=(3, 2), dtype=float32)
 ## tf.Tensor(
-## [[0. 3.]
-##  [1. 4.]
-##  [2. 5.]], shape=(3, 2), dtype=float32)
+## [[1. 4.]
+##  [2. 5.]
+##  [3. 6.]], shape=(3, 2), dtype=float32)
 
 }\if{html}{\out{</div>}}
 
@@ -106,10 +106,10 @@ a \%*\% b
 op_matmul(a, b)
 }\if{html}{\out{</div>}}
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([ 30.  80. 130. 180. 230.], shape=(5), dtype=float32)
-## tf.Tensor([ 30.  80. 130. 180. 230.], shape=(5), dtype=float32)
-## tf.Tensor([ 30.  80. 130. 180. 230.], shape=(5), dtype=float32)
-## tf.Tensor([ 30.  80. 130. 180. 230.], shape=(5), dtype=float32)
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([ 55. 130. 205. 280. 355.], shape=(5), dtype=float32)
+## tf.Tensor([ 55. 130. 205. 280. 355.], shape=(5), dtype=float32)
+## tf.Tensor([ 55. 130. 205. 280. 355.], shape=(5), dtype=float32)
+## tf.Tensor([ 55. 130. 205. 280. 355.], shape=(5), dtype=float32)
 
 }\if{html}{\out{</div>}}
 }
@@ -239,10 +239,12 @@ Other numpy ops: \cr
 \code{\link{op_reshape}()} \cr
 \code{\link{op_right_shift}()} \cr
 \code{\link{op_roll}()} \cr
+\code{\link{op_rot90}()} \cr
 \code{\link{op_round}()} \cr
 \code{\link{op_saturate_cast}()} \cr
 \code{\link{op_select}()} \cr
 \code{\link{op_sign}()} \cr
+\code{\link{op_signbit}()} \cr
 \code{\link{op_sin}()} \cr
 \code{\link{op_sinh}()} \cr
 \code{\link{op_size}()} \cr
@@ -383,9 +385,11 @@ Other ops: \cr
 \code{\link{op_image_affine_transform}()} \cr
 \code{\link{op_image_crop}()} \cr
 \code{\link{op_image_extract_patches}()} \cr
+\code{\link{op_image_gaussian_blur}()} \cr
 \code{\link{op_image_hsv_to_rgb}()} \cr
 \code{\link{op_image_map_coordinates}()} \cr
 \code{\link{op_image_pad}()} \cr
+\code{\link{op_image_perspective_transform}()} \cr
 \code{\link{op_image_resize}()} \cr
 \code{\link{op_image_rgb_to_grayscale}()} \cr
 \code{\link{op_image_rgb_to_hsv}()} \cr
@@ -447,6 +451,7 @@ Other ops: \cr
 \code{\link{op_ones_like}()} \cr
 \code{\link{op_outer}()} \cr
 \code{\link{op_pad}()} \cr
+\code{\link{op_polar}()} \cr
 \code{\link{op_power}()} \cr
 \code{\link{op_prod}()} \cr
 \code{\link{op_psnr}()} \cr
@@ -454,6 +459,7 @@ Other ops: \cr
 \code{\link{op_quantile}()} \cr
 \code{\link{op_ravel}()} \cr
 \code{\link{op_real}()} \cr
+\code{\link{op_rearrange}()} \cr
 \code{\link{op_reciprocal}()} \cr
 \code{\link{op_relu}()} \cr
 \code{\link{op_relu6}()} \cr
@@ -461,7 +467,9 @@ Other ops: \cr
 \code{\link{op_reshape}()} \cr
 \code{\link{op_rfft}()} \cr
 \code{\link{op_right_shift}()} \cr
+\code{\link{op_rms_normalization}()} \cr
 \code{\link{op_roll}()} \cr
+\code{\link{op_rot90}()} \cr
 \code{\link{op_round}()} \cr
 \code{\link{op_rsqrt}()} \cr
 \code{\link{op_saturate_cast}()} \cr
@@ -477,6 +485,7 @@ Other ops: \cr
 \code{\link{op_shape}()} \cr
 \code{\link{op_sigmoid}()} \cr
 \code{\link{op_sign}()} \cr
+\code{\link{op_signbit}()} \cr
 \code{\link{op_silu}()} \cr
 \code{\link{op_sin}()} \cr
 \code{\link{op_sinh}()} \cr
@@ -503,6 +512,7 @@ Other ops: \cr
 \code{\link{op_std}()} \cr
 \code{\link{op_stft}()} \cr
 \code{\link{op_stop_gradient}()} \cr
+\code{\link{op_subset}()} \cr
 \code{\link{op_subtract}()} \cr
 \code{\link{op_sum}()} \cr
 \code{\link{op_svd}()} \cr

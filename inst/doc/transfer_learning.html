@@ -461,7 +461,7 @@ updated during training.</p>
 <span id="cb20-16"><a href="#cb20-16" tabindex="-1"></a><span class="co"># Train the model</span></span>
 <span id="cb20-17"><a href="#cb20-17" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">compile</span>(<span class="at">optimizer =</span> <span class="st">&quot;adam&quot;</span>, <span class="at">loss =</span> <span class="st">&quot;mse&quot;</span>)</span>
 <span id="cb20-18"><a href="#cb20-18" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(<span class="fu">random_normal</span>(<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>)), <span class="fu">random_normal</span>(<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>)), <span class="at">epochs =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## 1/1 - 0s - 481ms/step - loss: 2.8362</code></pre>
+<pre><code>## 1/1 - 0s - 487ms/step - loss: 2.8362</code></pre>
 <div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a><span class="co"># Check that the weights of layer1 have not changed during training</span></span>
 <span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a>final_layer1_weights_values <span class="ot">&lt;-</span> <span class="fu">get_weights</span>(layer1)</span>
 <span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a></span>
@@ -646,7 +646,7 @@ class-specific folders.</p>
 datasets. To keep our dataset small, we will use 40% of the original
 training data (25,000 images) for training, 10% for validation, and 10%
 for testing.</p>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a><span class="co"># reticulate::py_install(&quot;tensorflow-datasets&quot;)</span></span>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a>reticulate<span class="sc">::</span><span class="fu">py_require</span>(<span class="st">&quot;tensorflow-datasets&quot;</span>)</span>
 <span id="cb33-2"><a href="#cb33-2" tabindex="-1"></a>tfds <span class="ot">&lt;-</span> reticulate<span class="sc">::</span><span class="fu">import</span>(<span class="st">&quot;tensorflow_datasets&quot;</span>)</span>
 <span id="cb33-3"><a href="#cb33-3" tabindex="-1"></a></span>
 <span id="cb33-4"><a href="#cb33-4" tabindex="-1"></a><span class="fu">c</span>(train_ds, validation_ds, test_ds) <span class="sc">%&lt;-%</span> tfds<span class="sc">$</span><span class="fu">load</span>(</span>
@@ -847,7 +847,7 @@ fine-tuning.</li>
 <span id="cb42-6"><a href="#cb42-6" tabindex="-1"></a></span>
 <span id="cb42-7"><a href="#cb42-7" tabindex="-1"></a>epochs <span class="ot">&lt;-</span> <span class="dv">1</span></span>
 <span id="cb42-8"><a href="#cb42-8" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(train_ds, <span class="at">epochs =</span> epochs, <span class="at">validation_data =</span> validation_ds)</span></code></pre></div>
-<pre><code>## 146/146 - 60s - 408ms/step - binary_accuracy: 0.9183 - loss: 0.1887 - val_binary_accuracy: 0.9669 - val_loss: 0.0926</code></pre>
+<pre><code>## 146/146 - 53s - 360ms/step - binary_accuracy: 0.9183 - loss: 0.1887 - val_binary_accuracy: 0.9669 - val_loss: 0.0926</code></pre>
 </div>
 <div id="do-a-round-of-fine-tuning-of-the-entire-model" class="section level2">
 <h2>Do a round of fine-tuning of the entire model</h2>
@@ -895,7 +895,7 @@ so far.</p>
 <span id="cb46-6"><a href="#cb46-6" tabindex="-1"></a></span>
 <span id="cb46-7"><a href="#cb46-7" tabindex="-1"></a>epochs <span class="ot">&lt;-</span> <span class="dv">1</span></span>
 <span id="cb46-8"><a href="#cb46-8" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(train_ds, <span class="at">epochs =</span> epochs, <span class="at">validation_data =</span> validation_ds)</span></code></pre></div>
-<pre><code>## 146/146 - 100s - 683ms/step - binary_accuracy: 0.8660 - loss: 0.3213 - val_binary_accuracy: 0.9652 - val_loss: 0.1022</code></pre>
+<pre><code>## 146/146 - 97s - 664ms/step - binary_accuracy: 0.8660 - loss: 0.3213 - val_binary_accuracy: 0.9652 - val_loss: 0.1022</code></pre>
 <p>After 10 epochs, fine-tuning gains us a nice improvement here. Let’s
 evaluate the model on the test dataset:</p>
 <div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">evaluate</span>(test_ds)</span></code></pre></div>
@@ -904,7 +904,7 @@ evaluate the model on the test dataset:</p>
 ## [1] 0.9539983
 ##
 ## $loss
-## [1] 0.1102509</code></pre>
+## [1] 0.1102593</code></pre>
 </div>
 
 

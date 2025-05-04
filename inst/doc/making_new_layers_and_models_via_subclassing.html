@@ -689,13 +689,13 @@ automatically summed and added to the main loss, if any):</p>
 <span id="cb36-6"><a href="#cb36-6" tabindex="-1"></a><span class="co"># losses get added to it</span></span>
 <span id="cb36-7"><a href="#cb36-7" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">compile</span>(<span class="at">optimizer =</span> <span class="st">&quot;adam&quot;</span>, <span class="at">loss =</span> <span class="st">&quot;mse&quot;</span>)</span>
 <span id="cb36-8"><a href="#cb36-8" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(<span class="fu">random_normal</span>(<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>)), <span class="fu">random_normal</span>(<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>)), <span class="at">epochs =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## 1/1 - 0s - 142ms/step - loss: 1.9081</code></pre>
+<pre><code>## 1/1 - 0s - 161ms/step - loss: 1.9081</code></pre>
 <div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" tabindex="-1"></a><span class="co"># It&#39;s also possible not to pass any loss in `compile`,</span></span>
 <span id="cb38-2"><a href="#cb38-2" tabindex="-1"></a><span class="co"># since the model already has a loss to minimize, via the `add_loss`</span></span>
 <span id="cb38-3"><a href="#cb38-3" tabindex="-1"></a><span class="co"># call during the forward pass!</span></span>
 <span id="cb38-4"><a href="#cb38-4" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">compile</span>(<span class="at">optimizer =</span> <span class="st">&quot;adam&quot;</span>)</span>
 <span id="cb38-5"><a href="#cb38-5" tabindex="-1"></a>model <span class="sc">|&gt;</span> <span class="fu">fit</span>(<span class="fu">random_normal</span>(<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>)), <span class="fu">random_normal</span>(<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>)), <span class="at">epochs =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## 1/1 - 0s - 115ms/step - loss: 1.6613</code></pre>
+<pre><code>## 1/1 - 0s - 139ms/step - loss: 1.6613</code></pre>
 </div>
 <div id="you-can-optionally-enable-serialization-on-your-layers" class="section level2">
 <h2>You can optionally enable serialization on your layers</h2>
@@ -1007,9 +1007,9 @@ a regularization loss (KL divergence).</p>
 <span id="cb50-16"><a href="#cb50-16" tabindex="-1"></a></span>
 <span id="cb50-17"><a href="#cb50-17" tabindex="-1"></a>vae <span class="sc">|&gt;</span> <span class="fu">fit</span>(x_train, x_train, <span class="at">epochs =</span> <span class="dv">2</span>, <span class="at">batch_size =</span> <span class="dv">64</span>)</span></code></pre></div>
 <pre><code>## Epoch 1/2
-## 938/938 - 5s - 5ms/step - loss: 0.0748
+## 938/938 - 4s - 5ms/step - loss: 0.0748
 ## Epoch 2/2
-## 938/938 - 1s - 2ms/step - loss: 0.0676</code></pre>
+## 938/938 - 1s - 1ms/step - loss: 0.0676</code></pre>
 </div>
 
 

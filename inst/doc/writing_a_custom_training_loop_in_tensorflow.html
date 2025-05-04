@@ -472,21 +472,21 @@ based on the gradients</li>
 ## Seen so far: 12800 samples
 ## Training loss (for one batch) at step 400: 1.6450
 ## Seen so far: 25600 samples
-## Training loss (for one batch) at step 600: 0.7421
+## Training loss (for one batch) at step 600: 0.8552
 ## Seen so far: 38400 samples
 ## Start of epoch  2
-## Training loss (for one batch) at step 200: 0.6305
+## Training loss (for one batch) at step 200: 0.6606
 ## Seen so far: 12800 samples
-## Training loss (for one batch) at step 400: 0.2632
+## Training loss (for one batch) at step 400: 0.2213
 ## Seen so far: 25600 samples
-## Training loss (for one batch) at step 600: 0.4417
+## Training loss (for one batch) at step 600: 0.3709
 ## Seen so far: 38400 samples
 ## Start of epoch  3
-## Training loss (for one batch) at step 200: 0.2815
+## Training loss (for one batch) at step 200: 0.2968
 ## Seen so far: 12800 samples
-## Training loss (for one batch) at step 400: 0.5612
+## Training loss (for one batch) at step 400: 0.4781
 ## Seen so far: 25600 samples
-## Training loss (for one batch) at step 600: 0.2475
+## Training loss (for one batch) at step 600: 0.2455
 ## Seen so far: 38400 samples</code></pre>
 </div>
 <div id="low-level-handling-of-metrics" class="section level2">
@@ -580,7 +580,7 @@ each epoch:</p>
 ## Training acc over epoch: 0.8838
 ## Validation acc: 0.9049</code></pre>
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">Sys.time</span>() <span class="sc">-</span> time</span></code></pre></div>
-<pre><code>## Time difference of 45.69004 secs</code></pre>
+<pre><code>## Time difference of 51.62403 secs</code></pre>
 </div>
 <div id="speeding-up-your-training-step-with-tf_function" class="section level2">
 <h2>Speeding-up your training step with <code>tf_function()</code></h2>
@@ -655,7 +655,7 @@ step:</p>
 ## Training acc over epoch: 0.0000
 ## Validation acc: 0.9049</code></pre>
 <div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">Sys.time</span>() <span class="sc">-</span> time</span></code></pre></div>
-<pre><code>## Time difference of 0.3871596 secs</code></pre>
+<pre><code>## Time difference of 0.5661066 secs</code></pre>
 <p>Much faster, isn’t it?</p>
 </div>
 <div id="low-level-handling-of-losses-tracked-by-the-model" class="section level2">

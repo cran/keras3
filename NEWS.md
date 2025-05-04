@@ -1,3 +1,80 @@
+# keras3 1.4.0
+
+- New `op_subset()` and `x@r[...]` methods enable tensor subsetting
+  using R's `[` semantics and idioms.
+
+- New subset assignment methods implemented for tensors:
+    `op_subset(x, ...) <- value` and `x@r[...] <- value`
+
+- Breaking changes: All operations prefixed with `op_` now return 1-based
+  indices by default. The following functions that return or consume indices have
+  changed:
+    `op_argmax()`, `op_argmin()`, `op_top_k()`, `op_argpartition()`,
+    `op_searchsorted()`, `op_argsort()`, `op_digitize()`, `op_nonzero()`,
+    `op_split()`, `op_trace()`, `op_swapaxes()`, `op_ctc_decode()`,
+    `op_ctc_loss()`, `op_one_hot()`, `op_arange()`
+
+- `op_arange()` now matches the semantics of `base::seq()`. By default
+  it starts, includes the end value, and automatically infers step direction.
+
+- `op_one_hot()` now infers `num_classes` if supplied a factor.
+
+- `op_hstack()` and `op_vstack()` now accept arguments passed via `...`.
+
+- `application_decode_predictions()` now returns a processed data frame by
+  default or a decoder function if predictions are missing.
+
+- `application_preprocess_inputs()` returns a preprocessor function if
+  inputs are missing.
+
+- Various new examples added to documentation,
+  including `op_scatter()`, `op_switch()`, and `op_nonzero()`.
+
+- New `x@py[...]` accessor introduced for Python-style 0-based indexing of tensors.
+
+- New `Summary` group generic method for `keras_shape`, enabling usage like
+  `prod(shape(3, 4))`
+
+- `KERAS_HOME` is now set to `tools::R_user_dir("keras3", "cache")` if
+ `~/.keras` does not exist and `KERAS_HOME` is unset.
+
+- new `op_convert_to_array()` to convert a tensor to an R array.
+
+- Added compatibility with Keras v3.9.2.
+  - New operations added:
+
+    - `op_rot90()`
+    - `op_rearrange()` (Einops-style)
+    - `op_signbit()`
+    - `op_polar()`
+    - `op_image_perspective_transform()`
+    - `op_image_gaussian_blur()`
+
+  - New layers introduced:
+
+    - `layer_rms_normalization()`
+    - `layer_aug_mix()`
+    - `layer_cut_mix()`
+    - `layer_random_invert()`
+    - `layer_random_erasing()`
+    - `layer_random_gaussian_blur()`
+    - `layer_random_perspective()`
+
+  - `layer_resizing()` gains an `antialias` argument.
+
+  - `keras_input()`, `keras_model_sequential()`, and `op_convert_to_tensor()` gain a `ragged` argument.
+
+  - `layer$pop_layer()` gains a `rebuild` argument and now returns the removed layer.
+
+  - New `rematerialized_call()` method added to `Layer` objects.
+
+  - Documentation improvements and minor fixes.
+
+- Fixed an issue where `op_shape()` would sometimes return a TensorFlow `TensorShape`
+
+- Fixes for `metric_iou()`, `op_top_k()`, and `op_eye()` being called with R atomic doubles
+
+
 # keras3 1.3.0
 
 - Keras now uses `reticulate::py_require()` to resolve Python dependencies.
@@ -13,8 +90,8 @@
 
 - `%*%` now dispatches to `op_matmul()` for tensorflow tensors, which
   has relaxed shape constraints compared to `tf$matmul()`.
-  
-- Fixed an issue where calling a `Metric` and `Loss` object 
+
+- Fixed an issue where calling a `Metric` and `Loss` object
   with unnamed arguments would error.
 
 ## Added compatibility with Keras v3.8.0. User-facing changes:

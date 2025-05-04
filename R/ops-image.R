@@ -103,7 +103,7 @@ function (images, transform, interpolation = "bilinear", fill_mode = "constant",
     # pass 'images' as unnamed positional arg (was renamed from 'image' in Keras 3.4.0)
     args <- args_to_positional(args, "images")
 
-    do.call(keras$ops$image$affine_transform, args)
+    do.call(ops$image$affine_transform, args)
 }
 
 
@@ -171,7 +171,7 @@ function (images, size, strides = NULL, dilation_rate = 1L, padding = "valid",
     # pass 'images' as unnamed positional arg (was renamed from 'image' in Keras 3.4.0)
     args <- args_to_positional(args, "images")
 
-    do.call(keras$ops$image$extract_patches, args)
+    do.call(ops$image$extract_patches, args)
 }
 
 
@@ -233,7 +233,7 @@ function (inputs, coordinates, order, fill_mode = "constant",
     args <- capture_args(list(fill_value = as_integer))
     # "inputs" renamed from "input" in Keras 3.4.0
     args <- args_to_positional(args, "inputs")
-    do.call(keras$ops$image$map_coordinates, args)
+    do.call(ops$image$map_coordinates, args)
 }
 
 
@@ -308,7 +308,7 @@ function (images, top_padding = NULL, left_padding = NULL,
         bottom_padding = as_integer, left_padding = as_integer,
         right_padding = as_integer, target_height = as_integer,
         target_width = as_integer))
-    do.call(keras$ops$image$pad_images, args)
+    do.call(ops$image$pad_images, args)
 }
 
 
@@ -402,7 +402,7 @@ function (images, size, interpolation = "bilinear", antialias = FALSE,
 {
     args <- capture_args(list(size = as_integer))
     args <- args_to_positional(args, "images")
-    do.call(keras$ops$image$resize, args)
+    do.call(ops$image$resize, args)
 }
 
 
@@ -472,7 +472,7 @@ function (images, top_cropping = NULL, left_cropping = NULL,
       target_height = as_integer,
       target_width = as_integer
   ))
-  do.call(keras$ops$image$crop_images, args)
+  do.call(ops$image$crop_images, args)
 }
 
 #' Convert RGB images to grayscale.
@@ -522,7 +522,7 @@ function (images, top_cropping = NULL, left_cropping = NULL,
 #' @tether keras.ops.image.rgb_to_grayscale
 op_image_rgb_to_grayscale <-
 function (images, data_format = NULL) {
-  keras$ops$image$rgb_to_grayscale(images, data_format)
+  ops$image$rgb_to_grayscale(images, data_format)
 }
 
 
@@ -574,7 +574,7 @@ function (images, data_format = NULL) {
 #' @tether keras.ops.image.hsv_to_rgb
 op_image_hsv_to_rgb <-
 function (images, data_format = NULL) {
-  keras$ops$image$hsv_to_rgb(images, data_format)
+  ops$image$hsv_to_rgb(images, data_format)
 }
 
 #' Convert RGB images to HSV.
@@ -627,5 +627,159 @@ function (images, data_format = NULL) {
 #' @tether keras.ops.image.rgb_to_hsv
 op_image_rgb_to_hsv <-
 function (images, data_format = NULL) {
-  keras$ops$image$rgb_to_hsv(images, data_format)
+  ops$image$rgb_to_hsv(images, data_format)
+}
+
+
+#' Applies a Gaussian blur to the image(s).
+#'
+#' @description
+#'
+#' # Examples
+#'
+#' ```{r}
+#' x <- op_ones(c(2, 64, 80, 3))  # batch of 2 RGB images
+#' y <- op_image_gaussian_blur(x)
+#' op_shape(y)
+#' ```
+#'
+#' ```{r}
+#' x <- op_ones(c(64, 80, 3))  # single RGB image
+#' y <- op_image_gaussian_blur(x)
+#' op_shape(y)
+#' ```
+#'
+#' ```{r}
+#' x <- op_ones(c(2, 3, 64, 80))  # batch of 2 RGB images, channels_first
+#' y <- op_image_gaussian_blur(x, data_format = "channels_first")
+#' op_shape(y)
+#' ```
+#'
+#' @returns
+#' Blurred image or batch of images.
+#'
+#' @param images
+#' Input image or batch of images. Must be 3D or 4D.
+#'
+#' @param kernel_size
+#' A tuple of two integers, specifying the height and width
+#' of the Gaussian kernel.
+#'
+#' @param sigma
+#' A tuple of two floats, specifying the standard deviation of
+#' the Gaussian kernel along height and width.
+#'
+#' @param data_format
+#' A string specifying the data format of the input tensor.
+#' It can be either `"channels_last"` or `"channels_first"`.
+#' `"channels_last"` corresponds to inputs with shape
+#' `(batch, height, width, channels)`, while `"channels_first"`
+#' corresponds to inputs with shape `(batch, channels, height, width)`.
+#' If not specified, the value will default to
+#' `keras.config.image_data_format`.
+#'
+#' @export
+#' @tether keras.ops.image.gaussian_blur
+#' @family image ops
+#' @family image utils
+#' @family ops
+op_image_gaussian_blur <-
+function (images, kernel_size = list(3L, 3L), sigma = list(1,
+    1), data_format = NULL) {
+  args <- capture_args(list(kernel_size = as_integer_tuple, sigma = as_tuple))
+  do.call(keras$ops$image$gaussian_blur, args)
+}
+
+#' Applies a perspective transformation to the image(s).
+#'
+#' @description
+#'
+#' # Examples
+#'
+#' ```{r}
+#' # Batch of 2 RGB images (channels_last)
+#' x <- op_ones(c(2, 64, 80, 3))
+#' start_points <- op_stack(list(
+#'   rbind(c(0, 0), c(0, 64), c(80, 0), c(80, 64)),
+#'   rbind(c(0, 0), c(0, 64), c(80, 0), c(80, 64))
+#' ))
+#' end_points <- op_stack(list(
+#'   rbind(c(3, 5), c(7, 64), c(76, -10), c(84, 61)),
+#'   rbind(c(8, 10), c(10, 61), c(65, 3), c(88, 43))
+#' ))
+#' y <- op_image_perspective_transform(x, start_points, end_points)
+#' op_shape(y)
+#' ```
+#'
+#' ```{r}
+#' # Single RGB image (channels_last)
+#' x <- op_ones(c(64, 80, 3))
+#' start_points <- rbind(c(0, 0), c(0, 64), c(80, 0), c(80, 64))
+#' end_points <- rbind(c(3, 5), c(7, 64), c(76, -10), c(84, 61))
+#' y <- op_image_perspective_transform(x, start_points, end_points)
+#' op_shape(y)
+#' ```
+#'
+#' ```{r}
+#' # Batch of 2 RGB images (channels_first)
+#' x <- op_ones(c(2, 3, 64, 80))
+#' start_points <- op_stack(list(
+#'   rbind(c(0, 0), c(0, 64), c(80, 0), c(80, 64)),
+#'   rbind(c(0, 0), c(0, 64), c(80, 0), c(80, 64))
+#' ))
+#' end_points <- op_stack(list(
+#'   rbind(c(3, 5), c(7, 64), c(76, -10), c(84, 61)),
+#'   rbind(c(8, 10), c(10, 61), c(65, 3), c(88, 43))
+#' ))
+#' y <- op_image_perspective_transform(
+#'   x, start_points, end_points,
+#'   data_format = "channels_first"
+#' )
+#' op_shape(y)
+#' ```
+#'
+#' @returns
+#' Applied perspective transform image or batch of images.
+#'
+#' @param images
+#' Input image or batch of images. Must be 3D or 4D.
+#'
+#' @param start_points
+#' A tensor of shape `(N, 4, 2)` or `(4, 2)`,
+#' representing the source points in the original image
+#' that define the transformation.
+#'
+#' @param end_points
+#' A tensor of shape `(N, 4, 2)` or `(4, 2)`,
+#' representing the target points in the output image
+#' after transformation.
+#'
+#' @param interpolation
+#' Interpolation method. Available methods are `"nearest"`,
+#' and `"bilinear"`. Defaults to `"bilinear"`.
+#'
+#' @param fill_value
+#' Value used for points outside the boundaries of the input if
+#' extrapolation is needed. Defaults to `0`.
+#'
+#' @param data_format
+#' A string specifying the data format of the input tensor.
+#' It can be either `"channels_last"` or `"channels_first"`.
+#' `"channels_last"` corresponds to inputs with shape
+#' `(batch, height, width, channels)`, while `"channels_first"`
+#' corresponds to inputs with shape `(batch, channels, height, width)`.
+#' If not specified, the value will default to
+#' `keras.config.image_data_format`.
+#'
+#' @export
+#' @tether keras.ops.image.perspective_transform
+#' @family image ops
+#' @family image utils
+#' @family ops
+op_image_perspective_transform <-
+function (images, start_points, end_points, interpolation = "bilinear",
+    fill_value = 0L, data_format = NULL)
+{
+    args <- capture_args(list(fill_value = as_integer))
+    do.call(keras$ops$image$perspective_transform, args)
 }

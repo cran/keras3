@@ -4,13 +4,17 @@
 \alias{op_argsort}
 \title{Returns the indices that would sort a tensor.}
 \usage{
-op_argsort(x, axis = -1L)
+op_argsort(x, axis = -1L, zero_indexed = FALSE)
 }
 \arguments{
 \item{x}{Input tensor.}
 
 \item{axis}{Axis along which to sort. Defaults to \code{-1} (the last axis). If
 \code{NULL}, the flattened tensor is used.}
+
+\item{zero_indexed}{If \code{TRUE}, the returned indices are zero-based (\code{0} encodes to first
+position); if \code{FALSE} (default), the returned indices are one-based (\code{1}
+encodes to first position).}
 }
 \value{
 Tensor of indices that sort \code{x} along the specified \code{axis}.
@@ -21,36 +25,73 @@ Returns the indices that would sort a tensor.
 \section{Examples}{
 One dimensional array:
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{x <- op_array(c(3, 1, 2))
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{x <- op_array(c(3, 1, 2)) + .1
 op_argsort(x)
 }\if{html}{\out{</div>}}
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([1 2 0], shape=(3), dtype=int32)
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([2 3 1], shape=(3), dtype=int32)
+
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{x@r[op_argsort(x)] == op_sort(x)
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor([ True  True  True], shape=(3), dtype=bool)
 
 }\if{html}{\out{</div>}}
 
 Two-dimensional array:
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{x <- op_array(rbind(c(0, 3),
-                   c(3, 2),
-                   c(4, 5)), dtype = "int32")
-op_argsort(x, axis = 1)
+                    c(3, 2),
+                    c(4, 5))) + .1
+(i <- op_argsort(x, axis = 1))
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(
-## [[0 1]
-##  [1 0]
-##  [2 2]], shape=(3, 2), dtype=int32)
+## [[1 2]
+##  [2 1]
+##  [3 3]], shape=(3, 2), dtype=int32)
 
 }\if{html}{\out{</div>}}
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{op_argsort(x, axis = 2)
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{x@r[i@r[, 1], ] # sort x-rows using first col of x
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(
-## [[0 1]
-##  [1 0]
-##  [0 1]], shape=(3, 2), dtype=int32)
+## [[0.1 3.1]
+##  [3.1 2.1]
+##  [4.1 5.1]], shape=(3, 2), dtype=float64)
+
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{x@r[i@r[, 2], ] # sort x-rows using second col of x
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(
+## [[3.1 2.1]
+##  [0.1 3.1]
+##  [4.1 5.1]], shape=(3, 2), dtype=float64)
+
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{(i <- op_argsort(x, axis = 2))
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(
+## [[1 2]
+##  [2 1]
+##  [1 2]], shape=(3, 2), dtype=int32)
+
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{x@r[, i@r[2,]] # sort x-cols using second row of x
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## tf.Tensor(
+## [[3.1 0.1]
+##  [2.1 3.1]
+##  [5.1 4.1]], shape=(3, 2), dtype=float64)
 
 }\if{html}{\out{</div>}}
 }
@@ -180,10 +221,12 @@ Other numpy ops: \cr
 \code{\link{op_reshape}()} \cr
 \code{\link{op_right_shift}()} \cr
 \code{\link{op_roll}()} \cr
+\code{\link{op_rot90}()} \cr
 \code{\link{op_round}()} \cr
 \code{\link{op_saturate_cast}()} \cr
 \code{\link{op_select}()} \cr
 \code{\link{op_sign}()} \cr
+\code{\link{op_signbit}()} \cr
 \code{\link{op_sin}()} \cr
 \code{\link{op_sinh}()} \cr
 \code{\link{op_size}()} \cr
@@ -324,9 +367,11 @@ Other ops: \cr
 \code{\link{op_image_affine_transform}()} \cr
 \code{\link{op_image_crop}()} \cr
 \code{\link{op_image_extract_patches}()} \cr
+\code{\link{op_image_gaussian_blur}()} \cr
 \code{\link{op_image_hsv_to_rgb}()} \cr
 \code{\link{op_image_map_coordinates}()} \cr
 \code{\link{op_image_pad}()} \cr
+\code{\link{op_image_perspective_transform}()} \cr
 \code{\link{op_image_resize}()} \cr
 \code{\link{op_image_rgb_to_grayscale}()} \cr
 \code{\link{op_image_rgb_to_hsv}()} \cr
@@ -388,6 +433,7 @@ Other ops: \cr
 \code{\link{op_ones_like}()} \cr
 \code{\link{op_outer}()} \cr
 \code{\link{op_pad}()} \cr
+\code{\link{op_polar}()} \cr
 \code{\link{op_power}()} \cr
 \code{\link{op_prod}()} \cr
 \code{\link{op_psnr}()} \cr
@@ -395,6 +441,7 @@ Other ops: \cr
 \code{\link{op_quantile}()} \cr
 \code{\link{op_ravel}()} \cr
 \code{\link{op_real}()} \cr
+\code{\link{op_rearrange}()} \cr
 \code{\link{op_reciprocal}()} \cr
 \code{\link{op_relu}()} \cr
 \code{\link{op_relu6}()} \cr
@@ -402,7 +449,9 @@ Other ops: \cr
 \code{\link{op_reshape}()} \cr
 \code{\link{op_rfft}()} \cr
 \code{\link{op_right_shift}()} \cr
+\code{\link{op_rms_normalization}()} \cr
 \code{\link{op_roll}()} \cr
+\code{\link{op_rot90}()} \cr
 \code{\link{op_round}()} \cr
 \code{\link{op_rsqrt}()} \cr
 \code{\link{op_saturate_cast}()} \cr
@@ -418,6 +467,7 @@ Other ops: \cr
 \code{\link{op_shape}()} \cr
 \code{\link{op_sigmoid}()} \cr
 \code{\link{op_sign}()} \cr
+\code{\link{op_signbit}()} \cr
 \code{\link{op_silu}()} \cr
 \code{\link{op_sin}()} \cr
 \code{\link{op_sinh}()} \cr
@@ -444,6 +494,7 @@ Other ops: \cr
 \code{\link{op_std}()} \cr
 \code{\link{op_stft}()} \cr
 \code{\link{op_stop_gradient}()} \cr
+\code{\link{op_subset}()} \cr
 \code{\link{op_subtract}()} \cr
 \code{\link{op_sum}()} \cr
 \code{\link{op_svd}()} \cr
